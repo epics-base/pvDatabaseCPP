@@ -1,4 +1,4 @@
-/* exampleRecord.h */
+/* testRecord.h */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -7,8 +7,8 @@
 /**
  * @author mrk
  */
-#ifndef EXAMPLE_RECORD_H
-#define EXAMPLE_RECORD_H
+#ifndef TEST_RECORD_H
+#define TEST_RECORD_H
 #include <string>
 #include <cstring>
 #include <stdexcept>
@@ -18,21 +18,21 @@
 
 namespace epics { namespace pvDatabase { 
 
-class ExampleRecord;
+class TestRecord;
 
-class ExampleRecord :
+class TestRecord :
   public virtual PVRecord
 {
 public:
-    POINTER_DEFINITIONS(ExampleRecord);
+    POINTER_DEFINITIONS(TestRecord);
     static PVRecordPtr create(epics::pvData::String const & recordName);
-    virtual ~ExampleRecord();
+    virtual ~TestRecord();
     virtual bool isSynchronous();
     virtual void process(
         epics::pvDatabase::RecordProcessRequesterPtr const &processRequester,
         bool alreadyLocked);
 private:
-    ExampleRecord(epics::pvData::String const & recordName,
+    TestRecord(epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure,
         epics::pvData::PVLongPtr const &pvValue);
     epics::pvData::PVLongPtr pvValue;
@@ -40,4 +40,4 @@ private:
 
 }}
 
-#endif  /* EXAMPLE_RECORD_H */
+#endif  /* TEST_RECORD_H */

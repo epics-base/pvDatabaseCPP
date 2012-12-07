@@ -1,4 +1,4 @@
-/* exampleRecord.cpp */
+/* testRecord.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -21,7 +21,7 @@
 #include <memory>
 
 #include <pv/standardPVField.h>
-#include "exampleRecord.h"
+#include "testRecord.h"
 
 
 namespace epics { namespace pvDatabase { 
@@ -30,18 +30,19 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 
-ExampleRecord::~ExampleRecord(){}
+TestRecord::~TestRecord(){}
 
-PVRecordPtr ExampleRecord::create(String const & recordName)
+PVRecordPtr TestRecord::create(String const & recordName)
 {
-    String properties;
+    String properties("alarm,timeStamp,display,control,valueAlarm");
     PVStructurePtr pvStructure = getStandardPVField()->scalar(pvLong,properties);
     PVLongPtr pvValue =  pvStructure->getLongField("value");
-    PVRecordPtr pvRecord(new ExampleRecord(recordName,pvStructure,pvValue));
+    PVRecordPtr pvRecord(new TestRecord(recordName,pvStructure,pvValue));
     pvRecord->init();
     return pvRecord;
 }
- ExampleRecord::ExampleRecord(
+
+TestRecord::TestRecord(
     String const & recordName,
     PVStructurePtr const & pvStructure,
     PVLongPtr const &pvValue)
@@ -49,9 +50,9 @@ PVRecordPtr ExampleRecord::create(String const & recordName)
   pvValue(pvValue)
 {}
 
-bool ExampleRecord::isSynchronous() {return true;}
+bool TestRecord::isSynchronous() {return true;}
 
-void ExampleRecord::process(
+void TestRecord::process(
     RecordProcessRequesterPtr const &processRequester,bool alreadyLocked)
 {
     if(!alreadyLocked) lock();
