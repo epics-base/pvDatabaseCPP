@@ -41,7 +41,8 @@ PVRecordPtr ExampleRecord::create(String const & recordName)
     pvRecord->init();
     return pvRecord;
 }
- ExampleRecord::ExampleRecord(
+
+ExampleRecord::ExampleRecord(
     String const & recordName,
     PVStructurePtr const & pvStructure,
     PVLongPtr const &pvValue)

@@ -38,20 +38,18 @@
 <h1>pvDatabaseCPP</h1>
 <!-- Maturity: Working Draft or Request for Comments, or Recommendation, and date. -->
 
-<h2 class="nocount">EPICS v4 Working Group, Working Draft, 11-Dec-2012</h2>
+<h2 class="nocount">EPICS v4 Working Group, Working Draft, 27-Nov-2012</h2>
 <dl>
     <dt>Latest version:</dt>
     <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP.html">pvDatabaseCPP.html</a>
+      href="pvDatabaseCPP.html">pvDatabaseCPP.html</a>
     </dd>
     <dt>This version:</dt>
     <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20121211.html">pvDatabaseCPP20121211.html</a>
+      href="pvDatabaseCPP.html">pvDatabaseCPP.html</a>
     </dd>
     <dt>Previous version:</dt>
-    <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20121127.html">pvDatabaseCPP_20121127.html</a>
-    </dd>
+    <dd>None</dd>
   <dt>Editors:</dt>
     <dd>Marty Kraimer, BNL</dd>
 </dl>
@@ -97,12 +95,12 @@ V4 control system programming environment:</p>
 
 <h2 class="nocount">Status of this Document</h2>
 
-<p>This is the 11-Dec-2012 version of the definition of pvDatabaseCPP.
+<p>This is the 27-Nov-2012 version of the definition of pvDatabaseCPP.
+This is the original version.
 </p>
 <p>This is the beginning of the implementation of pvDataBaseCPP.
 It describes the features that will be provided.
-The class definitions for PVRecord are implemented.
-The class definition for PVDatabase are defined but not implemented.</p>
+The class definitions for PVRecord and PVDatabase are defined but not implemented.</p>
 
 
 <div id="toc">
@@ -233,14 +231,11 @@ ExampleRecord::ExampleRecord(
 bool ExampleRecord::isSynchronous() {return true;}
 
 void ExampleRecord::process(
-    RecordProcessRequesterPtr const &amp;processRequester,bool alreadyLocked)
+    RecordProcessRequesterPtr const &amp;processRequester)
 {
-    if(!alreadyLocked) lock();
     pvValue-&gt;put(pvValue-&gt;get() + 1);
     processRequester-&gt;recordProcessResult(Status::Ok);
-    unlock();
     processRequester-&gt;recordProcessComplete();
-    dequeueProcessRequest(processRequester);
 }
 </pre>
 <p>where</p>
@@ -359,72 +354,29 @@ phase.</p>
 
 <h2>database</h2>
 <p>The classes in <b>pvDatabase.h</b> implement a database of memory resident
-smart records.
+smart records. The next subsection has the definitions for all the classes
+defined in this header file.
 It describes the following classes:</p>
 <dl>
    <dt>PVRecord</dt>
      <dd>This provides the methods required by localChannelProvider to implement Channel.</dd>
    <dt>PVRecordField</dt>
    <dt>PVRecordStructure</dt>
-     <dd>These <b>wrap</b> PVField and PVStructure so that pvCopy and monitor
-        can be implemented.</dd>
-   <dt>PVRecordClient</dt>
-      <dd>This is called by anything that acceses PVRecord.</dd>
+     <dd>These <b>wrap</b> PVField and PVStructure so that pvCopy and monitor can be implemented.</dd>
    <dt>PVListener</dt>
       <dd>This is implemented by anything that wants to trap calls to the PVRecord::message.</dd>
    <dt>RecordProcessRequester</dt>
       <dd>This is implemented by anything that calls PVRecord::queueProcessRequest.</dd>
-   <dt>RecordPutRequester</dt>
-      <dd>This is implemented by anything that calls PVRecord::queuePutRequest.</dd>
+   <dt>PVRecordClient</dt>
+      <dd>This is called by anything that acceses PVRecord.</dd>
    <dt>PVDatabase</dt>
       <dd>This is a database of PVRecords.</dd>
 </dl>
 <p>Each class is described in a separate subsection.</p>
-<h3>C++ namespace and typedefs</h3>
-<pre>
-namespace epics { namespace pvDatabase {
-
-class PVRecord;
-typedef std::tr1::shared_ptr&lt;PVRecord&gt; PVRecordPtr;
-
-class PVRecordField;
-typedef std::tr1::shared_ptr&lt;PVRecordField&gt; PVRecordFieldPtr;
-typedef std::vector&lt;PVRecordFieldPtr&gt; PVRecordFieldPtrArray;
-typedef std::tr1::shared_ptr&lt;PVRecordFieldPtrArray&gt; PVRecordFieldPtrArrayPtr;
-
-class PVRecordStructure;
-typedef std::tr1::shared_ptr&lt;PVRecordStructure&gt; PVRecordStructurePtr;
-
-class PVRecordClient;
-typedef std::tr1::shared_ptr&lt;PVRecordClient&gt; PVRecordClientPtr;
-
-class PVListener;
-typedef std::tr1::shared_ptr&lt;PVListener&gt; PVListenerPtr;
-
-class RecordProcessRequester;
-typedef std::tr1::shared_ptr&lt;RecordProcessRequester&gt; RecordProcessRequesterPtr;
-
-class RecordPutRequester;
-typedef std::tr1::shared_ptr&lt;RecordPutRequester&gt; RecordPutRequesterPtr;
-
-class PVDatabase;
-typedef std::tr1::shared_ptr&lt;PVDatabase&gt; PVDatabasePtr;
-</pre>
 
 <h3>class PVRecord</h3>
-<p><b>NOTES:</b>
-<ul>
-    <li>This section uses the name record instead of "an instance of PVRecord".</li>
-    <li>Most clients will access a record via the local channel provider,
-       i. e. via pvAccess.
-        Thus this section is mainly of interest to 
-      the local channel provider and record implementers.</li>
-</ul>
-<hr>PVRecord Methods</h4>
 <pre>
 class PVRecord
-     public epics::pvData::Requester,
-     public std::tr1::enable_shared_from_this&lt;PVRecord&gt;
 {
 public:
     POINTER_DEFINITIONS(PVRecord);
@@ -433,48 +385,32 @@ public:
         epics::pvData::PVStructurePtr const &amp; pvStructure);
     virtual ~PVRecord();
     virtual void process(
-        RecordProcessRequesterPtr const &amp;recordProcessRequester,
-        bool alreadyLocked) = 0;
+        RecordProcessRequesterPtr const &amp;recordProcessRequester) = 0;
     virtual bool isSynchronous() = 0;
-    virtual bool requestImmediatePut(epics::pvData::PVFieldPtr const &amp;pvField);
-    virtual void immediatePutDone();
-    virtual void destroy();
     epics::pvData::String getRecordName();
     PVRecordStructurePtr getPVRecordStructure();
     PVRecordFieldPtr findPVRecordField(
         epics::pvData::PVFieldPtr const &amp; pvField);
-    bool addRequester(epics::pvData::RequesterPtr const &amp; requester);
-    bool removeRequester(epics::pvData::RequesterPtr const &amp; requester);
     void lock();
     void unlock();
-    bool tryLock();
-    void lockOtherRecord(PVRecordPtr const &amp; otherRecord);
-    void addPVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
-    void removePVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
+    void registerClient(PVRecordClientPtr const &amp; pvRecordClient);
+    void unregisterClient(PVRecordClientPtr const &amp; pvRecordClient);
     void detachClients();
     void beginGroupPut();
     void endGroupPut();
+    void registerListener(PVListenerPtr const &amp; pvListener);
+    void unregisterListener(PVListenerPtr const &amp; pvListener);
+    void removeEveryListener();
+    epics::pvData::Status processRequest();
     void queueProcessRequest(
         RecordProcessRequesterPtr const &amp;recordProcessRequester);
-    void dequeueProcessRequest(
-        RecordProcessRequesterPtr const &amp;recordProcessRequester);
-    void queuePutRequest(
-        RecordPutRequesterPtr const &amp;recordPutRequester);
-    void putDone(
-        RecordPutRequesterPtr const &amp;recordPutRequester);
-    virtual epics::pvData::String getRequesterName();
+    void addRequester(epics::pvData::RequesterPtr const &amp; requester);
+    void removeRequester(epics::pvData::RequesterPtr const &amp; requester);
     void message(
         epics::pvData::String const &amp; message,
         epics::pvData::MessageType messageType);
-    void message(
-        PVRecordFieldPtr const &amp; pvRecordField,
-        epics::pvData::String const &amp; message,
-        epics::pvData::MessageType messageType);
-    void toString(epics::pvData::StringBuilder buf);
-    void toString(epics::pvData::StringBuilder buf,int indentLevel);
-    //init MUST be called after derived class is constructed
-    void init();
-
+    epics::pvData::String toString();
+    epics::pvData::String toString(int indentLevel);
 };
 </pre>
 <p>The methods are:</h3>
@@ -482,132 +418,62 @@ public:
    <dt>PVRecord</dt>
      <dd>The constructor. It requires a recordName and a top level PVStructure.</dd>
    <dt>~PVRecord</dt>
-     <dd>The destructor which must be virtual. A derived class must also have
+     <dd>The desctructor which must be virtual. A derived class must also have
        a virtual destructor.</dd>
    <dt>process</dt>
-     <dd>Pure virtual method.
-      <p>Derived classes must implement this method.</p>
-     <p>A client <b>must</b> only call this method when
-      <b>RecordProcessRequester::becomeProcessor</b> is called as a result
-      of a <b>queueProcessRequest</b>.
-     A client can either call lock before calling processs
-      or let process lock the record.
-     If a client wants to put data into the record it should lock, put, and then call
-     process.</p>
-     <p>If the record is synchronous, process will return only when all processing
-     is complete. If the record is asynchronous then process arranges for some
-     other thread to do the processing and returns.</p>
-    <p>When processing is done the record calls two client callbacks:</p>
-    <dl>
-       <dt>RecordProcessRequester::recordProcessResult</dt>
-          <dd>This is called with the record  still locked. 
-            The clients can get data from the record.</dd>
-       <dt>RecordProcessRequester::recordProcessComplete</dt>
-          <dd>This is called with the record unlocked.
-            The client can no longer access the record.</dd>
-    </dl>
-     </dd>
+     <dd>Pure virtual method. Derived classes must implement this method.</dd>
    <dt>isSynchronous</dt>
      <dd>Pure virtual method. Derived classes must implement this method.</dd>
-   <dt>requestImmediatePut</dt>
-      <dd>This is a virtual method.
-      <p> The purpose is to allow the implementation to provide fields
-       that allow a client to abort process.
-       For example a motor record might provide a field <b>stop</b></p>
-      <p>The default always returns <b>false</b>.</p>
-      <p>A record implementation can override the default and return <b>true</b>.
-      In it does requestImmediatePut it returns with the record locked.</p>
-      <p>The client can change the value of the associated field and then call
-      <b>immediatePutDone</b></p>
-      </dd>
-   <dt>immediatePutDone</dt>
-      <dd>This is a virtual method.
-      <p>The default does nothing.</p>
-       <p>Must be called by client as a result of a call to <b>requestImmediatePut</b>
-       that returns <b>true</b>.</p>
-      </dd>   
-   <dt>destroy</dt>
-      <dd>This is a virtual method.
-      <p>The default does nothing.</p>
-      </dd>   
    <dt>getRecordName</dt>
      <dd>Return the recordName.</dd>
    <dt>getPVRecordStructure</dt>
      <dd>Get the top level PVStructure.</dd>
    <dt>findPVRecordField</dt>
      <dd>Given a PVFieldPtr return the PVRecordFieldPtr for the field.</dd>
-   <dt>addRequester</dt>
-     <dd>Add a requester to receive messages.</dd>
-   <dt>removeRequester</dt>
-     <dd>Remove a message requester.</dd>
    <dt>lock</dt>
    <dt>unlock</dt>
      <dd>Lock and Unlock the record.
         Any code accessing the data in the record or calling other PVRecord methods
         must have the record locked.</dd>
-   <dt>tryLock</dt>
-      <dd>If <b>true</b> then just like <b>lock</b>.
-       If <b>false</b>client can not access record.
-       A client can try to simultaneously hold the lock for more than two records
-       by calling this method. But must be willing to accept failure.
-       </dd>
-   <dt>lockOtherRecord</dt>
-      <dd>A client that holds the lock for one record can lock one other record.
-        A client <b>must</b> not call this if the client already has the lock for
-        more then one record.
-      </dd>
-   <dt>addPVRecordClient</dt>
+   <dt>registerClient</dt>
      <dd>Every client that accesses the record must call this so that the client can be notified when the record is deleted.</dd>
-   <dt>removePVRecordClient</dt>
+   <dt>unregisterClient</dt>
      <dd>Client is no longer accessing the record.</dd>
    <dt>detachClients</dt>
      <dd>Ask all clients to detach from the record</dd>
-   <dt>addListener</dt>
-     <dd>Add a PVListener. This must be called before calling pvRecordField.addListener.</dd>
-   <dt>removeListener</dt>
-     <dd>Removes a listener. The listener will also be removed from all fields to which it is attached.</dd>
    <dt>beginGroupPut</dt>
-     <dd>Begin a group of puts.
-     This results in all registered PVListeners being called</dd>
+     <dd>Begin a group of puts. This results in all registered PVListeners being called</dd>
    <dt>endGroupPut</dt>
-     <dd>End a group of puts.
-       This results in all registered PVListeners being called.</dd>
+     <dd>End a group of puts. This results in all registered PVListeners being called.</dd>
+   <dt>registerListener</dt>
+     <dd>Register a PVListener. This must be called before calling pvRecordField.addListener.</dd>
+   <dt>unregisterListener</dt>
+     <dd>Unregister a listener. The listener will also be removed from all fields to which it is attached.</dd>
+   <dt>removeEveryListener</dt>
+     <dd>This must be called by any code that is deleting or changing the structure of a record.</dd>
+   <dt>processRequest</dt>
+     <dd>This is a convenience method for clients that are willing to block if
+     process is asynchronous. It implements RecordProcessRequester.
+    If process is synchronous it just calls process and returns the result
+    to the caller. If process is asynchronous it calls queueProcessRequest,
+    and process and waits for completion and then returns the result to the caller.</dd>
    <dt>queueProcessRequest</dt>
      <dd>Queue a process request.</dd>
-   <dt>dequeueProcessRequest</dt>
-     <dd>This <b>must</b> be called by record implementation after it has
-     completed a process request.
-     </dd>
-   <dt>queuePutRequest</dt>
-     <dd>Queue a put request.
-      <p>This is for code that wants to change data in a record without processing.
-      If <b>RecordPutRequester::requestResult</b> is called with result <b>true</b>
-     then the record is locked and the client can make changes.
-      When done the client <b>must</b> call <b>putDone</b></p>
-     </dd>
-   <dt>putDone</dt>
-     <dd>Called by <b>RecordPutRequester</b> after changing values in record.
-     This method unlocks the record</dd>
-   <dt>getRequesterName</dt>
-      <dd>virtual method of <b>Requester</b>
-      </dd>
+   <dt>addRequester</dt>
+     <dd>Add a requester to receive messages.</dd>
+   <dt>removeRequester</dt>
+     <dd>Remove a message requester.</dd>
    <dt>message</dt>
      <dd>Can be called by implementation code.
      The message will be sent to every requester.</dd>
-   <dt>init</dt>
-     <dd>This method <b>must</b> be called by derived class 
-     <b>after</b> class is completely constructed.</dd>
 </dl>
 <h3>class PVRecordField</h3>
 <pre>
 class PVRecordField {
-     public virtual epics::pvData::PostHandler,
-     public std::tr1::enable_shared_from_this&lt;PVRecordField&gt;
 public:
     POINTER_DEFINITIONS(PVRecordField);
     PVRecordField(
         epics::pvData::PVFieldPtr const &amp; pvField,
-        PVRecordStructurePtr const &amp;parent,
         PVRecordPtr const &amp; pvRecord);
     virtual ~PVRecordField();
     PVRecordStructurePtr getParent();
@@ -616,8 +482,8 @@ public:
     epics::pvData::String getFullName();
     PVRecordPtr getPVRecord();
     bool addListener(PVListenerPtr const &amp; pvListener);
-    virtual void removeListener(PVListenerPtr const &amp; pvListener);
-    virtual void postPut();
+    void removeListener(PVListenerPtr const &amp; pvListener);
+    void postPut();
     virtual void message(
         epics::pvData::String const &amp; message,
         epics::pvData::MessageType messageType);
@@ -667,8 +533,9 @@ public:
     virtual ~PVRecordStructure();
     PVRecordFieldPtrArrayPtr getPVRecordFields();
     epics::pvData::PVStructurePtr getPVStructure();
-    virtual void removeListener(PVListenerPtr const &amp; pvListener);
-    virtual void postPut();
+    virtual void message(
+        epics::pvData::String const &amp; message,
+        epics::pvData::MessageType messageType);
 };
 </pre>
 <p>When PVRecord is created it creates a PVRecordStructure for every structure field in the PVStructure
@@ -683,31 +550,13 @@ that holds the data. It has the following methods:
      <dd>Get the PVRecordField array for the subfields</dd>
    <dt>getPVStructure</dt>
      <dd>Get the PVStructure for this field.</dd>
-   <dt>removeListener</dt>
-     <dd>Remove a PVListener.</dd>
-   <dt>postPut</dt>
-     <dd>This is called by the code that implements the data interface.
-        It is called whenever the put method is called.</dd>
-<h3>class PVRecordClient</h3>
-<pre>
-class PVRecordClient {
-    POINTER_DEFINITIONS(PVRecordClient);
-    virtual ~PVRecordClient();
-    virtual void detach(PVRecordPtr const &amp; pvRecord);
-};
-</pre>
-<p>where</p>
-<dl>
-   <dt>~PVRecordClient</dt>
-     <dd>The destructor.</dd>
-   <dt>detach</dt>
-     <dd>The record is being removed from the master database,</dd>
-</dl>
+   <dt>message</dt>
+     <dd>Called by implementation code. It calls PVRecord::message after prepending the full 
+      fieldname.</dd>
 </dl>
 <h3>class PVListener</h3>
 <pre>
 class PVListener {
-    virtual public PVRecordClient
 public:
     POINTER_DEFINITIONS(PVListener);
     virtual ~PVListener();
@@ -717,6 +566,7 @@ public:
         requested,PVRecordFieldPtr const &amp; pvRecordField) = 0;
     virtual void beginGroupPut(PVRecordPtr const &amp; pvRecord) = 0;
     virtual void endGroupPut(PVRecordPtr const &amp; pvRecord) = 0;
+    virtual void unlisten(PVRecordPtr const &amp; pvRecord) = 0;
 };
 </pre>
 <p>where</p>
@@ -736,17 +586,19 @@ public:
      <dd>A related set of changes is being started.</dd>
    <dt>endGroupPut</dt>
      <dd>A related set of changes is done.</dd>
+   <dt>unlisten</dt>
+     <dd>The PVLister is being removed from the record.
+       This is called when the record is being destroyed or when the record structure
+       (not the data values) is being changed.</dd>
 </dl>
 <h3>class RecordProcessRequester</h3>
 <pre>
 class RecordProcessRequester :
-    virtual public PVRecordClient,
     virtual public epics::pvData::Requester
 {
 public:
     POINTER_DEFINITIONS(RecordProcessRequester);
     virtual ~RecordProcessRequester();
-    virtual void recordDestroyed() = 0;
     virtual void becomeProcessor() = 0;
     virtual void recordProcessResult(epics::pvData::Status status) = 0;
     virtual void recordProcessComplete() = 0;
@@ -756,8 +608,6 @@ public:
 <dl>
    <dt>~RecordProcessRequester</dt>
      <dd>The destructor.</dd>
-   <dt>recordDestroyed</dt>
-     <dd>Record is being destroyed.</dd>
    <dt>becomeProcessor</dt>
      <dd>Called as a result of queueRequeProcessst. The requester can the call process.</dd>
    <dt>recordProcessResult</dt>
@@ -770,29 +620,20 @@ public:
        If the process requester called process with leaveActive true then the requester
        must call setInactive.</dd>
 </dl>
-<h3>class RecordPutRequester</h3>
+<h3>class PVRecordClient</h3>
 <pre>
-class RecordPutRequester :
-    virtual public PVRecordClient
-{
-public:
-    POINTER_DEFINITIONS(RecordPutRequester);
-    virtual ~RecordPutRequester();
-    virtual void requestResult(bool result) = 0;
+class PVRecordClient {
+    POINTER_DEFINITIONS(PVRecordClient);
+    virtual ~PVRecordClient();
+    virtual void detach(PVRecordPtr const &amp; pvRecord);
 };
 </pre>
 <p>where</p>
 <dl>
-   <dt>~RecordPutRequester</dt>
+   <dt>~PVRecordClient</dt>
      <dd>The destructor.</dd>
-   <dt>requestResult</dt>
-     <dd>Result of a call to queuePutRequest. If <b>requestResult</b> is <b>false</b>
-      then the caller can not access the record.
-      If <b>requestResult</b> is <b>true</b>
-      then the record is locked and the caller can get and put data in the record.
-     When done the caller must call <b>PVRecord::putDone</b>, which will unlock the
-     record.
-    </dd>
+   <dt>detach</dt>
+     <dd>The record is being removed from the master database,</dd>
 </dl>
 <h3>class PVDatabase</h3>
 <pre>

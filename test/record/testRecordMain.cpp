@@ -44,6 +44,9 @@ typedef std::tr1::shared_ptr<MyPVListener> MyPVListenerPtr;
 class MyProcessRequester;
 typedef std::tr1::shared_ptr<MyProcessRequester> MyProcessRequesterPtr;
 
+class MyPutRequester;
+typedef std::tr1::shared_ptr<MyPutRequester> MyPutRequesterPtr;
+
 class MyPVListener :
    public PVListener,
    public std::tr1::enable_shared_from_this<MyPVListener>
@@ -61,6 +64,10 @@ public:
         return pvPVListener;
     }
     virtual ~MyPVListener() {}
+    virtual void detach(PVRecordPtr const & pvRecord)
+    {
+        printf("%s MyPVListener::detach\n",requesterName.c_str());
+    }
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField)
     {
         String fieldName = pvRecordField->getFullFieldName();
@@ -107,6 +114,7 @@ private:
       pvRecordField(pvRecordField)
     {}
     void init() {
+        pvRecord->addPVRecordClient(getPtrSelf());
         pvRecord->addListener(getPtrSelf());
         pvRecordField->addListener(getPtrSelf());
     }
@@ -120,7 +128,6 @@ private:
 class MyProcessRequester :
    public virtual Requester,
    public virtual RecordProcessRequester,
-   public PVRecordClient,
    public std::tr1::enable_shared_from_this<MyProcessRequester>
 {
 public:
@@ -160,6 +167,11 @@ public:
             message.c_str(),
             messageTypeName.c_str());
     }
+    virtual void recordDestroyed()
+    {
+        printf("%s MyProcessRequester::recordDestroyed\n",
+            requesterName.c_str());
+    }
     virtual void becomeProcessor()
     {
          pvRecord->process(getPtrSelf(),false);
@@ -196,6 +208,37 @@ private:
     bool isDetached;
     String requesterName;
     PVRecordPtr pvRecord;
+};
+
+class MyPutRequester :
+   public virtual RecordPutRequester,
+   public std::tr1::enable_shared_from_this<MyPutRequester>
+{
+public:
+    MyPutRequester(PVRecordPtr const & pvRecord)
+    : pvRecord(pvRecord),
+      result(false)
+    {}
+    virtual ~MyPutRequester() {}
+    virtual void requestResult(bool result)
+    {
+         this->result = result;
+         event.signal();
+    }
+    bool makeRequest()
+    {
+        pvRecord->queuePutRequest(getPtrSelf());
+        event.wait();
+        return result;
+    }
+private:
+    MyPutRequesterPtr getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    Event event;
+    PVRecordPtr pvRecord;
+    bool result;
 };
 
 
@@ -253,17 +296,22 @@ int main(int argc,char *argv[])
         "listenTop", pvRecord, pvRecord->getPVRecordStructure());
     MyPVListenerPtr listenValue = MyPVListener::create(
         "listenValue", pvRecord,recordFieldValue);
-    PVFieldPtr pvValueAlarm = pvStructure->getSubField("valueAlarm");
-    PVRecordFieldPtr recordFieldValueAlarm =
-        pvRecord->findPVRecordField(pvValueAlarm);
-    MyPVListenerPtr listenValueAlarm = MyPVListener::create(
-        "listenValueAlarm", pvRecord,recordFieldValueAlarm);
-    PVIntPtr pvHighAlarmSeverity =
-        pvStructure->getIntField("valueAlarm.highAlarmSeverity");
-    PVRecordFieldPtr recordFieldHighAlarmSeverity =
-        pvRecord->findPVRecordField(pvHighAlarmSeverity);
-    MyPVListenerPtr listenHighAlarmSeverity = MyPVListener::create(
-        "listenHighAlarmSeverity", pvRecord,recordFieldHighAlarmSeverity);
+
+    PVFieldPtr pvDisplay = pvStructure->getSubField("display");
+    PVRecordFieldPtr recordFieldDisplay =
+        pvRecord->findPVRecordField(pvDisplay);
+    MyPVListenerPtr listenDisplay = MyPVListener::create(
+        "listenDisplay", pvRecord,recordFieldDisplay);
+
+    PVStringPtr pvDisplayDescription =
+        pvStructure->getStringField("display.description");
+    PVRecordFieldPtr recordFieldDisplayDescription =
+        pvRecord->findPVRecordField(pvDisplayDescription);
+    MyPVListenerPtr listenDisplayDescription = MyPVListener::create(
+        "listenDisplayDescription", pvRecord,recordFieldDisplayDescription);
+
+    recordFieldDisplayDescription->message("test message",infoMessage);
+
     MyProcessRequesterPtr process1 =
         MyProcessRequester::create("process1",pvRecord);
     MyProcessRequesterPtr process2 =
@@ -276,8 +324,42 @@ int main(int argc,char *argv[])
     builder.clear();
     pvValue->toString(&builder);
     printf("%s\n",builder.c_str());
-    pvHighAlarmSeverity->put(3);
-    recordFieldHighAlarmSeverity->message("test message",infoMessage);
+    bool requestResult;
+    requestResult = pvRecord->requestImmediatePut(pvValue);
+    if(requestResult) {
+        printf("error requestImmediatePut for pvValue returned true");
+        pvRecord->immediatePutDone();
+    }
+    requestResult = pvRecord->requestImmediatePut(pvDisplayDescription);
+    if(!requestResult) {
+        printf("error requestImmediatePut for pvDisplayDescription returned false");
+    } else {
+        pvDisplayDescription->put("this is description");
+        pvRecord->immediatePutDone();
+    }
+
+    MyPutRequesterPtr myPut(new  MyPutRequester(pvRecord));
+    requestResult = myPut->makeRequest();
+    if(!requestResult) {
+        printf("error myPut->makeRequest() returned false");
+    } else {
+        pvDisplayDescription->put("this is new description");
+        pvValue->put(1000);
+        PVIntPtr pvSeverity = pvStructure->getIntField("alarm.severity");
+        pvSeverity->put(3);
+        PVIntPtr pvStatus = pvStructure->getIntField("alarm.status");
+        pvStatus->put(2);
+        PVStringPtr pvMessage = pvStructure->getStringField("alarm.message");
+        pvMessage->put("alarmMessage");
+        pvRecord->putDone(myPut);
+    }
+    
+    builder.clear();
+    pvStructure->toString(&builder);
+    printf("pvStructure\n%s\n",builder.c_str());
+    builder.clear();
+
+    pvRecord->destroy();
     printf("all done\n");
 #ifdef XXXXXX
     PVDatabasePtr pvDatabase = PVDatabase::getMaster();

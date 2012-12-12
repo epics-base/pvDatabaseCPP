@@ -32,13 +32,17 @@ using std::tr1::static_pointer_cast;
 
 TestRecord::~TestRecord(){}
 
-PVRecordPtr TestRecord::create(String const & recordName)
+PVRecordPtr TestRecord::create(
+    String const & recordName)
 {
     String properties("alarm,timeStamp,display,control,valueAlarm");
     PVStructurePtr pvStructure = getStandardPVField()->scalar(pvLong,properties);
     PVLongPtr pvValue =  pvStructure->getLongField("value");
-    PVRecordPtr pvRecord(new TestRecord(recordName,pvStructure,pvValue));
+    TestRecordPtr pvRecord(
+        new TestRecord(recordName,pvStructure,pvValue));
     pvRecord->init();
+    PVFieldPtr pvField = pvStructure->getSubField("display.description");
+    pvRecord->immediatePutOK = pvField;
     return pvRecord;
 }
 
@@ -49,8 +53,6 @@ TestRecord::TestRecord(
 : PVRecord(recordName,pvStructure),
   pvValue(pvValue)
 {}
-
-bool TestRecord::isSynchronous() {return true;}
 
 void TestRecord::process(
     RecordProcessRequesterPtr const &processRequester,bool alreadyLocked)
@@ -63,6 +65,26 @@ void TestRecord::process(
     dequeueProcessRequest(processRequester);
 }
 
+bool TestRecord::isSynchronous() {return true;}
+
+void TestRecord::destroy()
+{
+    PVRecord::destroy();
+    pvValue.reset();
+    immediatePutOK.reset();
+}
+
+bool TestRecord::requestImmediatePut(PVFieldPtr const &pvField)
+{
+    if(pvField!=immediatePutOK) return false;
+    lock();
+    return true;
+}
+
+void TestRecord::immediatePutDone()
+{
+    unlock();
+}
 
 }}
 
