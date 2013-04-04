@@ -9,11 +9,6 @@ src_DEPEND_DIRS = configure
 DIRS += test
 test_DEPEND_DIRS = src
 
-DIRS += example
-example_DEPEND_DIRS = src
-
-#DIRS += iocBoot
-
 include $(TOP)/configure/RULES_TOP
 
 

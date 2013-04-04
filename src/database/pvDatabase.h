@@ -6,7 +6,7 @@
  */
 /**
  * @author mrk
- * @data 2012.11.20
+ * @date 2012.11.20
  */
 #ifndef PVDATABASE_H
 #define PVDATABASE_H
@@ -36,15 +36,8 @@ typedef std::tr1::shared_ptr<PVRecordClient> PVRecordClientPtr;
 class PVListener;
 typedef std::tr1::shared_ptr<PVListener> PVListenerPtr;
 
-class RecordProcessRequester;
-typedef std::tr1::shared_ptr<RecordProcessRequester> RecordProcessRequesterPtr;
-
-class RecordPutRequester;
-typedef std::tr1::shared_ptr<RecordPutRequester> RecordPutRequesterPtr;
-
 class PVDatabase;
 typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
-
 
 class PVRecord :
      public epics::pvData::Requester,
@@ -52,17 +45,13 @@ class PVRecord :
 {
 public:
     POINTER_DEFINITIONS(PVRecord);
+    static PVRecordPtr create(
+        epics::pvData::String const & recordName,
+        epics::pvData::PVStructurePtr const & pvStructure);
     PVRecord(
         epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     virtual ~PVRecord();
-    virtual void process(
-        RecordProcessRequesterPtr const &recordProcessRequester,
-        bool alreadyLocked) = 0;
-    virtual bool isSynchronous() = 0;
-    virtual bool requestImmediatePut(
-        epics::pvData::PVFieldPtr const &pvField);
-    virtual void immediatePutDone();
     virtual void destroy();
     epics::pvData::String getRecordName();
     PVRecordStructurePtr getPVRecordStructure();
@@ -70,6 +59,7 @@ public:
         epics::pvData::PVFieldPtr const & pvField);
     bool addRequester(epics::pvData::RequesterPtr const & requester);
     bool removeRequester(epics::pvData::RequesterPtr const & requester);
+    inline void lock_guard() { epics::pvData::Lock theLock(mutex); }
     void lock();
     void unlock();
     bool tryLock();
@@ -81,15 +71,7 @@ public:
     bool removeListener(PVListenerPtr const & pvListener);
     void beginGroupPut();
     void endGroupPut();
-    void queueProcessRequest(
-        RecordProcessRequesterPtr const &recordProcessRequester);
-    void dequeueProcessRequest(
-        RecordProcessRequesterPtr const &recordProcessRequester);
-    void queuePutRequest(
-        RecordPutRequesterPtr const &recordPutRequester);
-    void putDone(
-        RecordPutRequesterPtr const &recordPutRequester);
-    virtual epics::pvData::String getRequesterName() {return getRecordName();}
+    epics::pvData::String getRequesterName() {return getRecordName();}
     virtual void message(
         epics::pvData::String const & message,
         epics::pvData::MessageType messageType);
@@ -99,9 +81,11 @@ public:
         epics::pvData::MessageType messageType);
     void toString(epics::pvData::StringBuilder buf);
     void toString(epics::pvData::StringBuilder buf,int indentLevel);
-    //init MUST be called after derived class is constructed
-    void init();
+    //init MUST be called by derived class after derived class is constructed
+    virtual bool init() {initPVRecord(); return true;}
+    virtual void process() {}
 protected:
+    void initPVRecord();
     PVRecordPtr getPtrSelf()
     {
         return shared_from_this();
@@ -114,16 +98,12 @@ private:
     epics::pvData::PVStructurePtr pvStructure;
     epics::pvData::ConvertPtr convert;
     PVRecordStructurePtr pvRecordStructure;
-    std::deque<RecordProcessRequesterPtr> processRequesterQueue;
-    std::deque<RecordPutRequesterPtr> putRequesterQueue;
     std::list<PVListenerPtr> pvListenerList;
     std::list<PVRecordClientPtr> pvRecordClientList;
     std::list<epics::pvData::RequesterPtr> requesterList;
     epics::pvData::Mutex mutex;
     epics::pvData::Lock thelock;
-    int depthGroupPut;
-    bool processActive;
-    bool putActive;
+    std::size_t depthGroupPut;
     bool isDestroyed;
 };
 
@@ -207,27 +187,6 @@ public:
         PVRecordFieldPtr const & pvRecordField) = 0;
     virtual void beginGroupPut(PVRecordPtr const & pvRecord) = 0;
     virtual void endGroupPut(PVRecordPtr const & pvRecord) = 0;
-};
-
-class RecordProcessRequester :
-    virtual public PVRecordClient,
-    virtual public epics::pvData::Requester
-{
-public:
-    POINTER_DEFINITIONS(RecordProcessRequester);
-    virtual ~RecordProcessRequester() {}
-    virtual void recordDestroyed() = 0;
-    virtual void becomeProcessor() = 0;
-    virtual void recordProcessResult(epics::pvData::Status status) = 0;
-    virtual void recordProcessComplete() = 0;
-};
-
-class RecordPutRequester 
-{
-public:
-    POINTER_DEFINITIONS(RecordPutRequester);
-    virtual ~RecordPutRequester() {}
-    virtual void requestResult(bool result) = 0;
 };
 
 class PVDatabase : virtual public epics::pvData::Requester {

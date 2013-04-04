@@ -17,6 +17,19 @@ using namespace epics::pvAccess;
 
 namespace epics { namespace pvDatabase {
 
+PVRecordPtr PVRecord::create(
+    String const &recordName,
+    PVStructurePtr const & pvStructure)
+{
+    PVRecordPtr pvRecord(new PVRecord(recordName,pvStructure));
+    if(!pvRecord->init()) {
+        pvRecord->destroy();
+        pvRecord.reset();
+    }
+    return pvRecord;
+}
+
+
 PVRecord::PVRecord(
     String const & recordName,
     PVStructurePtr const & pvStructure)
@@ -25,14 +38,17 @@ PVRecord::PVRecord(
   convert(getConvert()),
   thelock(mutex),
   depthGroupPut(0),
-  processActive(false),
-  putActive(false),
   isDestroyed(false)
 {
     thelock.unlock();
 }
 
-void PVRecord::init()
+PVRecord::~PVRecord()
+{
+    destroy();
+}
+
+void PVRecord::initPVRecord()
 {
     PVRecordStructurePtr parent;
     pvRecordStructure = PVRecordStructurePtr(
@@ -41,18 +57,13 @@ void PVRecord::init()
     pvStructure->setRequester(getPtrSelf());
 }
 
-PVRecord::~PVRecord() {}
-
-bool PVRecord::requestImmediatePut(PVFieldPtr const &pvField)
-{
-    return false;
-}
-
-void PVRecord::immediatePutDone() {}
-
 void PVRecord::destroy()
 {
     lock();
+    if(isDestroyed) {
+        unlock();
+        return;
+    }
     isDestroyed = true;
 
     std::list<RequesterPtr>::iterator requesterIter;
@@ -74,28 +85,6 @@ void PVRecord::destroy()
     pvRecordClientList.clear();
 
     pvListenerList.clear();
-
-    std::deque<RecordProcessRequesterPtr>::iterator processRequesterIter;
-    for (
-    processRequesterIter = processRequesterQueue.begin();
-    processRequesterIter != processRequesterQueue.end();
-    processRequesterIter++ )
-    {
-        (*processRequesterIter)->recordDestroyed();
-    }
-    processRequesterQueue.clear();
-
-    std::deque<RecordPutRequesterPtr>::iterator putRequesterIter;
-    for (
-    putRequesterIter = putRequesterQueue.begin();
-    putRequesterIter != putRequesterQueue.end();
-    putRequesterIter++ )
-    {
-        (*putRequesterIter)->requestResult(false);
-    }
-    putRequesterQueue.clear();
-
-
     unlock();
 }
 
@@ -307,100 +296,6 @@ void PVRecord::endGroupPut()
        (*iter).get()->endGroupPut(getPtrSelf());
    }
 }
-
-void PVRecord::queueProcessRequest(
-    RecordProcessRequesterPtr const &recordProcessRequester)
-{
-    lock();
-    if(isDestroyed) {
-	 unlock();
-         recordProcessRequester->recordDestroyed();
-	 return;
-    }
-    bool isFirst = false;
-    processRequesterQueue.push_back(recordProcessRequester);
-    if(processRequesterQueue.size()==1 && !putActive) isFirst = true;
-    unlock();
-    if(isFirst) recordProcessRequester->becomeProcessor();
-}
-
-void PVRecord::dequeueProcessRequest(
-    RecordProcessRequesterPtr const &recordProcessRequester)
-{
-    lock();
-    if(isDestroyed) {
-	 unlock();
-         recordProcessRequester->recordDestroyed();
-	 return;
-    }
-    RecordProcessRequesterPtr next;
-    RecordProcessRequesterPtr processRequester = 
-        processRequesterQueue[0];
-    if(processRequester.get()!=recordProcessRequester.get()) {
-        message(
-           "PVRecord::dequeueProcessRequest illegal requester",
-           errorMessage);
-        return;
-    }
-    processRequesterQueue.pop_front();
-    if(putRequesterQueue.size() > 0) {
-        RecordPutRequesterPtr putRequester = putRequesterQueue[0];
-        processActive = false;
-        putActive = true;
-        putRequester->requestResult(true);
-        return; // WITH LOCK HELD
-    }
-    if(processRequesterQueue.size()>0) next = processRequesterQueue[0];
-    if(next.get()!=NULL) processActive = true;
-    unlock();
-    if(next.get()!=NULL) next->becomeProcessor();
-}
-
-
-void PVRecord::queuePutRequest(
-    RecordPutRequesterPtr const &recordPutRequester)
-{
-    lock();
-    if(isDestroyed) {
-	 unlock();
-         recordPutRequester->requestResult(false);
-	 return;
-    }
-    if(processRequesterQueue.size()==0 && !processActive) {
-       putRequesterQueue.push_back(recordPutRequester);
-       putActive = true;
-       recordPutRequester->requestResult(true);
-       return; // WITH lock held
-    }
-    putRequesterQueue.push_back(recordPutRequester);
-    unlock();
-}
-
-void PVRecord::putDone(
-    RecordPutRequesterPtr const &recordPutRequester)
-{
-    // Note that this is called with lock held
-    RecordPutRequesterPtr putRequester = 
-        putRequesterQueue[0];
-    if(putRequester.get()!=recordPutRequester.get()) {
-        message(
-           "PVRecord::putDone illegal requester",
-           errorMessage);
-        return;
-    }
-    putRequesterQueue.pop_front();
-    if(putRequesterQueue.size()>0){
-        RecordPutRequesterPtr next  = putRequesterQueue[0];
-        next->requestResult(true);
-       return; // WITH lock held
-    }
-    putActive = false;
-    RecordProcessRequesterPtr next = processRequesterQueue[0];
-    if(next.get()!=NULL) processActive = true;
-    unlock();
-    if(next.get()!=NULL) next->becomeProcessor();
-}
-
 
 void PVRecord::message(String const & message,MessageType messageType)
 {

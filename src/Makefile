@@ -9,15 +9,12 @@ pvDatabase_LIBS += Com pvData pvAccess
 
 SRC_DIRS += $(DATABASE)/database
 INC += pvDatabase.h
-#INC += pvCopy.h
-#INC += monitor.h
-#LIBSRCS += pvDatabase.cpp
+INC += powerSupplyRecordTest.h
 LIBSRCS += pvRecord.cpp
-#LIBSRCS += recordProcess.cpp
-#LIBSRCS += pvCopy.cpp
-#LIBSRCS += monitor.cpp
 
-#SRC_DIRS += $(SRC)/pvAccess
+SRC_DIRS += $(DATABASE)/pvAccess
+INC += pvCopy.h
+LIBSRCS += pvCopy.cpp
 
 include $(TOP)/configure/RULES
 
