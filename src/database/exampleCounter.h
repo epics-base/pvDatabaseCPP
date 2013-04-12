@@ -40,7 +40,7 @@ ExampleCounterPtr ExampleCounter::create(
     epics::pvData::String const & recordName)
 {
     epics::pvData::PVStructurePtr pvStructure =
-       epics::pvData::getStandardPVField()->scalar(epics::pvData::pvDouble,"");
+       epics::pvData::getStandardPVField()->scalar(epics::pvData::pvLong,"timeStamp");
     ExampleCounterPtr pvRecord(
         new ExampleCounter(recordName,pvStructure));
     if(!pvRecord->init()) pvRecord.reset();

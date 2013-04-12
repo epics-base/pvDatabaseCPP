@@ -309,6 +309,7 @@ static void scalarTest()
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
     valueNameCopy = "value";
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    pvRecord->destroy();
 }
 
 static void arrayTest()
@@ -349,6 +350,7 @@ static void arrayTest()
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
     valueNameCopy = "value";
     testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    pvRecord->destroy();
 }
 
 static void powerSupplyTest()
@@ -397,6 +399,7 @@ static void powerSupplyTest()
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
     valueNameCopy = "power.value";
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    pvRecord->destroy();
 }
 
 int main(int argc,char *argv[])

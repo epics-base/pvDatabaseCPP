@@ -14,6 +14,7 @@
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace std;
 
 namespace epics { namespace pvDatabase {
 
@@ -85,6 +86,11 @@ void PVRecord::destroy()
     pvRecordClientList.clear();
 
     pvListenerList.clear();
+    pvRecordStructure->destroy();
+    pvRecordStructure.reset();
+    convert.reset();
+    pvStructure.reset();
+
     unlock();
 }
 
@@ -362,7 +368,17 @@ void PVRecordField::init()
     pvField->setPostHandler(getPtrSelf());
 }
 
-PVRecordField::~PVRecordField() {}
+PVRecordField::~PVRecordField()
+{
+}
+
+void PVRecordField::destroy()
+{
+    pvRecord.reset();
+    parent.reset();
+    pvField.reset();
+    pvListenerList.clear();
+}
 
 PVRecordStructurePtr PVRecordField::getParent() {return parent;}
 
@@ -435,7 +451,20 @@ PVRecordStructure::PVRecordStructure(
 {
 }
 
-PVRecordStructure::~PVRecordStructure() {}
+PVRecordStructure::~PVRecordStructure()
+{
+}
+
+void PVRecordStructure::destroy()
+{
+    PVRecordFieldPtrArray::iterator iter;
+    PVRecordField::destroy();
+    for(iter = pvRecordFields->begin() ; iter !=pvRecordFields->end(); iter++) {
+        (*iter)->destroy();
+    }
+    pvRecordFields.reset();
+    pvStructure.reset();
+}
 
 void PVRecordStructure::init()
 {

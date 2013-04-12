@@ -76,14 +76,6 @@ public:
         epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     /**
-     *  The constructor.
-     * @param recordName The name of the record, which is also the channelName.
-     * @param pvStructure The top level structure.
-     */
-    PVRecord(
-        epics::pvData::String const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
-    /**
      * The Destructor. Must be virtual.
      */
     virtual ~PVRecord();
@@ -228,6 +220,14 @@ public:
     void toString(epics::pvData::StringBuilder buf,int indentLevel);
 protected:
     /**
+     * Constructor
+     * @param recordName The name of the record
+     * @param pvStructure The top level PVStructutre
+     */
+    PVRecord(
+        epics::pvData::String const & recordName,
+        epics::pvData::PVStructurePtr const & pvStructure);
+    /**
      * Initializes the base class. Must be called by derived classes.
      */
     void initPVRecord();
@@ -281,6 +281,10 @@ public:
      * Destructor.
      */
     virtual ~PVRecordField();
+    /**
+     *   Release any resources used
+     */
+    virtual void destroy();
     /**
      * Get the parent.
      * @return The parent.
@@ -377,6 +381,10 @@ public:
      * Destructor.
      */
     virtual ~PVRecordStructure();
+    /**
+     *   Release any resources used
+     */
+    virtual void destroy();
     /**
      * Get the sub fields.
      * @return the array of PVRecordFieldPtr.
