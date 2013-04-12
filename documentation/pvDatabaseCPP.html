@@ -38,7 +38,7 @@
 <h1>pvDatabaseCPP</h1>
 <!-- Maturity: Working Draft or Request for Comments, or Recommendation, and date. -->
 
-<h2 class="nocount">EPICS v4 Working Group, Working Draft, 11-Dec-2012</h2>
+<h2 class="nocount">EPICS v4 Working Group, Working Draft, 09-Apr-2013</h2>
 <dl>
     <dt>Latest version:</dt>
     <dd><a
@@ -46,11 +46,11 @@
     </dd>
     <dt>This version:</dt>
     <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20121211.html">pvDatabaseCPP20121211.html</a>
+       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20130409.html">pvDatabaseCPP20131211.html</a>
     </dd>
     <dt>Previous version:</dt>
     <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20121127.html">pvDatabaseCPP_20121127.html</a>
+       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20131211.html">pvDatabaseCPP20131211.html</a>
     </dd>
   <dt>Editors:</dt>
     <dd>Marty Kraimer, BNL</dd>
@@ -67,7 +67,7 @@ href="http://epics-pvdata.sourceforge.net/LICENSE.html">EPICS open source licens
 which is a framework for implementing a network accessable database of smart memory resident
 records. Network access is via pvAccess. The data in each record is a top level PVStructure as defined by
 pvData. The framework includes a complete implementation of ChannelProvider as defined by pvAccess.
-The framework must be extended in order to create record instances.
+The framework can be extended in order to create record instances that implements services.
 The minimum that an extenson must provide is a top level PVStructure and a process method
 but the framework provides for complex extensions.</p>
 
@@ -97,7 +97,7 @@ V4 control system programming environment:</p>
 
 <h2 class="nocount">Status of this Document</h2>
 
-<p>This is the 11-Dec-2012 version of the definition of pvDatabaseCPP.
+<p>This is the 09-Apr-2013 version of the definition of pvDatabaseCPP.
 </p>
 <p>This is the beginning of the implementation of pvDataBaseCPP.
 It describes the features that will be provided.
@@ -113,22 +113,16 @@ The class definition for PVDatabase are defined but not implemented.</p>
 
 <h2>Introduction</h2>
 <h3>Overview</h3>
-<p>This document descibes a C++ implementation of some of the components in pvIOCJava.
-It extracts the core components required to create a network accessible database of smart
+<p>A brief description of a pvDatabase is that it is a set of network accessible, smart,
 memory resident records.
-pvDatabaseCPP does not and will not implement any of the specialized support that pvIOCJava
-provides. Instead other projects will implement the specialized support.
-It is expected that many services will be created that do not require the full features provided
-by pvIOCJava. In the future pvIOCJava should be split into multiple projects with one of 
-them named pvDatabaseJava.
-</p>
-
-<p>A brief description of a pvDatase is that it is a network accessible set of smart memory resident
-records. Each record has data composed of a top level PVStructure. Each record has a name which is
-the channelName for pvAccess. A local Channel Provider implements the complete ChannelProvider and
+Each record has data composed of a top level PVStructure.
+Each record has a name which is the channelName for pvAccess.
+A local Channel Provider implements the complete ChannelProvider and
 Channel interfaces as defined by pvAccess.
+The local provider provides access to the records in the pvDatabase.
 This local provider is accessed by the remote pvAccess server.
-A record is smart because code can be attached to a record.</p>
+A record is smart because code can be attached to a record, which is accessed via a method named <b>process</b>.</p>
+
 <p>This document describes components that provides the following features:
 <dl>
   <dt>database<dt>
@@ -142,135 +136,182 @@ A record is smart because code can be attached to a record.</p>
               <dd>This is a database of pvRecords.
                Records can be added and removed from a database.</dd>
        </dl>
-  <dt>localChannelProvider</dt>
-     <dd>This is a complete implementation of ChannelProvider and Channel as defined by pvAccess.
+  <dt>pvAccess</dt>
+     <dd>This is a complete implementation of a local ChannelProvider and Channel as defined by pvAccess.
        It is used by the server side of pvAccess to attach to pvRecords.
        This component also includes the monitor and pvCopy components from pvIOCJava</dd>
 </dl>
-<p><b>database</b> does not itself implement pvRecord instances.
-Instead it provides a base classes that make it easy to create record instances.
-What does have to be implemented is a top
+<p><b>database</b> 
+provides base classes that make it easy to create record instances.
+The code attached to each record must create the top
 level PVStructure and the following two methods:</p>
 <dl>
+  <dt>init</dt>
+    <dd>This is a method for initializing the support.
+     It returns <b>true</b> if successful and <b>false</b> otherwise.
+    </dd>
   <dt>process</dt>
     <dd>This is what makes a record <b>smart</b>.
-    What process does is up to the implementation except that it must decide if
-    it's execution model is synchronous or asynchronous.
-   Synchronous means that when process returns the processing is complete.
-   Asynchronous means that when process returns the processing is <b>not</b> complete.
-   Instead process invokes other threads that will complete the processing at a later time.</dd>
-  <dt>isSynchronous</dt>
-    <dd>Which execution model is being implemented.</dd>
+     </dd>
 </dl>
+<h3>Relationship with pvIOCJava.</h3>
+<p>This document descibes a C++ implementation of some of the components in pvIOCJava,
+which also implements a pvDatabase.
+It extracts the core components required to create a network accessible database of smart
+memory resident records.
+pvDatabaseCPP does not implement any of the specialized support that pvIOCJava
+provides.
+It is expected that many services will be created that do not require the full features provided
+by pvIOCJava. In the future pvIOCJava should be split into multiple projects with one of 
+them named pvDatabaseJava.</p>
+<p>Similar to epics base, pvIOCJava implements the concept of synchronous and asynchronous record processing.
+For pvDatabaseCPP the process method is allowed to block.
+Until a need is demonstrated this will remain true.
+The main user of a pvDatabase is pvAccess, and in particular, remote pvAccess.
+The server side of remote pvAccess creates two threads for each client and always accesses
+a record via these threads.
+It is expected that these threads will be sufficient to efficently handle all channel methods except
+channelRPC. For channelRPC pvAccess provides (or will provide) a thread pool for channelRPC requests.
+If, in the future, a scanning facility is provided by pvDatabaseCPP or some other facility,
+then the scanning facility will have to provide some way of handling process requests that block.</p>
+</p>
 <h3>Example PVRecord Extension</h3>
-<p>Directory <b>example/record</b> has an example PVRecord implementation.
-It implements a counter.
-The top level structure is:</p>
+<p>The example implements a simple counter.
+The example can be run on linux as follows:</p>
 <pre>
-structure
-    long value
-</pre>
-<p><b>NOTE:</b> The example compiles but does not build because nothing
-is implemented.</p>
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP
+mrk&gt; bin/linux-x86_64/exampleCounter 
 
-<h4>exampleRecord.h</h4>
-<p>This is the class description.
-The example extends PVRecord.</p>
+</pre>
+<p>The example consists of two components:</p>
+<dl>
+   <dt>ExampleCounter.h</dt>
+     <dd>The source code for the counter.</dd>
+   <dt>exampleCounterMain.cpp</dt>
+     <dd>A main program that runs the example so that it can be accessed
+       by a <b>pvAccess</b> client.</dd>
+</dl>
+<h4>ExampleCounter.h</h4>
+<p>The example resides in <b>src/database</b>.
+The complete implementation is in the header file.
+A serious implementation would probably break the code into two files:
+1) a header, and 2) the implementation. The description consists of</p>
 <pre>
-class ExampleRecord :
-  public virtual PVRecord
+class ExampleCounter;
+typedef std::tr1::shared_ptr&lt;ExampleCounter&gt; ExampleCounterPtr;
+
+class ExampleCounter :
+    public PVRecord
 {
 public:
-    POINTER_DEFINITIONS(ExampleRecord);
-    static PVRecordPtr create(epics::pvData::String const &amp; recordName);
-    virtual ~ExampleRecord();
-    virtual bool isSynchronous();
-    virtual void process(
-        epics::pvDatabase::RecordProcessRequesterPtr const &amp;processRequester);
+    POINTER_DEFINITIONS(ExampleCounter);
+    static ExampleCounterPtr create(
+        epics::pvData::String const &amp; recordName);
+    virtual ~ExampleCounter() {}
+    virtual bool init();
+    virtual void process();
 private:
-    ExampleRecord(epics::pvData::String const &amp; recordName,
-        epics::pvData::PVStructurePtr const &amp; pvStructure,
-        epics::pvData::PVLongPtr const &amp;pvValue);
+    ExampleCounter(epics::pvData::String const &amp; recordName,
+        epics::pvData::PVStructurePtr const &amp; pvStructure);
     epics::pvData::PVLongPtr pvValue;
 };
 </pre>
 <p>where</p>
 <dl>
   <dt>create<dt>
-    <dd>This is example specific. See the implemention for details.</dd>
-  <dt>~ExampleRecord<dt>
+    <dd>This is example specific but each support should provide
+     a similar static method.
+    </dd>
+  <dt>~ExampleCounter<dt>
     <dd>The destructor must be declared virtual.</dd>
-  <dt>isSynchronous<dt>
-    <dd>The implementation must say if process is synchronous or asynchronous.</dd>
+  <dt>init<dt>
+    <dd>A method to initialize the support. It returns <b>true</b>
+    if initialization is successful and <b>false</b> if not.
+    NOTE that this is a virtual method of PVRecord itself.</dd>
   <dt>process<dt>
-    <dd><b>The</b> implementation.</dd>
-  <dt>ExampleRecord<dt>
+    <dd>
+     This again is a virtual method of PVRecord.
+    </dd>
+  <dt>ExampleCounter<dt>
     <dd>For the example this is private.</dd>
+  <dt>pvValue</dt>
+    <dd>This is the field of the top level structure that <b>process</b>
+    accesses.
+    </dd>
 <dl>
-
-<h4>exampleRecord.cpp</h4>
-<p>This is the class implementation.</p>
+<p>The implementation of <b>create</b> is:</p>
 <pre>
-ExampleRecord::~ExampleRecord(){}
-
-PVRecordPtr ExampleRecord::create(String const &amp; recordName)
+ExampleCounterPtr ExampleCounter::create(
+    epics::pvData::String const &amp; recordName)
 {
-    String properties;
-    PVStructurePtr pvStructure = getStandardPVField()-&gt;scalar(pvLong,properties);
-    PVLongPtr pvValue =  pvStructure-&gt;getLongField("value");
-    PVRecordPtr pvRecord(new ExampleRecord(recordName,pvStructure,pvValue));
+    epics::pvData::PVStructurePtr pvStructure =
+       epics::pvData::getStandardPVField()-&gt;scalar(epics::pvData::pvDouble,"");
+    ExampleCounterPtr pvRecord(
+        new ExampleCounter(recordName,pvStructure));
+    if(!pvRecord-&gt;init()) pvRecord.reset();
     return pvRecord;
 }
-
-ExampleRecord::ExampleRecord(
-    String const &amp; recordName,
-    PVStructurePtr const &amp; pvStructure,
-    PVLongPtr const &amp;pvValue)
-: PVRecord(recordName,pvStructure),
-  pvValue(pvValue)
-{}
-
-bool ExampleRecord::isSynchronous() {return true;}
-
-void ExampleRecord::process(
-    RecordProcessRequesterPtr const &amp;processRequester,bool alreadyLocked)
+</pre>
+This:
+<ul>
+   <li>Creates the top level structure.</li>
+   <li>Creates a <b>ExampleCounterPtr</b> via the constructor.</li>
+   <li>Calls init and if it fails resets the shared pointer.</li>
+   <li>Returns the shared pointer to the newly created record.</li>
+</ul>
+<p>The private constructor is just:</p>
+<pre>
+ExampleCounter::ExampleCounter(
+    epics::pvData::String const &amp; recordName,
+    epics::pvData::PVStructurePtr const &amp; pvStructure)
+: PVRecord(recordName,pvStructure)
+{ }
+</pre>
+The example is very simple. It just calls the base class constructor.
+<p>The implementation of <b>init</b> is:</p>
+<pre>
+bool ExampleCounter::init()
 {
-    if(!alreadyLocked) lock();
-    pvValue-&gt;put(pvValue-&gt;get() + 1);
-    processRequester-&gt;recordProcessResult(Status::Ok);
-    unlock();
-    processRequester-&gt;recordProcessComplete();
-    dequeueProcessRequest(processRequester);
+
+    initPVRecord();
+    epics::pvData::PVFieldPtr pvField;
+    pvValue = getPVStructure()-&gt;getLongField("value");
+    if(pvValue.get()==NULL) return false;
+    return true;
 }
 </pre>
-<p>where</p>
-<dl>
-  <dt>create<dt>
-    <dd>Creates a PVStructure with a single subfield named value.
-     It gets the interface to the value field.
-     It then creates an ExampleRecord and returns it.
-    </dd>
-  <dt>~ExampleRecord<dt>
-    <dd>Does not have to do anything because of shared pointers.</dd>
-  <dt>ExampleRecord<dt>
-    <dd>Calls the base class constructor and sets pvValue.</dd>
-  <dt>isSynchronous<dt>
-    <dd>The example is synchronous.</dd>
-  <dt>process<dt>
-    <dd>Gets the curent value, increments it, and puts the new value.
-     It than calls two processRequester callbacks.</dd>
-<dl>
-
-<h4>exampleRecordMain.cpp</h4>
-<p>This is a main for creating and running the example.</p>
+This:
+<ul>
+   <li>Calls <b>initRecord</b> which is implemented by the base class.
+    It MUST be called.</li>
+   <li>Calls <b>getLongField</b> to get the interface to the value field,
+    which must be a scalar with type long.</li>
+   <li>If a long value field was not found it returns false.</li>
+   <li>Returns true</li>
+</ul>
+<p>The implementation of <b>process</b> is:</p>
+<pre>
+void ExampleCounter::process()
+{
+    pvValue-&gt;put(pvValue-&gt;get() + 1.0);
+}
+</pre>
+It just adds 1.0 to the current value.
+<h4>exampleCounterMain.cpp</h4>
+<p>This is in <b>test/server</b>.
+The main program is:</p>
 <pre>
 int main(int argc,char *argv[])
 {
-    String recordName("exampleRecord");
-    PVRecordPtr pvRecord = ExampleRecord::create(recordName);
-    PVDatabasePtr pvDatabase = PVDatabase::getMaster();
-    pvDatabase-&gt;addRecord(pvRecord);
-    cout &lt;&lt; recordName &lt;&lt; "\n";
+    PVDatabasePtr master = PVDatabase::getMaster();
+    ChannelProviderLocalPtr channelProvider = ChannelProviderLocal::create();
+    String recordName("exampleCounter");
+    PVRecordPtr pvRecord = ExampleCounter::create(recordName);
+    bool result = master-&gt;addRecord(pvRecord);
+    cout &lt;&lt; "result of addRecord " &lt;&lt; recordName &lt;&lt; " " &lt;&lt; result &lt;&lt; endl;
+    pvRecord.reset();
+    cout &lt;&lt; "exampleServer\n";
     string str;
     while(true) {
         cout &lt;&lt; "Type exit to stop: \n";
@@ -281,16 +322,15 @@ int main(int argc,char *argv[])
     return 0;
 }
 </pre>
-<p>The main program creates an example record and adds it to the database.
-It then runs until the process is stopped by typing <b>exit</b>.
-<p>Until the process is stopped,
-pvAccess clients can put and get the value field.
-For example</p>
-<pre>
-pvget exampleRecord
-pvput exampleRecord 5
-</pre>
-<p>Will both work.</p>
+This:
+<ul>
+  <li>Gets a pointer to the master database.</li>
+  <li>Creates the local Channel Provider. This starts the pvAccess server.</li>
+  <li>Creates a <b>ExampleCounter</b> record with the name <b>exampleCounter</b>
+  </li>
+   <li>Prints <b>exampleCounter</b> on standard out.</li>
+  <li>Runs forever until the user types <b>exit</b> on standard in.</li>
+</ul>
 <h3>Phased Development</h3>
 <p>This documentation describes the first phase of a phased implementation of pvDatabaseCPP:</pp>
 <dl>
@@ -299,16 +339,20 @@ pvput exampleRecord 5
    <dt>pvDatabase</d>
       <dd>Database of PVRecords. Has methods find, add, and remove.</dd>
    <dt>Local Channel Provider</dt>
-      <dd>These two features will be the first phase.
-        But only synchronous record processing will be supported.</dd>
+      <dd>Complete implementation of ChannelProvider and Channel.
+      This means that pvCopy and monitor are also implemented.</dd>
 </dl>
-<p>Future phases of pvDatabaseCPP should include:</p>
+<p>Future phases of pvDatabaseCPP might include:</p>
 <dl>
    <dt>Install</dt>
-      <dd>This provides on-line add and delete.</dd>
+      <dd>This provides complete support for on-line add and delete
+       of sets of records.
+      With the first phase each "service" is responsible for it's own implementation.
+      All that is provided is addRecord and removeRecord.
+      </dd>
    <dt>Field support</dt>
-      <dd>Add ability to optionally add support to fields.
-       In addition some of the basic support defined in pvIOCJava will also be implemented.</dd>
+      <dd>Add the ability to optionally add support to fields.
+       In addition some of the basic support defined in pvIOCJava could also be implemented.</dd>
    <dt>XML parser</dt>
       <dd>This provides the ability to create record instances without writing any code.</dd>
 </dl>
@@ -326,10 +370,10 @@ The rest of this  document discusses only the first phase.</p>
       <dd>This provides the ability to monitor changes to fields of a record.</dd>
    <dt>PVRecord and PVDatabase</dt>
       <dd>Defined below.</dd>
-   <dt>local ChannelProvider</dt>
+   <dt>The localChannelProvider itself</dt>
      <dd>This is the pvAccess package in pvIOCJava.
        The localChannelProvider will access data from PVRecords.
-     It will implement all channel methods except channelRPC.</dd>
+     It will implement all channel methods.</dd>
 </dl>
 <h3>Minumum Features Required for pvRecord</h3>
 <p>The first phase will only implement record processing, i. e.
@@ -340,9 +384,9 @@ The following are the minimium features required</p>
   <dt>PVDatabase</dt>
       <dd>This holds a set of PVRecords. It has methods to find, add, and remove records.</dd>
   <dt>PVRecord</dt>
-     <dd>This, and a set of related interfaces, provide the following:
+     <dd>This, and a set of related interfaces, provides the following:
         <dl>
-           <dt>PVStructure</dt>
+           <dt>Access to top level PVStructure</dt>
              <dd>PVRecord is a wrapper on a top level pvStructure.</dd>
            <dt>Record locking</dt>
               <dd>A record can be locked and unlocked.
@@ -353,12 +397,45 @@ The following are the minimium features required</p>
         </dl>
      </dd>
 </dl>
-<p>The following sections provide a first attempt to describe the classes required for the first
-phase.</p>
-<p>The last section gives a brief overview of the features provided by pvIOCJava.</p>
+<p>The following sections describes the classes required for the first phase.</p>
 
 <h2>database</h2>
-<p>The classes in <b>pvDatabase.h</b> implement a database of memory resident
+<p>This directory has the following files:</p>
+<dl>
+   <dt>pvDatabase.h</dt>
+     <dd>
+      This is what is described in this section.
+     </dd>
+   <dt>pvDatabase.cpp</dt>
+     <dd>
+       The implementation of PVDatabase.
+     </dd>
+   <dt>pvRecord.cpp</dt>
+     <dd>
+       The implementation of the base class for <b>PVREcord</b>.
+       It can also implement record instances with a <b>process</b>
+       method does nothing.
+       This can be used to create a "dumb" record where all changes are
+       done by clients.
+       The complete implementation is provided in the header file.
+       Thus code will be generated only if other code includes the
+        header file and creates a record instance.
+     </dd>
+   <dt>exampleCounter.h</dt>
+     <dd>
+       This was described in the introduction.
+     </dd>
+   <dt>powerSupplyRecordTest.h</dt>
+     <dd>
+       This provides code that simulates a power supply.
+       It computes the current from the voltage and power.
+       It is used for testing.
+       The complete implementation is provided in the header file.
+       Thus code will be generated only if other code includes the
+        header file and creates a record instance.
+     </dd>
+</dl>
+<p>The classes in <b>pvDatabase.h</b> describe a database of memory resident
 smart records.
 It describes the following classes:</p>
 <dl>
@@ -371,11 +448,7 @@ It describes the following classes:</p>
    <dt>PVRecordClient</dt>
       <dd>This is called by anything that acceses PVRecord.</dd>
    <dt>PVListener</dt>
-      <dd>This is implemented by anything that wants to trap calls to the PVRecord::message.</dd>
-   <dt>RecordProcessRequester</dt>
-      <dd>This is implemented by anything that calls PVRecord::queueProcessRequest.</dd>
-   <dt>RecordPutRequester</dt>
-      <dd>This is implemented by anything that calls PVRecord::queuePutRequest.</dd>
+      <dd>This is implemented by anything that wants to trap calls to PVRecord::message.</dd>
    <dt>PVDatabase</dt>
       <dd>This is a database of PVRecords.</dd>
 </dl>
@@ -419,6 +492,10 @@ typedef std::tr1::shared_ptr&lt;PVDatabase&gt; PVDatabasePtr;
        i. e. via pvAccess.
         Thus this section is mainly of interest to 
       the local channel provider and record implementers.</li>
+    <li>Most readers will not care about most of the PVRecord methods.
+       Most of the methods are used by the pvAccess code.
+      Service implementers will mostly be interested in methods <b>init</b> and <b>process</b>.
+      These are described first.
 </ul>
 <hr>PVRecord Methods</h4>
 <pre>
@@ -428,16 +505,17 @@ class PVRecord
 {
 public:
     POINTER_DEFINITIONS(PVRecord);
+
+    virtual bool init() {initPVRecord(); return true;}
+    virtual void process() {}
+
+    static PVRecordPtr create(
+        epics::pvData::String const &amp; recordName,
+        epics::pvData::PVStructurePtr const &amp; pvStructure);
     PVRecord(
         epics::pvData::String const &amp; recordName,
         epics::pvData::PVStructurePtr const &amp; pvStructure);
     virtual ~PVRecord();
-    virtual void process(
-        RecordProcessRequesterPtr const &amp;recordProcessRequester,
-        bool alreadyLocked) = 0;
-    virtual bool isSynchronous() = 0;
-    virtual bool requestImmediatePut(epics::pvData::PVFieldPtr const &amp;pvField);
-    virtual void immediatePutDone();
     virtual void destroy();
     epics::pvData::String getRecordName();
     PVRecordStructurePtr getPVRecordStructure();
@@ -445,25 +523,20 @@ public:
         epics::pvData::PVFieldPtr const &amp; pvField);
     bool addRequester(epics::pvData::RequesterPtr const &amp; requester);
     bool removeRequester(epics::pvData::RequesterPtr const &amp; requester);
+    inline void lock_guard() { epics::pvData::Lock theLock(mutex); }
     void lock();
     void unlock();
     bool tryLock();
     void lockOtherRecord(PVRecordPtr const &amp; otherRecord);
-    void addPVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
-    void removePVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
+    bool addPVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
+    bool removePVRecordClient(PVRecordClientPtr const &amp; pvRecordClient);
     void detachClients();
+    bool addListener(PVListenerPtr const &amp; pvListener);
+    bool removeListener(PVListenerPtr const &amp; pvListener);
     void beginGroupPut();
     void endGroupPut();
-    void queueProcessRequest(
-        RecordProcessRequesterPtr const &amp;recordProcessRequester);
-    void dequeueProcessRequest(
-        RecordProcessRequesterPtr const &amp;recordProcessRequester);
-    void queuePutRequest(
-        RecordPutRequesterPtr const &amp;recordPutRequester);
-    void putDone(
-        RecordPutRequesterPtr const &amp;recordPutRequester);
-    virtual epics::pvData::String getRequesterName();
-    void message(
+    epics::pvData::String getRequesterName() {return getRecordName();}
+    virtual void message(
         epics::pvData::String const &amp; message,
         epics::pvData::MessageType messageType);
     void message(
@@ -472,63 +545,39 @@ public:
         epics::pvData::MessageType messageType);
     void toString(epics::pvData::StringBuilder buf);
     void toString(epics::pvData::StringBuilder buf,int indentLevel);
-    //init MUST be called after derived class is constructed
-    void init();
-
-};
+protected:
+    void initPVRecord();
+    epics::pvData::PVStructurePtr getPVStructure();
+    PVRecordPtr getPtrSelf()
+    {
+        return shared_from_this();
+    }
+private:
+...
+}
 </pre>
 <p>The methods are:</h3>
 <dl>
+   <dt>init</dt>
+     <dd>Virtual method.
+      <p>Derived classes must implement this method.
+       This method <b>Must</b> call initPVRecord.</p>
+     </dd>
+   <dt>process</dt>
+     <dd>Virtual method.
+      <p>Derived classes must implement this method.
+      The base implementation does nothing.</p>
+      </dd>
+   <dt>create</dt>
+     <dd>Static method to create dumb records, i.e. records with a process method
+      that does nothing.</dd>
    <dt>PVRecord</dt>
      <dd>The constructor. It requires a recordName and a top level PVStructure.</dd>
    <dt>~PVRecord</dt>
      <dd>The destructor which must be virtual. A derived class must also have
        a virtual destructor.</dd>
-   <dt>process</dt>
-     <dd>Pure virtual method.
-      <p>Derived classes must implement this method.</p>
-     <p>A client <b>must</b> only call this method when
-      <b>RecordProcessRequester::becomeProcessor</b> is called as a result
-      of a <b>queueProcessRequest</b>.
-     A client can either call lock before calling processs
-      or let process lock the record.
-     If a client wants to put data into the record it should lock, put, and then call
-     process.</p>
-     <p>If the record is synchronous, process will return only when all processing
-     is complete. If the record is asynchronous then process arranges for some
-     other thread to do the processing and returns.</p>
-    <p>When processing is done the record calls two client callbacks:</p>
-    <dl>
-       <dt>RecordProcessRequester::recordProcessResult</dt>
-          <dd>This is called with the record  still locked. 
-            The clients can get data from the record.</dd>
-       <dt>RecordProcessRequester::recordProcessComplete</dt>
-          <dd>This is called with the record unlocked.
-            The client can no longer access the record.</dd>
-    </dl>
-     </dd>
-   <dt>isSynchronous</dt>
-     <dd>Pure virtual method. Derived classes must implement this method.</dd>
-   <dt>requestImmediatePut</dt>
-      <dd>This is a virtual method.
-      <p> The purpose is to allow the implementation to provide fields
-       that allow a client to abort process.
-       For example a motor record might provide a field <b>stop</b></p>
-      <p>The default always returns <b>false</b>.</p>
-      <p>A record implementation can override the default and return <b>true</b>.
-      In it does requestImmediatePut it returns with the record locked.</p>
-      <p>The client can change the value of the associated field and then call
-      <b>immediatePutDone</b></p>
-      </dd>
-   <dt>immediatePutDone</dt>
-      <dd>This is a virtual method.
-      <p>The default does nothing.</p>
-       <p>Must be called by client as a result of a call to <b>requestImmediatePut</b>
-       that returns <b>true</b>.</p>
-      </dd>   
    <dt>destroy</dt>
       <dd>This is a virtual method.
-      <p>The default does nothing.</p>
       </dd>   
    <dt>getRecordName</dt>
      <dd>Return the recordName.</dd>
@@ -540,6 +589,9 @@ public:
      <dd>Add a requester to receive messages.</dd>
    <dt>removeRequester</dt>
      <dd>Remove a message requester.</dd>
+   <dt>lock_guard</dt>
+      <dd>This is an inline method that locks the record. The record will automatically
+      be unlocked when control leaves the block that has the call.
    <dt>lock</dt>
    <dt>unlock</dt>
      <dd>Lock and Unlock the record.
@@ -572,31 +624,18 @@ public:
    <dt>endGroupPut</dt>
      <dd>End a group of puts.
        This results in all registered PVListeners being called.</dd>
-   <dt>queueProcessRequest</dt>
-     <dd>Queue a process request.</dd>
-   <dt>dequeueProcessRequest</dt>
-     <dd>This <b>must</b> be called by record implementation after it has
-     completed a process request.
-     </dd>
-   <dt>queuePutRequest</dt>
-     <dd>Queue a put request.
-      <p>This is for code that wants to change data in a record without processing.
-      If <b>RecordPutRequester::requestResult</b> is called with result <b>true</b>
-     then the record is locked and the client can make changes.
-      When done the client <b>must</b> call <b>putDone</b></p>
-     </dd>
-   <dt>putDone</dt>
-     <dd>Called by <b>RecordPutRequester</b> after changing values in record.
-     This method unlocks the record</dd>
    <dt>getRequesterName</dt>
       <dd>virtual method of <b>Requester</b>
       </dd>
    <dt>message</dt>
      <dd>Can be called by implementation code.
      The message will be sent to every requester.</dd>
-   <dt>init</dt>
-     <dd>This method <b>must</b> be called by derived class 
-     <b>after</b> class is completely constructed.</dd>
+   <dt>toString</dt>
+     <dd>Just calls the top level PVStructure toString method.</dd>
+   <dt>initRecord</dt>
+     <dd>This method <b>must</b> be called by derived class.</dd>
+   <dt>getPVStructure</dt>
+     <dd>Called by derived class.</dd>
 </dl>
 <h3>class PVRecordField</h3>
 <pre>
@@ -621,6 +660,14 @@ public:
     virtual void message(
         epics::pvData::String const &amp; message,
         epics::pvData::MessageType messageType);
+protected:
+    PVRecordFieldPtr getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    virtual void init();
+private:
+...
 };
 </pre>
 <p>When PVRecord is created it creates a PVRecordField for every field in the PVStructure
@@ -669,6 +716,10 @@ public:
     epics::pvData::PVStructurePtr getPVStructure();
     virtual void removeListener(PVListenerPtr const &amp; pvListener);
     virtual void postPut();
+protected:
+    virtual void init();
+private:
+...
 };
 </pre>
 <p>When PVRecord is created it creates a PVRecordStructure for every structure field in the PVStructure
@@ -737,63 +788,6 @@ public:
    <dt>endGroupPut</dt>
      <dd>A related set of changes is done.</dd>
 </dl>
-<h3>class RecordProcessRequester</h3>
-<pre>
-class RecordProcessRequester :
-    virtual public PVRecordClient,
-    virtual public epics::pvData::Requester
-{
-public:
-    POINTER_DEFINITIONS(RecordProcessRequester);
-    virtual ~RecordProcessRequester();
-    virtual void recordDestroyed() = 0;
-    virtual void becomeProcessor() = 0;
-    virtual void recordProcessResult(epics::pvData::Status status) = 0;
-    virtual void recordProcessComplete() = 0;
-};
-</pre>
-<p>where</p>
-<dl>
-   <dt>~RecordProcessRequester</dt>
-     <dd>The destructor.</dd>
-   <dt>recordDestroyed</dt>
-     <dd>Record is being destroyed.</dd>
-   <dt>becomeProcessor</dt>
-     <dd>Called as a result of queueRequeProcessst. The requester can the call process.</dd>
-   <dt>recordProcessResult</dt>
-     <dd>The results of record processing.
-       This is called with the record locked so that the process requester
-       can access data from the record.</dd>
-   <dt>recordProcessComplete</dt>
-     <dd>Processing is complete.
-       This is called with the record unlocked.
-       If the process requester called process with leaveActive true then the requester
-       must call setInactive.</dd>
-</dl>
-<h3>class RecordPutRequester</h3>
-<pre>
-class RecordPutRequester :
-    virtual public PVRecordClient
-{
-public:
-    POINTER_DEFINITIONS(RecordPutRequester);
-    virtual ~RecordPutRequester();
-    virtual void requestResult(bool result) = 0;
-};
-</pre>
-<p>where</p>
-<dl>
-   <dt>~RecordPutRequester</dt>
-     <dd>The destructor.</dd>
-   <dt>requestResult</dt>
-     <dd>Result of a call to queuePutRequest. If <b>requestResult</b> is <b>false</b>
-      then the caller can not access the record.
-      If <b>requestResult</b> is <b>true</b>
-      then the record is locked and the caller can get and put data in the record.
-     When done the caller must call <b>PVRecord::putDone</b>, which will unlock the
-     record.
-    </dd>
-</dl>
 <h3>class PVDatabase</h3>
 <pre>
 class PVDatabase : virtual public epics::pvData::Requester {
@@ -804,6 +798,10 @@ public:
     PVRecordPtr findRecord(epics::pvData::String const&amp; recordName);
     bool addRecord(PVRecordPtr const &amp; record);
     bool removeRecord(PVRecordPtr const &amp; record);
+    virtual epics::pvData::String getRequesterName();
+    virtual void message(
+        epics::pvData::String const &amp;message,
+        epics::pvData::MessageType messageType);
 private:
     PVDatabase();
 };
@@ -822,70 +820,21 @@ private:
    <dt>removeRecord</dt>
      <dd>Remove a record from the database.
        If the record was not in the database false is returned.</dd>
+    <dt>getRequesterName</dt>
+      <dd>Virtual method of Requester</dd>
+    <dt>message</dt>
+       <dd>Virtual message of Requester.</dd>
 </dl>
-<h2>Local Channel Provider</h2>
-<p>Not yet described.</p>
+<h2>pvAccess</h2>
+<p>Not yet described.
+It is only of interest to someone who wants to understand how it works.
+</p>
 <p>A brief description is that it must implement the following components of pvIOCJava:</p>
 <dl>
    <dt>pvCopy</dt>
    <dt>monitor</dt>
-   <dt>pvAccess</dt>
-      <dd>See the next section for a description</dd>
+   <dt>local ChannelProvider and Channel</dt>
 </dl>
-<h2>Summary of Packages in pvIOCJAVA</h2>
-<p>The following are the direct sub packages of <b>pvIOCJava/src/org/epics/pvioc</b>:</p>
-<dl>
-   <dt>pvCopy</dt>
-     <dd>This provides a copy of an arbitrary subset of the fields in a PVRecord.
-      It also provides the ability to detect and report changes to fields.
-      It is required for pvAccess.</dd>
-   <dt>monitor</dt>
-     <dd>This provides the ability to monitor changes to a PVRecord. It is required for pvAccess monitors.</dd>
-   <dt>pvAccess</dt>
-      <dd>The local implementation of Channel Provider and Channel.
-       It is accessed by the remote pvAccess server and can also be accessed by code in the same IOC.</dd>
-   <dt>database</dt>
-     <dd>This defines and implements PVRecord, PVDatabase , and PVListener.
-      It supports the basic feature required the implement a local Channel Provider.</dd>
-   <dt>support</dt>
-       <dd>This provides the ability to optionally attach code to any field of a pvRecord.
-        It and several sub packages provide a set of standard support modules.</dd>
-   <dt>install</dt>
-      <dd>This provides the ability to dynamically initialize and add new PVRecords. It also provides
-      the ability to dynamicall delete PVRecords.</d> 
-   <dt>xml</dt>
-      <dd>This provides the ability to configure record instances without writing code.</dd>
-   <dt>util</dt>
-     <dd>This is misnamed since it is code related to scanning.</dd>
-   <dt>pdrv</dt>
-      <dd>This is portDriver, which is a proposed sucessor to the asynManager component of asynDriver.</dd>
-   <dt>swtshell</dt>
-      <dd>This is shell that is can either run under the same process as a JavaIOC or as a remote shell.
-       It is like a version of probe but for pvData/pvAccess.
-      Almost all of it's features work in either local or remote mode.
-      With a little more work all or it's features could work remotely.
-      This should be done and then only remote mode should be supported.
-      It can then be rewritten in a completely different language and using a complely different GUI
-      framework.
-     </dd>
-   <dt>caV3</dt>
-      <dd>This has two components:
-       <dl>
-        <dt>ClientFactory</dt>
-          <dd>This is a small wrapper on top of the caV3 client support implemented by pvAccess.
-           It allows code in the pvIOC to access V3Records via pvAccess.</dd>
-        <dt>ServerFactory</dt>
-          <dd>This is a caV3 server that allows a caV3 client to access a PVRecord.
-          The Java implementation uses CAJ, which does most of the work.
-          For now it will not be discussed in this document.</dd>
-       </dl>
-     </dd>
-   <dt>v3a</dt>
-     <dd>I do not know what this is.</dd>
-</dl>
-<p>In addition there is one class file <b>JavaIOC.java</b>.
-This is starting a IOC instance.
-This is not required for pvIOCCPP which is either a main or runs as part of a V3 IOC.</p>
 
 </div>
 </body>

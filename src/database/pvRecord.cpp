@@ -92,6 +92,8 @@ String PVRecord::getRecordName() {return recordName;}
 
 PVRecordStructurePtr PVRecord::getPVRecordStructure() {return pvRecordStructure;}
 
+PVStructurePtr PVRecord::getPVStructure() {return pvStructure;}
+
 PVRecordFieldPtr PVRecord::findPVRecordField(PVFieldPtr const & pvField)
 {
     return findPVRecordField(pvRecordStructure,pvField);
@@ -486,44 +488,6 @@ void PVRecordStructure::postPut()
          PVRecordFieldPtr pvRecordField = (*pvRecordFields.get())[i];
          pvRecordField->callListener();
     }
-}
-
-PVDatabase::PVDatabase()
-{
-}
-
-PVDatabase::~PVDatabase() {}
-
-PVDatabasePtr PVDatabase::getMaster()
-{
-     PVDatabasePtr xxx;
-     return xxx;
-}
-
-PVRecordPtr PVDatabase::findRecord(String const& recordName)
-{
-     PVRecordPtr xxx;
-     return xxx;
-}
-
-bool PVDatabase::addRecord(PVRecordPtr const & record)
-{
-    return false;
-}
-
-bool PVDatabase::removeRecord(PVRecordPtr const & record)
-{
-    return false;
-}
-
-String PVDatabase::getRequesterName()
-{
-    String xxx;
-    return xxx;
-}
-
-void PVDatabase::message(String const & message,MessageType messageType)
-{
 }
 
 }}

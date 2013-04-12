@@ -11,10 +11,7 @@
 #ifndef POWERSUPPLYRECORDTEST_H
 #define POWERSUPPLYRECORDTEST_H
 
-#include <pv/executor.h>
 #include <pv/pvDatabase.h>
-#include <pv/event.h>
-#include <pv/timer.h>
 #include <pv/timeStamp.h>
 #include <pv/alarm.h>
 #include <pv/pvTimeStamp.h>
@@ -44,7 +41,6 @@ public:
 private:
     PowerSupplyRecordTest(epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::PVStructurePtr pvStructure;
     epics::pvData::PVDoublePtr pvCurrent;
     epics::pvData::PVDoublePtr pvPower;
     epics::pvData::PVDoublePtr pvVoltage;
@@ -67,8 +63,7 @@ PowerSupplyRecordTestPtr PowerSupplyRecordTest::create(
 PowerSupplyRecordTest::PowerSupplyRecordTest(
     epics::pvData::String const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
-: PVRecord(recordName,pvStructure),
-  pvStructure(pvStructure)
+: PVRecord(recordName,pvStructure)
 {
 }
 
@@ -80,6 +75,7 @@ PowerSupplyRecordTest::~PowerSupplyRecordTest()
 bool PowerSupplyRecordTest::init()
 {
     initPVRecord();
+    epics::pvData::PVStructurePtr pvStructure = getPVStructure();
     epics::pvData::PVFieldPtr pvField;
     bool result;
     pvField = pvStructure->getSubField("timeStamp");

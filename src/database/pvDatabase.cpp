@@ -14,6 +14,7 @@
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace std;
 
 namespace epics { namespace pvDatabase {
 
@@ -21,30 +22,51 @@ PVDatabase::~PVDatabase() {}
 
 PVDatabasePtr PVDatabase::getMaster()
 {
-     PVDatabasePtr xxx;
-     return xxx;
+    static PVDatabasePtr master;
+    static Mutex mutex;
+    Lock xx(mutex);
+    if(master.get()==NULL) {
+        master = PVDatabasePtr(new PVDatabase());
+    }
+    return master;
 }
+
+PVDatabase::PVDatabase() {}
 
 PVRecordPtr PVDatabase::findRecord(String const& recordName)
 {
+     PVRecordMap::iterator iter = recordMap.find(recordName);
+     if(iter!=recordMap.end()) {
+         return (*iter).second;
+     }
      PVRecordPtr xxx;
      return xxx;
 }
 
 bool PVDatabase::addRecord(PVRecordPtr const & record)
 {
-    return false;
+     String recordName = record->getRecordName();
+     PVRecordMap::iterator iter = recordMap.find(recordName);
+     if(iter!=recordMap.end()) return false;
+     recordMap.insert(PVRecordMap::value_type(recordName,record));
+     return true;
 }
 
 bool PVDatabase::removeRecord(PVRecordPtr const & record)
 {
-    return false;
+     String recordName = record->getRecordName();
+     PVRecordMap::iterator iter = recordMap.find(recordName);
+     if(iter!=recordMap.end())  {
+         recordMap.erase(iter);
+         return true;
+     }
+     return false;
 }
 
 String PVDatabase::getRequesterName()
 {
-    String xxx;
-    return xxx;
+    static String name("masterDatabase");
+    return name;
 }
 
 void PVDatabase::message(String const & message,MessageType messageType)
