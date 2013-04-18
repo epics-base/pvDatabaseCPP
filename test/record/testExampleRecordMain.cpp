@@ -81,6 +81,7 @@ int main(int argc,char *argv[])
         pvRecord->process();
     }
     cout << "processed exampleDouble "  << endl;
+    pvRecord->destroy();
     recordName = "powerSupplyExample";
     pvStructure.reset();
     pvStructure = createPowerSupply();
@@ -121,6 +122,7 @@ int main(int argc,char *argv[])
         cout <<  " current " << psr->getCurrent();
         cout << endl;
     }
+    psr->destroy();
     return 0;
 }
 

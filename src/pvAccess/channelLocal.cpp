@@ -55,37 +55,89 @@ static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
     return processDefault;
 }
 
-/*
-class ChannelRequestLocal :
-    public ChannelRequest
-{
-public:
-    POINTER_DEFINITIONS(ChannelRequestLocal)
-    ChannelRequestLocal() :thelock(mutex) {}
-    virtual ~ChannelRequestLocal() {}
-    virtual void destroy(){}
-    virtual void lock() {thelock.lock();}
-    virtual void unlock() {thelock.unlock();}
-private:
-    Mutex mutex;
-    Lock thelock;
-};
-*/
-    
-
 class ChannelProcessLocal :
-    public ChannelProcess
+    public ChannelProcess,
+    public std::tr1::enable_shared_from_this<ChannelProcessLocal>
 {
 public:
     POINTER_DEFINITIONS(ChannelProcessLocal);
-    virtual ~ChannelProcessLocal();
-    static ChannelProcess::shared_pointer create(
-        ChannelProviderLocalPtr const &channelProvider,
-        ChannelProcess::shared_pointer const & channelProcessRequester,
+    virtual ~ChannelProcessLocal() {destroy();}
+    static ChannelProcessLocalPtr create(
+        ChannelLocalPtr const &channelLocal,
+        ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void process(bool lastRequest);
+    virtual void destroy();
+    virtual void lock() {thelock.lock();}
+    virtual void unlock() {thelock.unlock();}
+private:
+    shared_pointer getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    ChannelProcessLocal(
+        ChannelLocalPtr const &channelLocal,
+        ChannelProcessRequester::shared_pointer const & channelProcessRequester,
+        PVRecordPtr const &pvRecord)
+    : 
+      isDestroyed(false),
+      channelLocal(channelLocal),
+      channelProcessRequester(channelProcessRequester),
+      pvRecord(pvRecord),
+      thelock(mutex)
+    {
+        thelock.unlock();
+    }
+    bool isDestroyed;
+    bool callProcess;
+    ChannelLocalPtr channelLocal;
+    ChannelProcessRequester::shared_pointer channelProcessRequester,;
+    PVRecordPtr pvRecord;
+    Mutex mutex;
+    Lock thelock;
 };
+
+ChannelProcessLocalPtr ChannelProcessLocal::create(
+    ChannelLocalPtr const &channelLocal,
+    ChannelProcessRequester::shared_pointer const & channelProcessRequester,
+    PVStructurePtr const & pvRequest,
+    PVRecordPtr const &pvRecord)
+{
+    ChannelProcessLocalPtr process(new ChannelProcessLocal(
+        channelLocal,
+        channelProcessRequester,
+        pvRecord));
+    channelLocal->addChannelProcess(process);
+    channelProcessRequester->channelProcessConnect(Status::Ok, process);
+    return process;
+}
+
+
+void ChannelProcessLocal::destroy()
+{
+    if(isDestroyed) return;
+    isDestroyed = true;
+    channelLocal->removeChannelProcess(getPtrSelf());
+    channelLocal.reset();
+    channelProcessRequester.reset();
+    pvRecord.reset();
+}
+
+void ChannelProcessLocal::process(bool lastRequest)
+{
+    pvRecord->lock();
+    pvRecord->process();
+    pvRecord->unlock();
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelProcessRequester->processDone(status);
+    } 
+    channelProcessRequester->processDone(Status::Ok);
+    if(lastRequest) destroy();
+}
 
 class ChannelGetLocal :
     public ChannelGet,
@@ -93,7 +145,7 @@ class ChannelGetLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelGetLocal);
-    virtual ~ChannelGetLocal(){}
+    virtual ~ChannelGetLocal(){destroy();}
     static ChannelGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelGetRequester::shared_pointer const & channelGetRequester,
@@ -199,14 +251,17 @@ void ChannelGetLocal::destroy()
 
 void ChannelGetLocal::get(bool lastRequest)
 {
-    if(callProcess) pvRecord->process();
     if(isDestroyed) {
          Status status(
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelGetRequester->getDone(status);
     } 
+    bitSet->clear();
+    pvRecord->lock();
+    if(callProcess) pvRecord->process();
     pvCopy->updateCopySetBitSet(pvStructure, bitSet, false);
+    pvRecord->unlock();
     if(firstTime) {
         bitSet->clear();
         bitSet->set(0);
@@ -216,37 +271,331 @@ void ChannelGetLocal::get(bool lastRequest)
     if(lastRequest) destroy();
 }
 
-
-class ChannelLocalPut :
-    public ChannelPut
+class ChannelPutLocal :
+    public ChannelPut,
+    public std::tr1::enable_shared_from_this<ChannelPutLocal>
 {
 public:
-    POINTER_DEFINITIONS(ChannelLocalPut);
-    virtual ~ChannelLocalPut();
-    static ChannelPut::shared_pointer create(
-        ChannelProviderLocalPtr const &channelProvider,
-        ChannelPut::shared_pointer const & channelPutRequester,
+    POINTER_DEFINITIONS(ChannelPutLocal);
+    virtual ~ChannelPutLocal(){destroy();}
+    static ChannelPutLocalPtr create(
+        ChannelLocalPtr const &channelLocal,
+        ChannelPutRequester::shared_pointer const & channelPutRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void put(bool lastRequest);
-    virtual void get(bool lastRequest);
+    virtual void get();
+    virtual void destroy();
+    virtual void lock() {thelock.lock();}
+    virtual void unlock() {thelock.unlock();}
+private:
+    shared_pointer getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    ChannelPutLocal(
+        bool callProcess,
+        ChannelLocalPtr const &channelLocal,
+        ChannelPutRequester::shared_pointer const & channelPutRequester,
+        PVCopyPtr const &pvCopy,
+        PVStructurePtr const&pvStructure,
+        BitSetPtr const & bitSet,
+        PVRecordPtr const &pvRecord)
+    :
+      isDestroyed(false),
+      callProcess(callProcess),
+      channelLocal(channelLocal),
+      channelPutRequester(channelPutRequester),
+      pvCopy(pvCopy),
+      pvStructure(pvStructure),
+      bitSet(bitSet),
+      pvRecord(pvRecord),
+      thelock(mutex)
+    {
+        thelock.unlock();
+    }
+    bool isDestroyed;
+    bool callProcess;
+    ChannelLocalPtr channelLocal;
+    ChannelPutRequester::shared_pointer channelPutRequester,;
+    PVCopyPtr pvCopy;
+    PVStructurePtr pvStructure;
+    BitSetPtr bitSet;
+    PVRecordPtr pvRecord;
+    Mutex mutex;
+    Lock thelock;
 };
 
+ChannelPutLocalPtr ChannelPutLocal::create(
+    ChannelLocalPtr const &channelLocal,
+    ChannelPutRequester::shared_pointer const & channelPutRequester,
+    PVStructurePtr const & pvRequest,
+    PVRecordPtr const &pvRecord)
+{
+    PVCopyPtr pvCopy = PVCopy::create(
+        pvRecord,
+        pvRequest,
+        "field");
+    if(pvCopy.get()==NULL) {
+        Status status(
+            Status::Status::STATUSTYPE_ERROR,
+            "invalid pvRequest");
+        ChannelPut::shared_pointer channelPut;
+        PVStructurePtr pvStructure;
+        BitSetPtr bitSet;
+        channelPutRequester->channelPutConnect(
+            status,
+            channelPut,
+            pvStructure,
+            bitSet);
+        ChannelPutLocalPtr localPut;
+        return localPut;
+    }
+    PVStructurePtr pvStructure = pvCopy->createPVStructure();
+    BitSetPtr   bitSet(new BitSet(pvStructure->getNumberFields()));
+    ChannelPutLocalPtr put(new ChannelPutLocal(
+        getProcess(pvRequest,true),
+        channelLocal,
+        channelPutRequester,
+        pvCopy,
+        pvStructure,
+        bitSet,
+        pvRecord));
+    channelLocal->addChannelPut(put);
+    channelPutRequester->channelPutConnect(Status::Ok, put, pvStructure,bitSet);
+    return put;
+}
+
+void ChannelPutLocal::destroy()
+{
+    if(isDestroyed) return;
+    isDestroyed = true;
+    channelLocal->removeChannelPut(getPtrSelf());
+    channelLocal.reset();
+    channelPutRequester.reset();
+    pvCopy.reset();
+    pvStructure.reset();
+    bitSet.reset();
+    pvRecord.reset();
+}
+
+void ChannelPutLocal::get()
+{
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelPutRequester->getDone(status);
+    }
+    bitSet->clear();
+    bitSet->set(0);
+    pvRecord->lock();
+    pvCopy->updateCopyFromBitSet(pvStructure, bitSet, false);
+    pvRecord->unlock();
+    channelPutRequester->getDone(Status::Ok);
+}
+
+void ChannelPutLocal::put(bool lastRequest)
+{
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelPutRequester->getDone(status);
+    }
+    pvRecord->lock();
+    pvCopy->updateRecord(pvStructure, bitSet, false);
+    if(callProcess) pvRecord->process();
+    pvRecord->unlock();
+    channelPutRequester->getDone(Status::Ok);
+    if(lastRequest) destroy();
+}
+
+
 class ChannelPutGetLocal :
-    public ChannelPutGet
+    public ChannelPutGet,
+    public std::tr1::enable_shared_from_this<ChannelPutGetLocal>
 {
 public:
     POINTER_DEFINITIONS(ChannelPutGetLocal);
-    virtual ~ChannelPutGetLocal();
-    static ChannelPutGet::shared_pointer create(
-        ChannelProviderLocalPtr const &channelProvider,
-        ChannelPutGet::shared_pointer const & channelPutGetRequester,
+    virtual ~ChannelPutGetLocal(){destroy();}
+    static ChannelPutGetLocalPtr create(
+        ChannelLocalPtr const &channelLocal,
+        ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void putGet(bool lastRequest);
     virtual void getPut();
     virtual void getGet();
+    virtual void destroy();
+    virtual void lock() {thelock.lock();}
+    virtual void unlock() {thelock.unlock();}
+private:
+    shared_pointer getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    ChannelPutGetLocal(
+        bool callProcess,
+        ChannelLocalPtr const &channelLocal,
+        ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
+        PVCopyPtr const &pvPutCopy,
+        PVCopyPtr const &pvGetCopy,
+        PVStructurePtr const&pvPutStructure,
+        PVStructurePtr const&pvGetStructure,
+        BitSetPtr const & putBitSet,
+        BitSetPtr const & getBitSet,
+        PVRecordPtr const &pvRecord)
+    : 
+      isDestroyed(false),
+      callProcess(callProcess),
+      channelLocal(channelLocal),
+      channelPutGetRequester(channelPutGetRequester),
+      pvPutCopy(pvPutCopy),
+      pvGetCopy(pvGetCopy),
+      pvPutStructure(pvPutStructure),
+      pvGetStructure(pvGetStructure),
+      putBitSet(putBitSet),
+      getBitSet(getBitSet),
+      pvRecord(pvRecord),
+      thelock(mutex)
+    {
+        thelock.unlock();
+    }
+    bool isDestroyed;
+    bool callProcess;
+    ChannelLocalPtr channelLocal;
+    ChannelPutGetRequester::shared_pointer channelPutGetRequester,;
+    PVCopyPtr pvPutCopy;
+    PVCopyPtr pvGetCopy;
+    PVStructurePtr pvPutStructure;
+    PVStructurePtr pvGetStructure;
+    BitSetPtr putBitSet;
+    BitSetPtr getBitSet;
+    PVRecordPtr pvRecord;
+    Mutex mutex;
+    Lock thelock;
 };
+
+ChannelPutGetLocalPtr ChannelPutGetLocal::create(
+    ChannelLocalPtr const &channelLocal,
+    ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
+    PVStructurePtr const & pvRequest,
+    PVRecordPtr const &pvRecord)
+{
+    PVCopyPtr pvPutCopy = PVCopy::create(
+        pvRecord,
+        pvRequest,
+        "putField");
+    PVCopyPtr pvGetCopy = PVCopy::create(
+        pvRecord,
+        pvRequest,
+        "getField");
+    if(pvPutCopy.get()==NULL || pvGetCopy.get()==NULL) {
+        Status status(
+            Status::Status::STATUSTYPE_ERROR,
+            "invalid pvRequest");
+        ChannelPutGet::shared_pointer channelPutGet;
+        PVStructurePtr pvStructure;
+        BitSetPtr bitSet;
+        channelPutGetRequester->channelPutGetConnect(
+            status,
+            channelPutGet,
+            pvStructure,
+            pvStructure);
+        ChannelPutGetLocalPtr localPutGet;
+        return localPutGet;
+    }
+    PVStructurePtr pvPutStructure = pvPutCopy->createPVStructure();
+    PVStructurePtr pvGetStructure = pvGetCopy->createPVStructure();
+    BitSetPtr   putBitSet(new BitSet(pvPutStructure->getNumberFields()));
+    BitSetPtr   getBitSet(new BitSet(pvGetStructure->getNumberFields()));
+    ChannelPutGetLocalPtr putGet(new ChannelPutGetLocal(
+        getProcess(pvRequest,true),
+        channelLocal,
+        channelPutGetRequester,
+        pvPutCopy,
+        pvGetCopy,
+        pvPutStructure,
+        pvGetStructure,
+        putBitSet,
+        getBitSet,
+        pvRecord));
+    channelLocal->addChannelPutGet(putGet);
+    channelPutGetRequester->channelPutGetConnect(
+        Status::Ok, putGet, pvPutStructure,pvGetStructure);
+    return putGet;
+}
+
+
+void ChannelPutGetLocal::destroy()
+{
+    if(isDestroyed) return;
+    isDestroyed = true;
+    channelLocal->removeChannelPutGet(getPtrSelf());
+    channelLocal.reset();
+    channelPutGetRequester.reset();
+    pvPutCopy.reset();
+    pvGetCopy.reset();
+    pvPutStructure.reset();
+    pvGetStructure.reset();
+    putBitSet.reset();
+    getBitSet.reset();
+    pvRecord.reset();
+}
+
+void ChannelPutGetLocal::putGet(bool lastRequest)
+{
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelPutGetRequester->putGetDone(status);
+    } 
+    putBitSet->clear();
+    putBitSet->set(0);
+    pvRecord->lock();
+    pvPutCopy->updateRecord(pvPutStructure, putBitSet, false);
+    if(callProcess) pvRecord->process();
+    pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
+    pvRecord->unlock();
+    getBitSet->clear();
+    getBitSet->set(0);
+    channelPutGetRequester->putGetDone(Status::Ok);
+    if(lastRequest) destroy();
+}
+
+void ChannelPutGetLocal::getPut()
+{
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelPutGetRequester->getPutDone(status);
+    } 
+    pvRecord->lock();
+    pvPutCopy->updateCopySetBitSet(pvPutStructure, putBitSet, false);
+    pvRecord->unlock();
+    putBitSet->clear();
+    putBitSet->set(0);
+    channelPutGetRequester->getPutDone(Status::Ok);
+}
+
+void ChannelPutGetLocal::getGet()
+{
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelPutGetRequester->getGetDone(status);
+    } 
+    pvRecord->lock();
+    pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
+    pvRecord->unlock();
+    getBitSet->clear();
+    getBitSet->set(0);
+    channelPutGetRequester->getGetDone(Status::Ok);
+}
 
 class ChannelMonitorLocal :
     public Monitor
@@ -573,6 +922,16 @@ bool ChannelLocal::isConnected()
 void ChannelLocal::getField(GetFieldRequester::shared_pointer const &requester,
         String const &subField)
 {
+    if(subField.size()<1) {
+        StructureConstPtr structure = pvRecord->getPVRecordStructure()->getPVStructure()->getStructure();
+        requester->getDone(Status::Ok,structure);
+        return;
+    } 
+    PVFieldPtr pvField =  pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(subField);
+    if(pvField.get()!=NULL) {
+        requester->getDone(Status::Ok,pvField->getField());
+        return;
+    }
     Status status(Status::STATUSTYPE_ERROR,
         String("client asked for illegal field"));
     requester->getDone(status,FieldConstPtr());
@@ -588,12 +947,13 @@ ChannelProcess::shared_pointer ChannelLocal::createChannelProcess(
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVStructure::shared_pointer const & pvRequest)
 {
-    Status status(Status::STATUSTYPE_ERROR,
-        String("ChannelProcess not supported"));
-    channelProcessRequester->channelProcessConnect(
-        status,
-        ChannelProcess::shared_pointer());
-    return ChannelProcess::shared_pointer();
+    ChannelProcessLocalPtr channelProcess =
+       ChannelProcessLocal::create(
+            getPtrSelf(),
+            channelProcessRequester,
+            pvRequest,
+            pvRecord);
+    return channelProcess;
 }
 
 ChannelGet::shared_pointer ChannelLocal::createChannelGet(
@@ -613,28 +973,26 @@ ChannelPut::shared_pointer ChannelLocal::createChannelPut(
         ChannelPutRequester::shared_pointer const &channelPutRequester,
         PVStructure::shared_pointer const &pvRequest)
 {
-    Status status(Status::STATUSTYPE_ERROR,
-        String("ChannelPut not supported"));
-    channelPutRequester->channelPutConnect(
-        status,
-        ChannelPut::shared_pointer(),
-        PVStructure::shared_pointer(),
-        BitSet::shared_pointer());
-    return ChannelPut::shared_pointer();
+    ChannelPutLocalPtr channelPut =
+       ChannelPutLocal::create(
+            getPtrSelf(),
+            channelPutRequester,
+            pvRequest,
+            pvRecord);
+    return channelPut;
 }
 
 ChannelPutGet::shared_pointer ChannelLocal::createChannelPutGet(
         ChannelPutGetRequester::shared_pointer const &channelPutGetRequester,
         PVStructure::shared_pointer const &pvRequest)
 {
-    Status status(Status::STATUSTYPE_ERROR,
-        String("ChannelPutGet not supported"));
-    channelPutGetRequester->channelPutGetConnect(
-        status,
-        ChannelPutGet::shared_pointer(),
-        PVStructure::shared_pointer(),
-        PVStructure::shared_pointer());
-    return ChannelPutGet::shared_pointer();
+    ChannelPutGetLocalPtr channelPutGet =
+       ChannelPutGetLocal::create(
+            getPtrSelf(),
+            channelPutGetRequester,
+            pvRequest,
+            pvRecord);
+    return channelPutGet;
 }
 
 ChannelRPC::shared_pointer ChannelLocal::createChannelRPC(

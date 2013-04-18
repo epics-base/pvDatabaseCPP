@@ -11,8 +11,10 @@ SRC_DIRS += $(DATABASE)/database
 INC += pvDatabase.h
 INC += powerSupplyRecordTest.h
 INC += exampleCounter.h
+INC += recordList.h
 LIBSRCS += pvRecord.cpp
 LIBSRCS += pvDatabase.cpp
+LIBSRCS += recordList.cpp
 
 SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h

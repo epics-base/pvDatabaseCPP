@@ -21,6 +21,7 @@ static String providerName("local");
 
 class LocalChannelCTX;
 typedef std::tr1::shared_ptr<LocalChannelCTX> LocalChannelCTXPtr;
+
 class LocalChannelCTX :
     public epics::pvData::Runnable,
     public std::tr1::enable_shared_from_this<LocalChannelCTX>
@@ -77,6 +78,7 @@ LocalChannelCTX::~LocalChannelCTX()
     // we need thead.waitForCompletion()
     event.wait();
     epicsThreadSleep(1.0);
+    ctx.reset();
     delete thread;
 }
 void LocalChannelCTX::run()
@@ -87,7 +89,11 @@ void LocalChannelCTX::run()
     ctx->initialize(getChannelAccess());
     ctx->printInfo();
     ctx->run(0);
-    ctx->destroy();
+// Matej if I switch which is commented then errors when exit
+// BUT this way causes lots of memory leaks
+    channelProvider->destroy();
+    //ctx->destroy();
+// Matej end of comments
     event.signal();
 }
 
@@ -107,21 +113,23 @@ ChannelProviderLocal::ChannelProviderLocal()
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
-    pvDatabase.reset();
+    destroy();
 }
 
 void ChannelProviderLocal::destroy()
 {
     Lock xx(mutex);
     if(beingDestroyed) return;
-    unregisterChannelProvider(getPtrSelf());
     beingDestroyed = true;
     ChannelLocalList::iterator iter;
-    for(iter = channelList.begin(); iter!=channelList.end(); ++iter) {
-        ChannelLocalPtr channel = *iter;
-        channel->destroy();
+    while(true) {
+        iter = channelList.begin();
+        if(iter==channelList.end()) break;
+        (*iter)->destroy();
+        channelList.erase(iter);
     }
-    channelList.clear();
+
+    pvDatabase->destroy();
 }
 
 String ChannelProviderLocal::getProviderName()

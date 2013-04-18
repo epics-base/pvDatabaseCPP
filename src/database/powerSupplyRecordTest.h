@@ -32,6 +32,7 @@ public:
         epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     virtual ~PowerSupplyRecordTest();
+    virtual void destroy();
     virtual bool init();
     virtual void process();
     void put(double power,double voltage);
@@ -70,6 +71,11 @@ PowerSupplyRecordTest::PowerSupplyRecordTest(
 PowerSupplyRecordTest::~PowerSupplyRecordTest()
 {
    destroy();
+}
+
+void PowerSupplyRecordTest::destroy()
+{
+    PVRecord::destroy();
 }
 
 bool PowerSupplyRecordTest::init()

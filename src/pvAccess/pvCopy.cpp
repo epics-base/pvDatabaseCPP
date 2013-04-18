@@ -60,19 +60,17 @@ PVCopyPtr PVCopy::create(
     PVStructurePtr const &pvRequest, 
     String const & structureName)
 {
+    PVStructurePtr pvStructure(pvRequest);
     if(structureName.size()>0) {
         if(pvRequest->getStructure()->getNumberFields()>0) {
-            PVStructurePtr pvStructure
-                 = pvRequest->getStructureField(structureName);
+            pvStructure = pvRequest->getStructureField(structureName);
             if(pvStructure.get()==NULL) return NULLPVCopy;
         }
+    } else if(pvStructure->getSubField("field")!=NULL) {
+        pvStructure = pvRequest->getStructureField("field");
     }
     PVCopyPtr pvCopy = PVCopyPtr(new PVCopy(pvRecord));
-    PVStructurePtr pvStruct = pvRequest;
-    if(pvRequest->getSubField("field")!=NULL) {
-        pvStruct = pvRequest->getStructureField("field");
-    }
-    bool result = pvCopy->init(pvStruct);
+    bool result = pvCopy->init(pvStructure);
     if(!result) pvCopy.reset();
     return pvCopy;
 }

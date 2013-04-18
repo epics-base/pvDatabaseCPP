@@ -110,8 +110,8 @@ static void powerSupplyTest()
 int main(int argc,char *argv[])
 {
     scalarTest();
-    //arrayTest();
-    //powerSupplyTest();
+    arrayTest();
+    powerSupplyTest();
     return 0;
 }
 

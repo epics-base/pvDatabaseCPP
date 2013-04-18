@@ -20,8 +20,10 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
+#include <pv/exampleCounter.h>
 #include <pv/powerSupplyRecordTest.h>
 #include <pv/channelProviderLocal.h>
+#include <pv/recordList.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -63,21 +65,24 @@ int main(int argc,char *argv[])
     StandardPVFieldPtr standardPVField = getStandardPVField();
     String properties;
     ScalarType scalarType;
+    PVRecordPtr pvRecord;
     String recordName;
+    bool result(false);
+    recordName = "exampleCounter";
+    pvRecord = ExampleCounter::create(recordName);
+    result = master->addRecord(pvRecord);
     properties = "alarm,timeStamp";
     scalarType = pvDouble;
     recordName = "exampleDouble";
     PVStructurePtr pvStructure;
     pvStructure = standardPVField->scalar(scalarType,properties);
-    PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
+    pvRecord = PVRecord::create(recordName,pvStructure);
     {
         pvRecord->lock_guard();
         pvRecord->process();
     }
-    pvStructure.reset();
-    bool result = master->addRecord(pvRecord);
-    pvRecord.reset();
-    recordName = "powerSupplyExample";
+    result = master->addRecord(pvRecord);
+    recordName = "examplePowerSupply";
     pvStructure = createPowerSupply();
     PowerSupplyRecordTestPtr psr =
         PowerSupplyRecordTest::create(recordName,pvStructure);
@@ -85,11 +90,15 @@ int main(int argc,char *argv[])
         cout << "PowerSupplyRecordTest::create failed" << endl;
         return 1;
     }
-    pvStructure.reset();
     result = master->addRecord(psr);
-    cout << "result of addRecord " << recordName << " " << result << endl;
-    psr.reset();
+    recordName = "laptoprecordListPGRPC";
+    pvRecord = RecordListRecord::create(recordName);
+    result = master->addRecord(pvRecord);
     cout << "exampleServer\n";
+    PVStringArrayPtr pvNames = master->getRecordNames();
+    String buffer;
+    pvNames->toString(&buffer);
+    cout << "recordNames" << endl << buffer << endl;
     string str;
     while(true) {
         cout << "Type exit to stop: \n";

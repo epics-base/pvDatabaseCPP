@@ -118,7 +118,7 @@ public:
      *  The record will automatically
      *   be unlocked when control leaves the block that has the call.
      */
-    inline void lock_guard() { epics::pvData::Lock theLock(mutex); }
+    inline void lock_guard() { epics::pvData::Lock thelock(mutex); }
     /**
      * Lock the record.
      * Any code must lock while accessing a record.
@@ -489,6 +489,10 @@ public:
      */
     virtual ~PVDatabase();
     /**
+     *  Destroy the PVDatabase.
+     */
+    virtual void destroy();
+    /**
      * Find a record.
      * An empty pointer is returned if the record is not in the database.
      * @param recordName The record to find.
@@ -508,6 +512,11 @@ public:
      */
     bool removeRecord(PVRecordPtr const & record);
     /**
+     * Get the names of all the records in the database.
+     * @return The names.
+     */
+    epics::pvData::PVStringArrayPtr getRecordNames();
+    /**
      * Virtual method of Requester.
      * @return The name.
      */
@@ -523,7 +532,13 @@ public:
         epics::pvData::MessageType messageType);
 private:
     PVDatabase();
+    void lock();
+    void unlock();
+    inline void lock_guard() { epics::pvData::Lock thelock(mutex); }
     PVRecordMap  recordMap;
+    epics::pvData::Mutex mutex;
+    epics::pvData::Lock thelock;
+    bool isDestroyed;
     
 };
 

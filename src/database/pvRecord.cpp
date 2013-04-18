@@ -68,29 +68,29 @@ void PVRecord::destroy()
     isDestroyed = true;
 
     std::list<RequesterPtr>::iterator requesterIter;
-    for (
-    requesterIter = requesterList.begin();
-    requesterIter!=requesterList.end();
-    requesterIter++ ) {
+    while(true) {
+        requesterIter = requesterList.begin();
+        if(requesterIter==requesterList.end()) break;
+        requesterList.erase(requesterIter);
+        unlock();
         (*requesterIter)->message("record destroyed",fatalErrorMessage);
+        lock();
     }
-    requesterList.clear();
 
     std::list<PVRecordClientPtr>::iterator clientIter;
-    for (clientIter = pvRecordClientList.begin();
-    clientIter!=pvRecordClientList.end();
-    clientIter++ )
-    {
+    while(true) {
+        clientIter = pvRecordClientList.begin();
+        if(clientIter==pvRecordClientList.end()) break;
+        pvRecordClientList.erase(clientIter);
+        unlock();
         (*clientIter)->detach(getPtrSelf());
+        lock();
     }
-    pvRecordClientList.clear();
-
     pvListenerList.clear();
     pvRecordStructure->destroy();
     pvRecordStructure.reset();
     convert.reset();
     pvStructure.reset();
-
     unlock();
 }
 
@@ -211,6 +211,10 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
 bool PVRecord::removePVRecordClient(PVRecordClientPtr const & pvRecordClient)
 {
     lock();
+    if(isDestroyed) {
+         unlock();
+         return false;
+    }
     std::list<PVRecordClientPtr>::iterator iter;
     for (iter = pvRecordClientList.begin();
     iter!=pvRecordClientList.end();
