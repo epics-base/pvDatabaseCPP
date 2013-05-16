@@ -5,7 +5,8 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
+ * @author Marty Kraimer
+ * @data 2013.04
  */
 #ifndef CHANNELPROVIDERLOCAL_H
 #define CHANNELPROVIDERLOCAL_H
@@ -22,10 +23,13 @@
 #include <pv/pvDatabase.h>
 #include <pv/status.h>
 #include <pv/pvCopy.h>
+#include <pv/monitorAlgorithm.h>
 
 
 namespace epics { namespace pvDatabase { 
 
+class MonitorFactory;
+typedef std::tr1::shared_ptr<MonitorFactory> MonitorFactoryPtr;
 
 class ChannelProviderLocal;
 typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
@@ -33,14 +37,45 @@ class ChannelLocal;
 typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
 typedef std::set<ChannelLocalPtr> ChannelLocalList;
 
+extern MonitorFactoryPtr getMonitorFactory();
+class MonitorLocal;
+typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
+typedef std::set<MonitorLocalPtr> MonitorLocalList;
+
+
+class MonitorFactory 
+{
+public:
+    POINTER_DEFINITIONS(MonitorFactory);
+    virtual ~MonitorFactory();
+    virtual void destroy();
+    epics::pvData::MonitorPtr createMonitor(
+        PVRecordPtr const & pvRecord,
+        epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
+        epics::pvData::PVStructurePtr const & pvRequest);
+    void registerMonitorAlgorithmCreate(
+        MonitorAlgorithmCreatePtr const &monitorAlgorithmCreate);
+    MonitorAlgorithmCreatePtr getMonitorAlgorithmCreate(epics::pvData::String algorithmName);
+private:
+    MonitorFactory();
+    void removeMonitor(MonitorLocal * monitor);
+    friend class MonitorLocal;
+    friend MonitorFactoryPtr getMonitorFactory();
+    std::set<MonitorAlgorithmCreatePtr> monitorAlgorithmCreateList;
+    std::set<MonitorLocalPtr> monitorLocalList;
+    bool isDestroyed;
+    epics::pvData::Mutex mutex;
+};
+
+
+extern ChannelProviderLocalPtr getChannelProviderLocal();
+
 class ChannelProviderLocal :
     public epics::pvAccess::ChannelProvider,
     public std::tr1::enable_shared_from_this<ChannelProviderLocal>
 {
 public:
     POINTER_DEFINITIONS(ChannelProviderLocal);
-
-    static ChannelProviderLocalPtr create();
     virtual ~ChannelProviderLocal();
     virtual void destroy();
     virtual  epics::pvData::String getProviderName();
@@ -64,7 +99,7 @@ private:
         return shared_from_this();
     }
     ChannelProviderLocal();
-
+    friend ChannelProviderLocalPtr getChannelProviderLocal();
     PVDatabasePtr pvDatabase;
     ChannelLocalList channelList;
     epics::pvData::Mutex mutex;

@@ -169,11 +169,17 @@ PVRecordFieldPtr PVRecord::findPVRecordField(
         + pvField->getFieldName() + " not in PVRecord");
 }
 
-void PVRecord::lock() {thelock.lock();}
+void PVRecord::lock() {
+    thelock.lock();
+}
 
-void PVRecord::unlock() {thelock.unlock();}
+void PVRecord::unlock() {
+    thelock.unlock();
+}
 
-bool PVRecord::tryLock() {return thelock.tryLock();}
+bool PVRecord::tryLock() {
+    return thelock.tryLock();
+}
 
 void PVRecord::lockOtherRecord(PVRecordPtr const & otherRecord)
 {
@@ -347,6 +353,7 @@ PVRecordField::PVRecordField(
     PVRecordStructurePtr const &parent,
     PVRecordPtr const & pvRecord)
 :  pvField(pvField),
+   isStructure(pvField->getField()->getType()==structure ? true : false),
    parent(parent),
    pvRecord(pvRecord)
 {
@@ -419,15 +426,33 @@ void PVRecordField::removeListener(PVListenerPtr const & pvListener)
 
 void PVRecordField::postPut()
 {
-    callListener();
+    if(parent!=NULL) {
+        parent->postParent(getPtrSelf());
+    }
+    postSubField();
+}
+
+void PVRecordField::postParent(PVRecordFieldPtr const & subField)
+{
+    PVRecordStructurePtr pvrs = static_pointer_cast<PVRecordStructure>(getPtrSelf());
     std::list<PVListenerPtr>::iterator iter;
-    PVRecordStructurePtr pvParent = getParent();
-    while(pvParent.get()!=NULL) {
-        std::list<PVListenerPtr> list = pvParent->pvListenerList;
-        for (iter = list.begin(); iter!=list.end(); iter++ ) {
-            (*iter)->dataPut(pvParent,getPtrSelf());
+    for(iter = pvListenerList.begin(); iter != pvListenerList.end(); ++iter)
+    {
+        (*iter)->dataPut(pvrs,subField);
+    }
+    if(parent!=NULL) parent->postParent(subField);
+}
+
+void PVRecordField::postSubField()
+{
+    callListener();
+    if(isStructure) {
+        PVRecordStructurePtr pvrs = static_pointer_cast<PVRecordStructure>(getPtrSelf());
+        PVRecordFieldPtrArrayPtr pvRecordFields = pvrs->getPVRecordFields();
+        PVRecordFieldPtrArray::iterator iter;
+        for(iter = pvRecordFields->begin() ; iter !=pvRecordFields->end(); iter++) {
+             (*iter)->postSubField();
         }
-        pvParent = pvParent->getParent();
     }
 }
 

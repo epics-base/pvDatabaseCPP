@@ -4,35 +4,55 @@
  * EPICS pvData is distributed subject to a Software License Agreement found
  * in file LICENSE that is included with this distribution.
  */
-/* Marty Kraimer 2011.03 */
+/**
+ * @author Marty Kraimer
+ * @data 2013.04
+ */
 #ifndef MONITORALGORITHM_H
 #define MONITORALGORITHM_H
-#include <string>
 
-#include <pv/pvData.h>
+#include <pv/pvCopy.h>
 
-namespace epics { namespace pvIOC { 
+namespace epics { namespace pvDatabase { 
 
-class MonitorAlgorithm {
+class MonitorAlgorithm;
+typedef std::tr1::shared_ptr<MonitorAlgorithm> MonitorAlgorithmPtr;
+class MonitorAlgorithmCreate;
+typedef std::tr1::shared_ptr<MonitorAlgorithmCreate> MonitorAlgorithmCreatePtr;
+
+class MonitorAlgorithm 
+{
 public:
-     MonitorAlgorithm(){}
-     virtual ~MonitorAlgorithm(){}
-     virtual epics::pvData::String getAlgorithmName() = 0;
-     virtual bool causeMonitor() = 0;
-     void monitorIssued() = 0;
-}}
-
-class MonitorAlgorithmCreate {
-public:
-    virtual String getAlgorithmName() = 0;
-    virtual std::auto_ptr<MonitorAlgorithm> create(
-        PVRecord &pvRecord;
-        MonitorRequester &requester;
-        PVRecordField &pvRecordField;
-        PVStructure &pvStructure);
+    POINTER_DEFINITIONS(MonitorAlgorithm);
+    virtual ~MonitorAlgorithm(){}
+    virtual epics::pvData::String getAlgorithmName(){return algorithmName;}
+    virtual bool causeMonitor() = 0;
+    virtual void monitorIssued() = 0;
+protected:
+    MonitorAlgorithm(epics::pvData::String algorithmName)
+    : algorithmName(algorithmName)
+    {}
+    epics::pvData::String algorithmName;
 };
 
-extern MonitorAlgorithmCreate& getAlgorithmDeadband();
-extern MonitorAlgorithmCreate& getAlgorithmOnChange();
+class MonitorAlgorithmCreate 
+{
+public:
+    POINTER_DEFINITIONS(MonitorAlgorithmCreate);
+    virtual ~MonitorAlgorithmCreate(){}
+    virtual epics::pvData::String getAlgorithmName(){return algorithmName;}
+    virtual MonitorAlgorithmPtr create(
+        PVRecordPtr const &pvRecord,
+        epics::pvData::MonitorRequester::shared_pointer const &requester,
+        PVRecordFieldPtr const &fromPVRecord,
+        epics::pvData::PVStructurePtr const &pvOptions) = 0;
+protected:
+    MonitorAlgorithmCreate(epics::pvData::String algorithmName)
+    : algorithmName(algorithmName)
+    {}
+    epics::pvData::String algorithmName;
+};
+
+}}
 
 #endif  /* MONITORALGORITHM_H */

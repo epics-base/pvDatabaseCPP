@@ -61,7 +61,7 @@ static PVStructurePtr createPowerSupply()
 int main(int argc,char *argv[])
 {
     PVDatabasePtr master = PVDatabase::getMaster();
-    ChannelProviderLocalPtr channelProvider = ChannelProviderLocal::create();
+    ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     StandardPVFieldPtr standardPVField = getStandardPVField();
     String properties;
     ScalarType scalarType;

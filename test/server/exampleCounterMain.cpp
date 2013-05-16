@@ -32,7 +32,7 @@ using namespace epics::pvDatabase;
 int main(int argc,char *argv[])
 {
     PVDatabasePtr master = PVDatabase::getMaster();
-    ChannelProviderLocalPtr channelProvider = ChannelProviderLocal::create();
+    ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     String recordName("exampleCounter");
     PVRecordPtr pvRecord = ExampleCounter::create(recordName);
     bool result = master->addRecord(pvRecord);

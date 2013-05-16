@@ -5,16 +5,24 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
+ * @author Marty Kraimer
+ * @date 2013.04
  */
 
+#include <sstream>
+
+#include <epicsThread.h>
+
 #include <pv/channelProviderLocal.h>
+#include <pv/convert.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
+
+static ConvertPtr convert = getConvert();
 
 class ChannelProcessLocal;
 typedef std::tr1::shared_ptr<ChannelProcessLocal> ChannelProcessLocalPtr;
@@ -79,13 +87,15 @@ private:
     ChannelProcessLocal(
         ChannelLocalPtr const &channelLocal,
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
-        PVRecordPtr const &pvRecord)
+        PVRecordPtr const &pvRecord,
+        int nProcess)
     : 
       isDestroyed(false),
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
-      thelock(mutex)
+      thelock(mutex),
+      nProcess(nProcess)
     {
         thelock.unlock();
     }
@@ -96,6 +106,7 @@ private:
     PVRecordPtr pvRecord;
     Mutex mutex;
     Lock thelock;
+    int nProcess;
 };
 
 ChannelProcessLocalPtr ChannelProcessLocal::create(
@@ -104,10 +115,29 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
     PVStructurePtr const & pvRequest,
     PVRecordPtr const &pvRecord)
 {
+    PVFieldPtr pvField;
+    PVStructurePtr pvOptions;
+    int nProcess = 1;
+    if(pvRequest!=NULL) pvField = pvRequest->getSubField("record._options");
+    if(pvField.get()!=NULL) {
+        pvOptions = static_pointer_cast<PVStructure>(pvField);
+        pvField = pvOptions->getSubField("nProcess");
+        if(pvField.get()!=NULL) {
+            PVStringPtr pvString = pvOptions->getStringField("nProcess");
+            if(pvString.get()!=NULL) {
+                int size;
+                std::stringstream ss;
+                ss << pvString->get();
+                ss >> size;
+                nProcess = size;
+            }
+        }
+    }
     ChannelProcessLocalPtr process(new ChannelProcessLocal(
         channelLocal,
         channelProcessRequester,
-        pvRecord));
+        pvRecord,
+        nProcess));
     channelLocal->addChannelProcess(process);
     channelProcessRequester->channelProcessConnect(Status::Ok, process);
     return process;
@@ -126,9 +156,13 @@ void ChannelProcessLocal::destroy()
 
 void ChannelProcessLocal::process(bool lastRequest)
 {
-    pvRecord->lock();
-    pvRecord->process();
-    pvRecord->unlock();
+    for(int i=0; i< nProcess; i++) {
+        pvRecord->lock();
+        pvRecord->beginGroupPut();
+        pvRecord->process();
+        pvRecord->endGroupPut();
+        pvRecord->unlock();
+    }
     if(isDestroyed) {
          Status status(
              Status::Status::STATUSTYPE_ERROR,
@@ -259,7 +293,11 @@ void ChannelGetLocal::get(bool lastRequest)
     } 
     bitSet->clear();
     pvRecord->lock();
-    if(callProcess) pvRecord->process();
+    if(callProcess) {
+        pvRecord->beginGroupPut();
+        pvRecord->process();
+        pvRecord->endGroupPut();
+    }
     pvCopy->updateCopySetBitSet(pvStructure, bitSet, false);
     pvRecord->unlock();
     if(firstTime) {
@@ -404,8 +442,12 @@ void ChannelPutLocal::put(bool lastRequest)
          channelPutRequester->getDone(status);
     }
     pvRecord->lock();
+    pvRecord->beginGroupPut();
     pvCopy->updateRecord(pvStructure, bitSet, false);
-    if(callProcess) pvRecord->process();
+    if(callProcess) {
+         pvRecord->process();
+    }
+    pvRecord->endGroupPut();
     pvRecord->unlock();
     channelPutRequester->getDone(Status::Ok);
     if(lastRequest) destroy();
@@ -555,9 +597,11 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
     putBitSet->clear();
     putBitSet->set(0);
     pvRecord->lock();
+    pvRecord->beginGroupPut();
     pvPutCopy->updateRecord(pvPutStructure, putBitSet, false);
     if(callProcess) pvRecord->process();
     pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
+    pvRecord->endGroupPut();
     pvRecord->unlock();
     getBitSet->clear();
     getBitSet->set(0);
@@ -597,23 +641,6 @@ void ChannelPutGetLocal::getGet()
     channelPutGetRequester->getGetDone(Status::Ok);
 }
 
-class ChannelMonitorLocal :
-    public Monitor
-{
-public:
-    POINTER_DEFINITIONS(ChannelMonitorLocal);
-    virtual ~ChannelMonitorLocal();
-    static Monitor::shared_pointer create(
-        ChannelProviderLocalPtr const &channelProvider,
-        MonitorRequester::shared_pointer const & channelMonitorRequester,
-        PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
-    virtual Status start();
-    virtual Status stop();
-    virtual MonitorElementPtr poll();
-    virtual void release(MonitorElementPtr const & monitorElement);
-};
-
 class ChannelRPCLocal :
     public ChannelRPC
 {
@@ -628,22 +655,6 @@ public:
     virtual void request(
         PVStructurePtr const & pvArgument,
         bool lastRequest);
-};
-
-class ChannelArrayLocal :
-    public ChannelArray
-{
-public:
-    POINTER_DEFINITIONS(ChannelArrayLocal);
-    virtual ~ChannelArrayLocal();
-    static ChannelArray::shared_pointer create(
-        ChannelProviderLocalPtr const &channelProvider,
-        ChannelArray::shared_pointer const & channelArrayRequester,
-        PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
-    virtual void putArray(bool lastRequest, int offset, int count);
-    virtual void getArray(bool lastRequest, int offset, int count);
-    virtual void setLength(bool lastRequest, int length, int capacity);
 };
 
 int ChannelLocalDebugLevel = 0;
@@ -1009,14 +1020,9 @@ Monitor::shared_pointer ChannelLocal::createMonitor(
         MonitorRequester::shared_pointer const &monitorRequester,
         PVStructure::shared_pointer const &pvRequest)
 {
-    Status status(Status::STATUSTYPE_ERROR,
-        String("ChannelMonitor not supported"));
-    Monitor::shared_pointer thisPointer = dynamic_pointer_cast<Monitor>(getPtrSelf());
-    monitorRequester->monitorConnect(
-        status,
-        thisPointer,
-        StructureConstPtr());
-    return Monitor::shared_pointer();
+    MonitorPtr monitor = 
+        getMonitorFactory()->createMonitor(pvRecord,monitorRequester,pvRequest);
+    return monitor;
 }
 
 ChannelArray::shared_pointer ChannelLocal::createChannelArray(

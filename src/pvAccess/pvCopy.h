@@ -5,8 +5,8 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
- * @date 2013.03.25
+ * @author Marty Kraimer
+ * @date 2013.04
  */
 #ifndef PVCOPY_H
 #define PVCOPY_H
@@ -81,6 +81,10 @@ public:
         epics::pvData::PVStructurePtr const &copyPVStructure,std::size_t fieldOffset);
     epics::pvData::String dump();
 private:
+    void dump(
+        epics::pvData::String *builder,
+        CopyNodePtr const &node,
+        int indentLevel);
     PVCopyPtr getPtrSelf()
     {
         return shared_from_this();
@@ -92,6 +96,7 @@ private:
     epics::pvData::PVStructurePtr cacheInitStructure;
 private:
     PVCopy(PVRecordPtr const &pvRecord);
+    friend class PVCopyMonitor;
     bool init(epics::pvData::PVStructurePtr const &pvRequest);
     epics::pvData::String dump(
         epics::pvData::String const &value,
@@ -154,7 +159,8 @@ private:
     
 };
 
-class PVCopyMonitor : 
+class PVCopyMonitor :
+    public PVListener,
     public std::tr1::enable_shared_from_this<PVCopyMonitor>
 {
 public:
@@ -167,28 +173,46 @@ public:
     void switchBitSets(
         epics::pvData::BitSetPtr const &newChangeBitSet,
         epics::pvData::BitSetPtr const &newOverrunBitSet, bool lockRecord);
+    // following are PVListener methods
+    virtual void detach(PVRecordPtr const & pvRecord);
+    virtual void dataPut(PVRecordFieldPtr const & pvRecordField);
+    virtual void dataPut(
+        PVRecordStructurePtr const & requested,
+        PVRecordFieldPtr const & pvRecordField);
+    virtual void beginGroupPut(PVRecordPtr const & pvRecord);
+    virtual void endGroupPut(PVRecordPtr const & pvRecord);
+    virtual void unlisten(PVRecordPtr const & pvRecord);
 private:
+    void addListener(CopyNodePtr const & node);
+    CopyNodePtr findNode(
+        CopyNodePtr const & node,
+        PVRecordFieldPtr const & pvRecordField);
     PVCopyMonitorPtr getPtrSelf()
     {
         return shared_from_this();
     }
-    PVCopyMonitor();
+    PVCopyMonitor(
+        PVRecordPtr const &pvRecord,
+        CopyNodePtr const &headNode,
+        PVCopyPtr const &pvCopy,
+        PVCopyMonitorRequesterPtr const &pvCopyMonitorRequester);
     friend class PVCopy;
-    // TBD
+    PVRecordPtr pvRecord;
+    CopyNodePtr headNode;
+    PVCopyPtr pvCopy;
+    PVCopyMonitorRequesterPtr pvCopyMonitorRequester;
+    epics::pvData::BitSetPtr changeBitSet;
+    epics::pvData::BitSetPtr overrunBitSet;
+    bool isGroupPut;
+    bool dataChanged;
 };
 
-class PVCopyMonitorRequester : 
-    public std::tr1::enable_shared_from_this<PVCopyMonitorRequester>
+class PVCopyMonitorRequester
 {
 public:
     POINTER_DEFINITIONS(PVCopyMonitorRequester);
     virtual void dataChanged() = 0;
     virtual void unlisten() = 0;
-private:
-    PVCopyMonitorRequesterPtr getPtrSelf()
-    {
-        return shared_from_this();
-    }
 };
 
 

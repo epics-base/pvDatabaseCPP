@@ -5,7 +5,8 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
+ * @author Marty Kraimer
+ * @date 2013.04
  */
 
 #include <pv/serverContext.h>
@@ -98,11 +99,17 @@ void LocalChannelCTX::run()
 }
 
 
-ChannelProviderLocalPtr ChannelProviderLocal::create()
+ChannelProviderLocalPtr getChannelProviderLocal()
 {
-    ChannelProviderLocalPtr channelProvider(new ChannelProviderLocal());
-    LocalChannelCTX::create(channelProvider);
-    return channelProvider;
+    static ChannelProviderLocalPtr channelProviderLocal;
+    static Mutex mutex;
+    Lock xx(mutex);
+    if(channelProviderLocal.get()==NULL) {
+        channelProviderLocal = ChannelProviderLocalPtr(
+            new ChannelProviderLocal());
+        LocalChannelCTX::create(channelProviderLocal);
+    }
+    return channelProviderLocal;
 }
 
 ChannelProviderLocal::ChannelProviderLocal()

@@ -61,9 +61,13 @@ void PVDatabase::destroy()
     }
 }
 
-void PVDatabase::lock() {thelock.lock();}
+void PVDatabase::lock() {
+    thelock.lock();
+}
 
-void PVDatabase::unlock() {thelock.unlock();}
+void PVDatabase::unlock() {
+    thelock.unlock();
+}
 
 PVRecordPtr PVDatabase::findRecord(String const& recordName)
 {

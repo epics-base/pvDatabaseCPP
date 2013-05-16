@@ -5,7 +5,8 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
+ * @author Marty Kraimer
+ * @date 2013.04
  */
 #include <string>
 #include <stdexcept>
@@ -18,7 +19,7 @@
 #include <pv/support.h>
 #include <pv/pvCopy.h>
 
-namespace epics { namespace pvIOC { 
+namespace epics { namespace pvDatabase { 
 
 using namespace epics::pvData;
 

@@ -19,9 +19,12 @@ LIBSRCS += recordList.cpp
 SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h
 INC += pvCopy.h
+INC += monitorAlgorithm.h
 LIBSRCS += channelProviderLocal.cpp
 LIBSRCS += channelLocal.cpp
 LIBSRCS += pvCopy.cpp
+LIBSRCS += monitorFactory.cpp
+
 
 include $(TOP)/configure/RULES
 

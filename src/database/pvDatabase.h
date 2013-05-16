@@ -346,11 +346,14 @@ protected:
         return shared_from_this();
     }
     virtual void init();
+    virtual void postParent(PVRecordFieldPtr const & subField);
+    virtual void postSubField();
 private:
     void callListener();
 
     std::list<PVListenerPtr> pvListenerList;
     epics::pvData::PVFieldPtr pvField;
+    bool isStructure;
     PVRecordStructurePtr parent;
     PVRecordPtr pvRecord;
     epics::pvData::String fullName;
@@ -470,6 +473,11 @@ public:
      * @param pvRecord The record.
      */
     virtual void endGroupPut(PVRecordPtr const & pvRecord) = 0;
+    /**
+     * Connection to record is being terminated.
+     * @param pvRecord The record.
+     */
+    virtual void unlisten(PVRecordPtr const & pvRecord) = 0;
 };
 
 /**

@@ -5,11 +5,13 @@
  * in file LICENSE that is included with this distribution.
  */
 /**
- * @author mrk
+ * @author Marty Kraimer
+ * @date 2013.04
  */
 #include <string>
 #include <stdexcept>
 #include <memory>
+#include <sstream>
 
 #include <pv/pvCopy.h>
 
@@ -23,8 +25,8 @@ static PVCopyPtr NULLPVCopy;
 static FieldConstPtr NULLField;
 static StructureConstPtr NULLStructure;
 static PVStructurePtr NULLPVStructure;
-static CopyNodePtr NULLCopyNodePtr;
-static CopyRecordNodePtr NULLCopyRecordNodePtr;
+static CopyNodePtr NULLCopyNode;
+static CopyRecordNodePtr NULLCopyRecordNode;
 
 struct CopyNode {
     CopyNode()
@@ -48,10 +50,6 @@ typedef std::vector<CopyNodePtr> CopyNodePtrArray;
 typedef std::tr1::shared_ptr<CopyNodePtrArray> CopyNodePtrArrayPtr;
     
 struct CopyStructureNode : public  CopyNode {
-//    CopyStructureNode(size_t numNodes)
-//    : nodes(CopyNodePtrArrayPtr(new CopyNodePtrArray(numNodes)))
-//    {
-//    }
     CopyNodePtrArrayPtr nodes;
 };
 
@@ -92,7 +90,11 @@ StructureConstPtr PVCopy::getStructure()
 
 PVStructurePtr PVCopy::createPVStructure()
 {
-    if(cacheInitStructure.get()!=NULL) return cacheInitStructure;
+    if(cacheInitStructure.get()!=NULL) {
+        PVStructurePtr save = cacheInitStructure;
+        cacheInitStructure.reset();
+        return save;
+    }
     PVStructurePtr pvStructure = 
         getPVDataCreate()->createPVStructure(structure);
     return pvStructure;
@@ -279,12 +281,51 @@ void PVCopy::updateRecord(
 PVCopyMonitorPtr PVCopy::createPVCopyMonitor(
     PVCopyMonitorRequesterPtr const &pvCopyMonitorRequester)
 {
-    throw std::logic_error(String("Not Implemented"));
+    PVCopyMonitorPtr pvCopyMonitor( new PVCopyMonitor(
+        pvRecord,headNode,getPtrSelf(),pvCopyMonitorRequester));
+    return pvCopyMonitor;
 }
 
 epics::pvData::String PVCopy::dump()
 {
-    throw std::logic_error(String("Not Implemented"));
+    String builder;
+    dump(&builder,headNode,0);
+    return builder;
+}
+
+void PVCopy::dump(String *builder,CopyNodePtr const &node,int indentLevel)
+{
+    getConvert()->newLine(builder,indentLevel);
+    std::stringstream ss;
+    ss << (node->isStructure ? "structureNode" : "recordNode");
+    ss << " structureOffset " << node->structureOffset;
+    ss << " nfields " << node->nfields;
+    *builder +=  ss.str();
+    PVStructurePtr options = node->options;
+    if(options.get()!=NULL) {
+        getConvert()->newLine(builder,indentLevel +1);
+        options->toString(builder);
+        getConvert()->newLine(builder,indentLevel);
+    }
+    if(!node->isStructure) {
+        CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(node);
+        String name = recordNode->recordPVField->getFullName();
+        *builder += " recordField " + name;
+        return;
+    }
+    CopyStructureNodePtr structureNode =
+        static_pointer_cast<CopyStructureNode>(node);
+    CopyNodePtrArrayPtr nodes = structureNode->nodes;
+    for(size_t i=0; i<nodes->size(); ++i) {
+        if((*nodes)[i].get()==NULL) {
+            getConvert()->newLine(builder,indentLevel +1);
+            ss.str("");
+            ss << "node[" << i << "] is null";
+            *builder += ss.str();
+            continue;
+        }
+        dump(builder,(*nodes)[i],indentLevel+1);
+    }
 }
 
 bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
@@ -589,7 +630,7 @@ CopyNodePtr PVCopy::createStructureNodes(
         nameFromRecord = getFullName(pvFromRequest,nameFromRecord);
         PVFieldPtr pvField = pvRecordStructure->
             getPVStructure()->getSubField(nameFromRecord);
-        if(pvField.get()==NULL) return NULLCopyNodePtr;
+        if(pvField.get()==NULL) return NULLCopyNode;
         PVRecordFieldPtr pvRecordField = pvRecordStructure->
             getPVRecord()->findPVRecordField(pvField);
         size_t structureOffset = pvFromField->getFieldOffset();
@@ -650,7 +691,7 @@ CopyNodePtr PVCopy::createStructureNodes(
         ++indFromStructure;
     }
     size_t len = nodes->size();
-    if(len==String::npos) return NULLCopyNodePtr;
+    if(len==String::npos) return NULLCopyNode;
     CopyStructureNodePtr structureNode(new CopyStructureNode());
     structureNode->isStructure = true;
     structureNode->nodes = nodes;
@@ -915,7 +956,7 @@ CopyRecordNodePtr PVCopy::getCopyOffset(
             if(recordNode.get()!=NULL) return recordNode;
         }
     }
-    return NULLCopyRecordNodePtr;
+    return NULLCopyRecordNode;
 }
 
 CopyRecordNodePtr PVCopy::getRecordNode(
@@ -935,37 +976,163 @@ CopyRecordNodePtr PVCopy::getRecordNode(
             static_pointer_cast<CopyStructureNode>(node);
         return  getRecordNode(subNode,structureOffset);
     }
-    return NULLCopyRecordNodePtr;
+    return NULLCopyRecordNode;
 }
 
-
-PVCopyMonitor::PVCopyMonitor()
+PVCopyMonitor::PVCopyMonitor(
+    PVRecordPtr const &pvRecord,
+    CopyNodePtr const &headNode,
+    PVCopyPtr const &pvCopy,
+    PVCopyMonitorRequesterPtr const &pvCopyMonitorRequester
+)
+: pvRecord(pvRecord),
+  headNode(headNode),
+  pvCopy(pvCopy),
+  pvCopyMonitorRequester(pvCopyMonitorRequester),
+  isGroupPut(false),
+  dataChanged(false)
 {
-    throw std::logic_error(String("Not Implemented"));
 }
 
 PVCopyMonitor::~PVCopyMonitor()
 {
-    throw std::logic_error(String("Not Implemented"));
+    pvRecord.reset();
+    headNode.reset();
+    pvCopy.reset();
+    pvCopyMonitorRequester.reset();
+    changeBitSet.reset();
+    overrunBitSet.reset();
 }
 
 void PVCopyMonitor::startMonitoring(
     BitSetPtr const  &changeBitSet,
     BitSetPtr const  &overrunBitSet)
 {
-    throw std::logic_error(String("Not Implemented"));
+    this->changeBitSet = changeBitSet;
+    this->overrunBitSet = overrunBitSet;
+    isGroupPut = false;
+    pvRecord->addListener(getPtrSelf());
+    addListener(headNode);
+    pvRecord->lock();
+    try {
+        changeBitSet->clear();
+        overrunBitSet->clear();
+        changeBitSet->set(0);
+        pvCopyMonitorRequester->dataChanged();
+        pvRecord->unlock();
+    } catch(...) {
+        pvRecord->unlock();
+    }
 }
 
 void PVCopyMonitor::stopMonitoring()
 {
-    throw std::logic_error(String("Not Implemented"));
+    pvRecord->removeListener(getPtrSelf());
 }
 
 void PVCopyMonitor::switchBitSets(
     BitSetPtr const &newChangeBitSet,
-    BitSetPtr const &newOverrunBitSet, bool lockRecord)
+    BitSetPtr const &newOverrunBitSet,
+    bool lockRecord)
 {
-    throw std::logic_error(String("Not Implemented"));
+    if(lockRecord) pvRecord->lock();
+    try {
+        changeBitSet = newChangeBitSet;
+        overrunBitSet = newOverrunBitSet;
+        if(lockRecord) pvRecord->unlock();
+    } catch(...) {
+        if(lockRecord) pvRecord->unlock();
+    }
+}
+
+void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)
+{
+}
+
+void PVCopyMonitor::dataPut(PVRecordFieldPtr const & pvRecordField)
+{
+    CopyNodePtr node = findNode(headNode,pvRecordField);
+    if(node.get()==NULL) {
+        throw std::logic_error("Logic error");
+    }
+    size_t offset = node->structureOffset;
+    bool isSet = changeBitSet->get(offset);
+    changeBitSet->set(offset);
+    if(isSet) overrunBitSet->set(offset);
+    if(!isGroupPut) pvCopyMonitorRequester->dataChanged();
+    dataChanged = true;
+}
+
+void PVCopyMonitor::dataPut(
+    PVRecordStructurePtr const & requested,
+    PVRecordFieldPtr const & pvRecordField)
+{
+    CopyNodePtr node = findNode(headNode,requested);
+    if(node.get()==NULL || node->isStructure) {
+        throw std::logic_error("Logic error");
+    }
+    CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(node);
+    size_t offset = recordNode->structureOffset
+        + (pvRecordField->getPVField()->getFieldOffset()
+             - recordNode->recordPVField->getPVField()->getFieldOffset());
+    bool isSet = changeBitSet->get(offset);
+    changeBitSet->set(offset);
+    if(isSet) overrunBitSet->set(offset);
+    if(!isGroupPut) pvCopyMonitorRequester->dataChanged();
+    dataChanged = true;
+}
+
+void PVCopyMonitor::beginGroupPut(PVRecordPtr const & pvRecord)
+{
+    isGroupPut = true;
+    dataChanged = false;
+}
+
+void PVCopyMonitor::endGroupPut(PVRecordPtr const & pvRecord)
+{
+    isGroupPut = false;
+    if(dataChanged) {
+         dataChanged = false;
+         pvCopyMonitorRequester->dataChanged();
+    }
+}
+
+void PVCopyMonitor::unlisten(PVRecordPtr const & pvRecord)
+{
+    pvCopyMonitorRequester->unlisten();
+}
+
+
+void PVCopyMonitor::addListener(CopyNodePtr const & node)
+{
+    if(!node->isStructure) {
+        PVRecordFieldPtr pvRecordField =
+             pvCopy->getRecordPVField(node->structureOffset);
+        pvRecordField->addListener(getPtrSelf());
+        return;
+    }
+    CopyStructureNodePtr structureNode =
+        static_pointer_cast<CopyStructureNode>(node);
+    for(size_t i=0; i< structureNode->nodes->size(); i++) {
+        addListener((*structureNode->nodes)[i]);
+    }
+}
+
+CopyNodePtr PVCopyMonitor::findNode(
+    CopyNodePtr const & node,
+    PVRecordFieldPtr const & pvRecordField)
+{
+    if(!node->isStructure) {
+        CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(node);
+        if(recordNode->recordPVField==pvRecordField) return node;
+        return NULLCopyNode;
+    }
+    CopyStructureNodePtr structureNode = static_pointer_cast<CopyStructureNode>(node);
+    for(size_t i=0; i<structureNode->nodes->size(); i++) {
+        CopyNodePtr xxx = findNode((*structureNode->nodes)[i],pvRecordField);
+        if(xxx.get()!=NULL) return xxx;
+    }
+    return NULLCopyNode;
 }
 
 }}
