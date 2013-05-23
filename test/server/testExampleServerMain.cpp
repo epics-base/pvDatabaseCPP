@@ -62,6 +62,7 @@ int main(int argc,char *argv[])
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
+    channelProvider->createChannelLocalDebugRecord("channelLocalDebug");
     StandardPVFieldPtr standardPVField = getStandardPVField();
     String properties;
     ScalarType scalarType;
@@ -76,6 +77,14 @@ int main(int argc,char *argv[])
     recordName = "exampleDouble";
     PVStructurePtr pvStructure;
     pvStructure = standardPVField->scalar(scalarType,properties);
+    pvRecord = PVRecord::create(recordName,pvStructure);
+    {
+        pvRecord->lock_guard();
+        pvRecord->process();
+    }
+    result = master->addRecord(pvRecord);
+    recordName = "exampleDoubleArray";
+    pvStructure = standardPVField->scalarArray(scalarType,properties);
     pvRecord = PVRecord::create(recordName,pvStructure);
     {
         pvRecord->lock_guard();

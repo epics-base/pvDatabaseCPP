@@ -11,6 +11,7 @@
 
 #include <pv/serverContext.h>
 #include <pv/channelProviderLocal.h>
+#include <pv/channelLocalDebugRecord.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -75,11 +76,13 @@ LocalChannelCTX::LocalChannelCTX(
 
 LocalChannelCTX::~LocalChannelCTX()
 {
+std::cout << "LocalChannelCTX::~LocalChannelCTX()" << std::endl;
     ctx->shutdown();
     // we need thead.waitForCompletion()
     event.wait();
     epicsThreadSleep(1.0);
     ctx.reset();
+    channelProvider.reset();
     delete thread;
 }
 void LocalChannelCTX::run()
@@ -90,11 +93,7 @@ void LocalChannelCTX::run()
     ctx->initialize(getChannelAccess());
     ctx->printInfo();
     ctx->run(0);
-// Matej if I switch which is commented then errors when exit
-// BUT this way causes lots of memory leaks
-    channelProvider->destroy();
-    //ctx->destroy();
-// Matej end of comments
+    ctx->destroy();
     event.signal();
 }
 
@@ -114,18 +113,27 @@ ChannelProviderLocalPtr getChannelProviderLocal()
 
 ChannelProviderLocal::ChannelProviderLocal()
 : pvDatabase(PVDatabase::getMaster()),
-  beingDestroyed(false)
+  beingDestroyed(false),
+  channelLocalDebug(new ChannelLocalDebug())
 {
 }
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
-    destroy();
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "~ChannelProviderLocal()" << std::endl;
+    }
 }
 
 void ChannelProviderLocal::destroy()
 {
     Lock xx(mutex);
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelProviderLocal::destroy";
+        std::cout << " destroyed " << beingDestroyed << std::endl;
+    }
     if(beingDestroyed) return;
     beingDestroyed = true;
     ChannelLocalList::iterator iter;
@@ -135,7 +143,6 @@ void ChannelProviderLocal::destroy()
         (*iter)->destroy();
         channelList.erase(iter);
     }
-
     pvDatabase->destroy();
 }
 
@@ -206,10 +213,15 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord.get()!=NULL) {
         Channel::shared_pointer channel(new ChannelLocal(
-            getPtrSelf(),channelRequester,pvRecord));
+            getPtrSelf(),channelRequester,pvRecord,channelLocalDebug));
         channelRequester->channelCreated(
             Status::Ok,
             channel);
+        if(channelLocalDebug->getLevel()>1)
+        {
+            std::cout << "ChannelProviderLocal::createChannel";
+            std::cout << " channelName " << channelName << std::endl;
+        }
         return channel;
     }   
     Status notFoundStatus(Status::STATUSTYPE_ERROR,String("pv not found"));
@@ -228,9 +240,26 @@ void ChannelProviderLocal::removeChannel(
     for(iter = channelList.begin(); iter!=channelList.end(); ++iter)
     {
         if((*iter).get()==channel.get()) {
+            if(channelLocalDebug->getLevel()>1)
+            {
+                std::cout << "ChannelProviderLocal::createChannel";
+                std::cout << " channelName " << channel->getChannelName() << std::endl;
+            }
             channelList.erase(iter);
             return;
         }
+    }
+}
+
+void ChannelProviderLocal::createChannelLocalDebugRecord(
+    String const &recordName)
+{
+    ChannelLocalDebugRecordPtr pvRecord
+         = ChannelLocalDebugRecord::create(channelLocalDebug,recordName);
+    PVDatabasePtr master = PVDatabase::getMaster();
+    bool result = master->addRecord(pvRecord);
+    if(!result) {
+        cout << "result of addRecord " << recordName << " " << result << endl;
     }
 }
 

@@ -1027,6 +1027,7 @@ void PVCopyMonitor::startMonitoring(
 
 void PVCopyMonitor::stopMonitoring()
 {
+std::cout << "PVCopyMonitor::stopMonitoring()" << std::endl;
     pvRecord->removeListener(getPtrSelf());
 }
 

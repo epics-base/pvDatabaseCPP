@@ -20,10 +20,12 @@ SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h
 INC += pvCopy.h
 INC += monitorAlgorithm.h
+INC += channelLocalDebugRecord.h
 LIBSRCS += channelProviderLocal.cpp
 LIBSRCS += channelLocal.cpp
 LIBSRCS += pvCopy.cpp
 LIBSRCS += monitorFactory.cpp
+LIBSRCS += channelLocalDebugRecord.cpp
 
 
 include $(TOP)/configure/RULES

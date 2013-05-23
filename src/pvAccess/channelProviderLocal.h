@@ -28,8 +28,15 @@
 
 namespace epics { namespace pvDatabase { 
 
+class ChannelLocalDebug;
+typedef std::tr1::shared_ptr<ChannelLocalDebug> ChannelLocalDebugPtr;
+
 class MonitorFactory;
 typedef std::tr1::shared_ptr<MonitorFactory> MonitorFactoryPtr;
+
+class MonitorLocal;
+typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
+
 
 class ChannelProviderLocal;
 typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
@@ -42,6 +49,23 @@ class MonitorLocal;
 typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
 typedef std::set<MonitorLocalPtr> MonitorLocalList;
 
+class ChannelLocalDebug {
+public:
+    ChannelLocalDebug()
+    : channelLocalDebugLevel(0)
+    {}
+    ~ChannelLocalDebug(){}
+    void setLevel(int level)
+    {
+        channelLocalDebugLevel = level;
+    }
+    int getLevel()
+    {
+        return channelLocalDebugLevel;
+    }
+private:
+    int channelLocalDebugLevel;
+};
 
 class MonitorFactory 
 {
@@ -52,13 +76,14 @@ public:
     epics::pvData::MonitorPtr createMonitor(
         PVRecordPtr const & pvRecord,
         epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
-        epics::pvData::PVStructurePtr const & pvRequest);
+        epics::pvData::PVStructurePtr const & pvRequest,
+        ChannelLocalDebugPtr const &channelLocalDebug);
     void registerMonitorAlgorithmCreate(
         MonitorAlgorithmCreatePtr const &monitorAlgorithmCreate);
-    MonitorAlgorithmCreatePtr getMonitorAlgorithmCreate(epics::pvData::String algorithmName);
+    MonitorAlgorithmCreatePtr getMonitorAlgorithmCreate(
+        epics::pvData::String algorithmName);
 private:
     MonitorFactory();
-    void removeMonitor(MonitorLocal * monitor);
     friend class MonitorLocal;
     friend MonitorFactoryPtr getMonitorFactory();
     std::set<MonitorAlgorithmCreatePtr> monitorAlgorithmCreateList;
@@ -93,6 +118,7 @@ public:
         epics::pvData::String const &address);
     void removeChannel(
         epics::pvAccess::Channel::shared_pointer const &channel);
+    void createChannelLocalDebugRecord(epics::pvData::String const &recordName);
 private:
     shared_pointer getPtrSelf()
     {
@@ -104,6 +130,7 @@ private:
     ChannelLocalList channelList;
     epics::pvData::Mutex mutex;
     bool beingDestroyed;
+    ChannelLocalDebugPtr channelLocalDebug;
     friend class ChannelProviderLocalRun;
 };
 
@@ -116,7 +143,8 @@ public:
     ChannelLocal(
         ChannelProviderLocalPtr const &channelProvider,
         epics::pvAccess::ChannelRequester::shared_pointer const & requester,
-        PVRecordPtr const & pvRecord
+        PVRecordPtr const & pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug
     );
     virtual ~ChannelLocal();
     virtual void destroy();
@@ -124,7 +152,10 @@ public:
     virtual void message(
         epics::pvData::String const & message,
         epics::pvData::MessageType messageType);
-    virtual epics::pvAccess::ChannelProvider::shared_pointer getProvider();
+    virtual epics::pvAccess::ChannelProvider::shared_pointer getProvider()
+    {
+        return provider;
+    }
     virtual epics::pvData::String getRemoteAddress();
     virtual epics::pvAccess::Channel::ConnectionState getConnectionState();
     virtual epics::pvData::String getChannelName();
@@ -163,14 +194,12 @@ public:
     void addChannelGet(epics::pvAccess::ChannelGet::shared_pointer const &);
     void addChannelPut(epics::pvAccess::ChannelPut::shared_pointer const &);
     void addChannelPutGet(epics::pvAccess::ChannelPutGet::shared_pointer const &);
-    void addChannelMonitor(epics::pvData::Monitor::shared_pointer const &);
     void addChannelRPC(epics::pvAccess::ChannelRPC::shared_pointer const &);
     void addChannelArray(epics::pvAccess::ChannelArray::shared_pointer const &);
     void removeChannelProcess(epics::pvAccess::ChannelProcess::shared_pointer const &);
     void removeChannelGet(epics::pvAccess::ChannelGet::shared_pointer const &);
     void removeChannelPut(epics::pvAccess::ChannelPut::shared_pointer const &);
     void removeChannelPutGet(epics::pvAccess::ChannelPutGet::shared_pointer const &);
-    void removeChannelMonitor(epics::pvData::Monitor::shared_pointer const &);
     void removeChannelRPC(epics::pvAccess::ChannelRPC::shared_pointer const &);
     void removeChannelArray(epics::pvAccess::ChannelArray::shared_pointer const &);
 protected:
@@ -182,12 +211,12 @@ private:
     ChannelProviderLocalPtr provider;
     epics::pvAccess::ChannelRequester::shared_pointer requester;
     PVRecordPtr pvRecord;
+    ChannelLocalDebugPtr channelLocalDebug;
     bool beingDestroyed;
     std::set<epics::pvAccess::ChannelProcess::shared_pointer> channelProcessList;
     std::set<epics::pvAccess::ChannelGet::shared_pointer> channelGetList;
     std::set<epics::pvAccess::ChannelPut::shared_pointer> channelPutList;
     std::set<epics::pvAccess::ChannelPutGet::shared_pointer> channelPutGetList;
-    std::set<epics::pvData::Monitor::shared_pointer> channelMonitorList;
     std::set<epics::pvAccess::ChannelRPC::shared_pointer> channelRPCList;
     std::set<epics::pvAccess::ChannelArray::shared_pointer> channelArrayList;
     epics::pvData::Mutex mutex;

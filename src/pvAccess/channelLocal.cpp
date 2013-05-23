@@ -39,12 +39,6 @@ typedef std::tr1::shared_ptr<ChannelRPCLocal> ChannelRPCLocalPtr;
 class ChannelArrayLocal;
 typedef std::tr1::shared_ptr<ChannelArrayLocal> ChannelArrayLocalPtr;
 
-class ChannelLocalDebug {
-public:
-    static void setLevel(int level);
-    static int getLevel();
-};
-
 static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
 {
     PVFieldPtr pvField = pvRequest->getSubField("record._options.process");
@@ -69,12 +63,19 @@ class ChannelProcessLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelProcessLocal);
-    virtual ~ChannelProcessLocal() {destroy();}
+    virtual ~ChannelProcessLocal()
+    {
+         if(channelLocalDebug->getLevel()>0)
+         {
+             std::cout << "~ChannelProcessLocal() " << std::endl;
+         }
+    }
     static ChannelProcessLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug);
     virtual void process(bool lastRequest);
     virtual void destroy();
     virtual void lock() {thelock.lock();}
@@ -88,12 +89,14 @@ private:
         ChannelLocalPtr const &channelLocal,
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug,
         int nProcess)
     : 
       isDestroyed(false),
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
+      channelLocalDebug(channelLocalDebug),
       thelock(mutex),
       nProcess(nProcess)
     {
@@ -104,6 +107,7 @@ private:
     ChannelLocalPtr channelLocal;
     ChannelProcessRequester::shared_pointer channelProcessRequester,;
     PVRecordPtr pvRecord;
+    ChannelLocalDebugPtr channelLocalDebug;
     Mutex mutex;
     Lock thelock;
     int nProcess;
@@ -113,7 +117,8 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
     ChannelLocalPtr const &channelLocal,
     ChannelProcessRequester::shared_pointer const & channelProcessRequester,
     PVStructurePtr const & pvRequest,
-    PVRecordPtr const &pvRecord)
+    PVRecordPtr const &pvRecord,
+    ChannelLocalDebugPtr const &channelLocalDebug)
 {
     PVFieldPtr pvField;
     PVStructurePtr pvOptions;
@@ -137,7 +142,13 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
         channelLocal,
         channelProcessRequester,
         pvRecord,
+        channelLocalDebug,
         nProcess));
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelProcessLocal::create";
+        std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
+    }
     channelLocal->addChannelProcess(process);
     channelProcessRequester->channelProcessConnect(Status::Ok, process);
     return process;
@@ -146,6 +157,11 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
 
 void ChannelProcessLocal::destroy()
 {
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelProcessLocal::destroy";
+        std::cout << " destroyed " << isDestroyed << std::endl;
+    }
     if(isDestroyed) return;
     isDestroyed = true;
     channelLocal->removeChannelProcess(getPtrSelf());
@@ -156,6 +172,18 @@ void ChannelProcessLocal::destroy()
 
 void ChannelProcessLocal::process(bool lastRequest)
 {
+    if(isDestroyed) {
+         Status status(
+             Status::Status::STATUSTYPE_ERROR,
+            "was destroyed");
+         channelProcessRequester->processDone(status);
+         return;
+    } 
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelProcessLocal::process";
+        std::cout << " nProcess " << nProcess << std::endl;
+    }
     for(int i=0; i< nProcess; i++) {
         pvRecord->lock();
         pvRecord->beginGroupPut();
@@ -163,12 +191,6 @@ void ChannelProcessLocal::process(bool lastRequest)
         pvRecord->endGroupPut();
         pvRecord->unlock();
     }
-    if(isDestroyed) {
-         Status status(
-             Status::Status::STATUSTYPE_ERROR,
-            "was destroyed");
-         channelProcessRequester->processDone(status);
-    } 
     channelProcessRequester->processDone(Status::Ok);
     if(lastRequest) destroy();
 }
@@ -179,12 +201,19 @@ class ChannelGetLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelGetLocal);
-    virtual ~ChannelGetLocal(){destroy();}
+    virtual ~ChannelGetLocal()
+    {
+         if(channelLocalDebug->getLevel()>0)
+         {
+            std::cout << "~ChannelGetLocal()" << std::endl;
+        }
+    }
     static ChannelGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelGetRequester::shared_pointer const & channelGetRequester,
         PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug);
     virtual void get(bool lastRequest);
     virtual void destroy();
     virtual void lock() {thelock.lock();}
@@ -201,7 +230,8 @@ private:
         PVCopyPtr const &pvCopy,
         PVStructurePtr const&pvStructure,
         BitSetPtr const & bitSet,
-        PVRecordPtr const &pvRecord)
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug)
     : 
       firstTime(true),
       isDestroyed(false),
@@ -212,6 +242,7 @@ private:
       pvStructure(pvStructure),
       bitSet(bitSet),
       pvRecord(pvRecord),
+      channelLocalDebug(channelLocalDebug),
       thelock(mutex)
     {
         thelock.unlock();
@@ -225,6 +256,7 @@ private:
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
     PVRecordPtr pvRecord;
+    ChannelLocalDebugPtr channelLocalDebug;
     Mutex mutex;
     Lock thelock;
 };
@@ -233,7 +265,8 @@ ChannelGetLocalPtr ChannelGetLocal::create(
     ChannelLocalPtr const &channelLocal,
     ChannelGetRequester::shared_pointer const & channelGetRequester,
     PVStructurePtr const & pvRequest,
-    PVRecordPtr const &pvRecord)
+    PVRecordPtr const &pvRecord,
+    ChannelLocalDebugPtr const &channelLocalDebug)
 {
     PVCopyPtr pvCopy = PVCopy::create(
         pvRecord,
@@ -263,7 +296,13 @@ ChannelGetLocalPtr ChannelGetLocal::create(
         pvCopy,
         pvStructure,
         bitSet,
-        pvRecord));
+        pvRecord,
+        channelLocalDebug));
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelGetLocal::create";
+        std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
+    }
     channelLocal->addChannelGet(get);
     channelGetRequester->channelGetConnect(Status::Ok, get, pvStructure,bitSet);
     return get;
@@ -272,6 +311,11 @@ ChannelGetLocalPtr ChannelGetLocal::create(
 
 void ChannelGetLocal::destroy()
 {
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelGetLocal::destroy";
+        std::cout << " destroyed " << isDestroyed << std::endl;
+    }
     if(isDestroyed) return;
     isDestroyed = true;
     channelLocal->removeChannelGet(getPtrSelf());
@@ -290,6 +334,7 @@ void ChannelGetLocal::get(bool lastRequest)
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelGetRequester->getDone(status);
+         return;
     } 
     bitSet->clear();
     pvRecord->lock();
@@ -306,6 +351,10 @@ void ChannelGetLocal::get(bool lastRequest)
         firstTime = false;
     } 
     channelGetRequester->getDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelGetLocal::get" << std::endl;
+    }
     if(lastRequest) destroy();
 }
 
@@ -315,12 +364,19 @@ class ChannelPutLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelPutLocal);
-    virtual ~ChannelPutLocal(){destroy();}
+    virtual ~ChannelPutLocal()
+    {
+         if(channelLocalDebug->getLevel()>0)
+         {
+            std::cout << "~ChannelPutLocal()" << std::endl;
+        }
+    }
     static ChannelPutLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutRequester::shared_pointer const & channelPutRequester,
         PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug);
     virtual void put(bool lastRequest);
     virtual void get();
     virtual void destroy();
@@ -338,7 +394,8 @@ private:
         PVCopyPtr const &pvCopy,
         PVStructurePtr const&pvStructure,
         BitSetPtr const & bitSet,
-        PVRecordPtr const &pvRecord)
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug)
     :
       isDestroyed(false),
       callProcess(callProcess),
@@ -348,6 +405,7 @@ private:
       pvStructure(pvStructure),
       bitSet(bitSet),
       pvRecord(pvRecord),
+      channelLocalDebug(channelLocalDebug),
       thelock(mutex)
     {
         thelock.unlock();
@@ -360,6 +418,7 @@ private:
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
     PVRecordPtr pvRecord;
+    ChannelLocalDebugPtr channelLocalDebug;
     Mutex mutex;
     Lock thelock;
 };
@@ -368,7 +427,8 @@ ChannelPutLocalPtr ChannelPutLocal::create(
     ChannelLocalPtr const &channelLocal,
     ChannelPutRequester::shared_pointer const & channelPutRequester,
     PVStructurePtr const & pvRequest,
-    PVRecordPtr const &pvRecord)
+    PVRecordPtr const &pvRecord,
+    ChannelLocalDebugPtr const &channelLocalDebug)
 {
     PVCopyPtr pvCopy = PVCopy::create(
         pvRecord,
@@ -398,14 +458,25 @@ ChannelPutLocalPtr ChannelPutLocal::create(
         pvCopy,
         pvStructure,
         bitSet,
-        pvRecord));
+        pvRecord,
+        channelLocalDebug));
     channelLocal->addChannelPut(put);
     channelPutRequester->channelPutConnect(Status::Ok, put, pvStructure,bitSet);
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelPutLocal::create";
+        std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
+    }
     return put;
 }
 
 void ChannelPutLocal::destroy()
 {
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelPutLocal::destroy";
+        std::cout << " destroyed " << isDestroyed << std::endl;
+    }
     if(isDestroyed) return;
     isDestroyed = true;
     channelLocal->removeChannelPut(getPtrSelf());
@@ -424,6 +495,7 @@ void ChannelPutLocal::get()
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutRequester->getDone(status);
+         return;
     }
     bitSet->clear();
     bitSet->set(0);
@@ -431,6 +503,10 @@ void ChannelPutLocal::get()
     pvCopy->updateCopyFromBitSet(pvStructure, bitSet, false);
     pvRecord->unlock();
     channelPutRequester->getDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelPutLocal::get" << std::endl;
+    }
 }
 
 void ChannelPutLocal::put(bool lastRequest)
@@ -440,6 +516,7 @@ void ChannelPutLocal::put(bool lastRequest)
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutRequester->getDone(status);
+         return;
     }
     pvRecord->lock();
     pvRecord->beginGroupPut();
@@ -449,7 +526,11 @@ void ChannelPutLocal::put(bool lastRequest)
     }
     pvRecord->endGroupPut();
     pvRecord->unlock();
-    channelPutRequester->getDone(Status::Ok);
+    channelPutRequester->putDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelPutLocal::get" << std::endl;
+    }
     if(lastRequest) destroy();
 }
 
@@ -460,12 +541,19 @@ class ChannelPutGetLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelPutGetLocal);
-    virtual ~ChannelPutGetLocal(){destroy();}
+    virtual ~ChannelPutGetLocal()
+    {
+         if(channelLocalDebug->getLevel()>0)
+         {
+            std::cout << "~ChannelPutGetLocal()" << std::endl;
+        }
+    }
     static ChannelPutGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
         PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug);
     virtual void putGet(bool lastRequest);
     virtual void getPut();
     virtual void getGet();
@@ -487,7 +575,8 @@ private:
         PVStructurePtr const&pvGetStructure,
         BitSetPtr const & putBitSet,
         BitSetPtr const & getBitSet,
-        PVRecordPtr const &pvRecord)
+        PVRecordPtr const &pvRecord,
+        ChannelLocalDebugPtr const &channelLocalDebug)
     : 
       isDestroyed(false),
       callProcess(callProcess),
@@ -500,6 +589,7 @@ private:
       putBitSet(putBitSet),
       getBitSet(getBitSet),
       pvRecord(pvRecord),
+      channelLocalDebug(channelLocalDebug),
       thelock(mutex)
     {
         thelock.unlock();
@@ -515,6 +605,7 @@ private:
     BitSetPtr putBitSet;
     BitSetPtr getBitSet;
     PVRecordPtr pvRecord;
+    ChannelLocalDebugPtr channelLocalDebug;
     Mutex mutex;
     Lock thelock;
 };
@@ -523,7 +614,8 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
     ChannelLocalPtr const &channelLocal,
     ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
     PVStructurePtr const & pvRequest,
-    PVRecordPtr const &pvRecord)
+    PVRecordPtr const &pvRecord,
+    ChannelLocalDebugPtr const &channelLocalDebug)
 {
     PVCopyPtr pvPutCopy = PVCopy::create(
         pvRecord,
@@ -562,7 +654,13 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
         pvGetStructure,
         putBitSet,
         getBitSet,
-        pvRecord));
+        pvRecord,
+        channelLocalDebug));
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelPutGetLocal::create";
+        std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
+    }
     channelLocal->addChannelPutGet(putGet);
     channelPutGetRequester->channelPutGetConnect(
         Status::Ok, putGet, pvPutStructure,pvGetStructure);
@@ -572,6 +670,11 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
 
 void ChannelPutGetLocal::destroy()
 {
+    if(channelLocalDebug->getLevel()>0)
+    {
+        std::cout << "ChannelPutGetLocal::destroy";
+        std::cout << " destroyed " << isDestroyed << std::endl;
+    }
     if(isDestroyed) return;
     isDestroyed = true;
     channelLocal->removeChannelPutGet(getPtrSelf());
@@ -593,6 +696,7 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->putGetDone(status);
+         return;
     } 
     putBitSet->clear();
     putBitSet->set(0);
@@ -606,6 +710,10 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
     getBitSet->clear();
     getBitSet->set(0);
     channelPutGetRequester->putGetDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelPutGetLocal::putGet" << std::endl;
+    }
     if(lastRequest) destroy();
 }
 
@@ -616,6 +724,7 @@ void ChannelPutGetLocal::getPut()
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->getPutDone(status);
+         return;
     } 
     pvRecord->lock();
     pvPutCopy->updateCopySetBitSet(pvPutStructure, putBitSet, false);
@@ -623,6 +732,10 @@ void ChannelPutGetLocal::getPut()
     putBitSet->clear();
     putBitSet->set(0);
     channelPutGetRequester->getPutDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelPutGetLocal::getPut" << std::endl;
+    }
 }
 
 void ChannelPutGetLocal::getGet()
@@ -632,6 +745,7 @@ void ChannelPutGetLocal::getGet()
              Status::Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->getGetDone(status);
+         return;
     } 
     pvRecord->lock();
     pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
@@ -639,6 +753,10 @@ void ChannelPutGetLocal::getGet()
     getBitSet->clear();
     getBitSet->set(0);
     channelPutGetRequester->getGetDone(Status::Ok);
+    if(channelLocalDebug->getLevel()>1)
+    {
+        std::cout << "ChannelPutGetLocal::getGet" << std::endl;
+    }
 }
 
 class ChannelRPCLocal :
@@ -657,38 +775,32 @@ public:
         bool lastRequest);
 };
 
-int ChannelLocalDebugLevel = 0;
-void ChannelLocalDebug::setLevel(int level) {ChannelLocalDebugLevel = level;}
-int ChannelLocalDebug::getLevel() {return ChannelLocalDebugLevel;}
-
-
 
 ChannelLocal::ChannelLocal(
     ChannelProviderLocalPtr const & provider,
     ChannelRequester::shared_pointer const & requester,
-    PVRecordPtr const & pvRecord)
+    PVRecordPtr const & pvRecord,
+    ChannelLocalDebugPtr const &channelLocalDebug)
 :   provider(provider),
     requester(requester),
     pvRecord(pvRecord),
+    channelLocalDebug(channelLocalDebug),
     beingDestroyed(false)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::ChannelLocal\n");
-    }
 }
 
 ChannelLocal::~ChannelLocal()
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::~ChannelLocal\n");
+    if(channelLocalDebug->getLevel()>0) {
+        std::cout << "~ChannelLocal()" << std::endl;
     }
 }
 
 void ChannelLocal::destroy()
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::destroy beingDestroyed %s\n",
-         (beingDestroyed ? "true" : "false"));
+    if(channelLocalDebug->getLevel()>0) {
+         std::cout << "ChannelLocal::destroy() ";
+         std::cout << "beingDestroyed " << beingDestroyed << std::endl;
     }
     {
         Lock xx(mutex);
@@ -724,13 +836,6 @@ void ChannelLocal::destroy()
         channelPutGetList.erase(it);
     }
     while(true) {
-        std::set<Monitor::shared_pointer>::iterator it;
-        it = channelMonitorList.begin();
-        if(it==channelMonitorList.end()) break;
-        it->get()->destroy();
-        channelMonitorList.erase(it);
-    }
-    while(true) {
         std::set<ChannelRPC::shared_pointer>::iterator it;
         it = channelRPCList.begin();
         if(it==channelRPCList.end()) break;
@@ -750,8 +855,8 @@ void ChannelLocal::destroy()
 
 void ChannelLocal::addChannelProcess(ChannelProcess::shared_pointer const & channelProcess)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelProcess\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelProcess() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -760,8 +865,8 @@ void ChannelLocal::addChannelProcess(ChannelProcess::shared_pointer const & chan
 
 void ChannelLocal::addChannelGet(ChannelGet::shared_pointer const &channelGet)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelGet\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelGet() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -770,8 +875,8 @@ void ChannelLocal::addChannelGet(ChannelGet::shared_pointer const &channelGet)
 
 void ChannelLocal::addChannelPut(ChannelPut::shared_pointer const &channelPut)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelPut\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelPut() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -780,28 +885,18 @@ void ChannelLocal::addChannelPut(ChannelPut::shared_pointer const &channelPut)
 
 void ChannelLocal::addChannelPutGet(ChannelPutGet::shared_pointer const &channelPutGet)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelPutGet\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelPutGet() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
     channelPutGetList.insert(channelPutGet);
 }
 
-void ChannelLocal::addChannelMonitor(Monitor::shared_pointer const &monitor)
-{
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelMonitor\n");
-    }
-    Lock xx(mutex);
-    if(beingDestroyed) return;
-    channelMonitorList.insert(monitor);
-}
-
 void ChannelLocal::addChannelRPC(ChannelRPC::shared_pointer const &channelRPC)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelRPC\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelRPC() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -810,8 +905,8 @@ void ChannelLocal::addChannelRPC(ChannelRPC::shared_pointer const &channelRPC)
 
 void ChannelLocal::addChannelArray(ChannelArray::shared_pointer const &channelArray)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::addChannelArray\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::addChannelArray() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -820,8 +915,8 @@ void ChannelLocal::addChannelArray(ChannelArray::shared_pointer const &channelAr
 
 void ChannelLocal::removeChannelProcess(ChannelProcess::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelProcess\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelProcess() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -830,8 +925,8 @@ void ChannelLocal::removeChannelProcess(ChannelProcess::shared_pointer const &re
 
 void ChannelLocal::removeChannelGet(ChannelGet::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelGet\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelGet() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -840,8 +935,8 @@ void ChannelLocal::removeChannelGet(ChannelGet::shared_pointer const &ref)
 
 void ChannelLocal::removeChannelPut(ChannelPut::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelPut\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelPut() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -850,28 +945,18 @@ void ChannelLocal::removeChannelPut(ChannelPut::shared_pointer const &ref)
 
 void ChannelLocal::removeChannelPutGet(ChannelPutGet::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelPutGet\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelPutGet() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
     channelPutGetList.erase(ref);
 }
 
-void ChannelLocal::removeChannelMonitor(Monitor::shared_pointer const &ref)
-{
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelMonitor\n");
-    }
-    Lock xx(mutex);
-    if(beingDestroyed) return;
-    channelMonitorList.erase(ref);
-}
-
 void ChannelLocal::removeChannelRPC(ChannelRPC::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelRPC\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelRPC() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -880,8 +965,8 @@ void ChannelLocal::removeChannelRPC(ChannelRPC::shared_pointer const &ref)
 
 void ChannelLocal::removeChannelArray(ChannelArray::shared_pointer const &ref)
 {
-    if(ChannelLocalDebug::getLevel()>0) {
-         printf("ChannelLocal::removeChannelArray\n");
+    if(channelLocalDebug->getLevel()>1) {
+         std::cout << "ChannelLocal::removeChannelArray() " << std::endl;
     }
     Lock xx(mutex);
     if(beingDestroyed) return;
@@ -898,11 +983,6 @@ void ChannelLocal::message(
         MessageType messageType)
 {
     requester->message(message,messageType);
-}
-
-ChannelProvider::shared_pointer ChannelLocal::getProvider()
-{
-    return provider;
 }
 
 String ChannelLocal::getRemoteAddress()
@@ -963,7 +1043,8 @@ ChannelProcess::shared_pointer ChannelLocal::createChannelProcess(
             getPtrSelf(),
             channelProcessRequester,
             pvRequest,
-            pvRecord);
+            pvRecord,
+            channelLocalDebug);
     return channelProcess;
 }
 
@@ -976,7 +1057,8 @@ ChannelGet::shared_pointer ChannelLocal::createChannelGet(
             getPtrSelf(),
             channelGetRequester,
             pvRequest,
-            pvRecord);
+            pvRecord,
+            channelLocalDebug);
     return channelGet;
 }
 
@@ -989,7 +1071,8 @@ ChannelPut::shared_pointer ChannelLocal::createChannelPut(
             getPtrSelf(),
             channelPutRequester,
             pvRequest,
-            pvRecord);
+            pvRecord,
+            channelLocalDebug);
     return channelPut;
 }
 
@@ -1002,7 +1085,8 @@ ChannelPutGet::shared_pointer ChannelLocal::createChannelPutGet(
             getPtrSelf(),
             channelPutGetRequester,
             pvRequest,
-            pvRecord);
+            pvRecord,
+            channelLocalDebug);
     return channelPutGet;
 }
 
@@ -1021,7 +1105,11 @@ Monitor::shared_pointer ChannelLocal::createMonitor(
         PVStructure::shared_pointer const &pvRequest)
 {
     MonitorPtr monitor = 
-        getMonitorFactory()->createMonitor(pvRecord,monitorRequester,pvRequest);
+        getMonitorFactory()->createMonitor(
+            pvRecord,
+            monitorRequester,
+            pvRequest,
+            channelLocalDebug);
     return monitor;
 }
 
@@ -1040,7 +1128,7 @@ ChannelArray::shared_pointer ChannelLocal::createChannelArray(
 
 void ChannelLocal::printInfo()
 {
-    printf("ChannelLocal provides access to service\n");
+    std::cout << "ChannelLocal provides access to service" << std::endl;
 }
 
 void ChannelLocal::printInfo(StringBuilder out)
