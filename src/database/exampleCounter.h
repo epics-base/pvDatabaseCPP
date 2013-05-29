@@ -63,7 +63,6 @@ ExampleCounter::ExampleCounter(
 
 ExampleCounter::~ExampleCounter()
 {
-    destroy();
 }
 
 void ExampleCounter::destroy()

@@ -86,7 +86,15 @@ void PVRecord::destroy()
         (*clientIter)->detach(getPtrSelf());
         lock();
     }
-    pvListenerList.clear();
+    std::list<PVListenerPtr>::iterator listenerIter;
+    while(true) {
+        listenerIter = pvListenerList.begin();
+        if(listenerIter==pvListenerList.end()) break;
+        pvListenerList.erase(listenerIter);
+        unlock();
+        (*listenerIter)->unlisten(getPtrSelf());
+        lock();
+    }
     pvRecordStructure->destroy();
     pvRecordStructure.reset();
     convert.reset();
@@ -491,6 +499,7 @@ void PVRecordStructure::destroy()
     for(iter = pvRecordFields->begin() ; iter !=pvRecordFields->end(); iter++) {
         (*iter)->destroy();
     }
+    PVRecordField::destroy();
     pvRecordFields.reset();
     pvStructure.reset();
 }

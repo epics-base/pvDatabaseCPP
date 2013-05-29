@@ -11,7 +11,7 @@
 
 #include <pv/serverContext.h>
 #include <pv/channelProviderLocal.h>
-#include <pv/channelLocalDebugRecord.h>
+#include <pv/channelLocalTraceRecord.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -81,6 +81,8 @@ std::cout << "LocalChannelCTX::~LocalChannelCTX()" << std::endl;
     // we need thead.waitForCompletion()
     event.wait();
     epicsThreadSleep(1.0);
+std::cout << "LocalChannelCTX::run() calling channelProvider->destroy()" << std::endl;
+    if(channelProvider!=NULL) channelProvider->destroy();
     ctx.reset();
     channelProvider.reset();
     delete thread;
@@ -114,13 +116,13 @@ ChannelProviderLocalPtr getChannelProviderLocal()
 ChannelProviderLocal::ChannelProviderLocal()
 : pvDatabase(PVDatabase::getMaster()),
   beingDestroyed(false),
-  channelLocalDebug(new ChannelLocalDebug())
+  channelLocalTrace(new ChannelLocalTrace())
 {
 }
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
-    if(channelLocalDebug->getLevel()>0)
+    if(channelLocalTrace->getLevel()>0)
     {
         std::cout << "~ChannelProviderLocal()" << std::endl;
     }
@@ -129,7 +131,7 @@ ChannelProviderLocal::~ChannelProviderLocal()
 void ChannelProviderLocal::destroy()
 {
     Lock xx(mutex);
-    if(channelLocalDebug->getLevel()>0)
+    if(channelLocalTrace->getLevel()>0)
     {
         std::cout << "ChannelProviderLocal::destroy";
         std::cout << " destroyed " << beingDestroyed << std::endl;
@@ -156,6 +158,10 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     ChannelFindRequester::shared_pointer  const &channelFindRequester)
 {
     Lock xx(mutex);
+    if(channelLocalTrace->getLevel()>2)
+    {
+        std::cout << "ChannelProviderLocal::channelFind" << std::endl;
+    }
     bool found = false;
     ChannelLocalList::iterator iter;
     for(iter = channelList.begin(); iter!=channelList.end(); ++iter)
@@ -203,25 +209,19 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     String const &address)
 {
     Lock xx(mutex);
-    ChannelLocalList::iterator iter;
-    for(iter = channelList.begin(); iter!=channelList.end(); ++iter)
-    {
-        if((*iter)->getChannelName().compare(channelName)==0) {
-            return *iter;
-        }
-    }
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord.get()!=NULL) {
-        Channel::shared_pointer channel(new ChannelLocal(
-            getPtrSelf(),channelRequester,pvRecord,channelLocalDebug));
+        ChannelLocalPtr channel(new ChannelLocal(
+            getPtrSelf(),channelRequester,pvRecord,channelLocalTrace));
         channelRequester->channelCreated(
             Status::Ok,
             channel);
-        if(channelLocalDebug->getLevel()>1)
+        if(channelLocalTrace->getLevel()>1)
         {
             std::cout << "ChannelProviderLocal::createChannel";
             std::cout << " channelName " << channelName << std::endl;
         }
+        channelList.insert(channel);
         return channel;
     }   
     Status notFoundStatus(Status::STATUSTYPE_ERROR,String("pv not found"));
@@ -235,14 +235,19 @@ void ChannelProviderLocal::removeChannel(
     Channel::shared_pointer const & channel)
 {
     Lock xx(mutex);
+    if(channelLocalTrace->getLevel()>0)
+    {
+        std::cout << "ChannelProviderLocal::removeChannel";
+        std::cout << " destroyed " << beingDestroyed << std::endl;
+    }
     if(beingDestroyed) return;
     ChannelLocalList::iterator iter;
     for(iter = channelList.begin(); iter!=channelList.end(); ++iter)
     {
         if((*iter).get()==channel.get()) {
-            if(channelLocalDebug->getLevel()>1)
+            if(channelLocalTrace->getLevel()>1)
             {
-                std::cout << "ChannelProviderLocal::createChannel";
+                std::cout << "ChannelProviderLocal::removeChannel";
                 std::cout << " channelName " << channel->getChannelName() << std::endl;
             }
             channelList.erase(iter);
@@ -251,11 +256,11 @@ void ChannelProviderLocal::removeChannel(
     }
 }
 
-void ChannelProviderLocal::createChannelLocalDebugRecord(
+void ChannelProviderLocal::createChannelLocalTraceRecord(
     String const &recordName)
 {
-    ChannelLocalDebugRecordPtr pvRecord
-         = ChannelLocalDebugRecord::create(channelLocalDebug,recordName);
+    ChannelLocalTraceRecordPtr pvRecord
+         = ChannelLocalTraceRecord::create(channelLocalTrace,recordName);
     PVDatabasePtr master = PVDatabase::getMaster();
     bool result = master->addRecord(pvRecord);
     if(!result) {

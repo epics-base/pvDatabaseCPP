@@ -122,7 +122,9 @@ int main(int argc,char *argv[])
         cout <<  " current " << psr->getCurrent();
         cout << endl;
     }
-    psr->destroy();
+    PVDatabasePtr pvDatabase = PVDatabase::getMaster();
+    pvDatabase->addRecord(psr);
+    pvDatabase->destroy();
     return 0;
 }
 

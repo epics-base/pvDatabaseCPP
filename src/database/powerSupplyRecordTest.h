@@ -70,7 +70,6 @@ PowerSupplyRecordTest::PowerSupplyRecordTest(
 
 PowerSupplyRecordTest::~PowerSupplyRecordTest()
 {
-   destroy();
 }
 
 void PowerSupplyRecordTest::destroy()

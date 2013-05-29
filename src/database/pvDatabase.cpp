@@ -38,7 +38,6 @@ PVDatabase::PVDatabase()
 
 PVDatabase::~PVDatabase()
 {
-    destroy();
 }
 
 void PVDatabase::destroy()

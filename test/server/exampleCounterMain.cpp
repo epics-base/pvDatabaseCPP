@@ -33,7 +33,7 @@ int main(int argc,char *argv[])
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
-    channelProvider->createChannelLocalDebugRecord("channelLocalDebug");
+    channelProvider->createChannelLocalTraceRecord("channelLocalTrace");
     String recordName("exampleCounter");
     PVRecordPtr pvRecord = ExampleCounter::create(recordName);
     bool result = master->addRecord(pvRecord);

@@ -1,4 +1,4 @@
-/* channelListDebugRecord.cpp */
+/* channelListTraceRecord.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -9,7 +9,7 @@
  * @date 2013.04.18
  */
 
-#include <pv/channelLocalDebugRecord.h>
+#include <pv/channelLocalTraceRecord.h>
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
@@ -18,8 +18,8 @@ using namespace std;
 
 namespace epics { namespace pvDatabase { 
 
-ChannelLocalDebugRecordPtr ChannelLocalDebugRecord::create(
-    ChannelLocalDebugPtr const &channelLocalDebug,
+ChannelLocalTraceRecordPtr ChannelLocalTraceRecord::create(
+    ChannelLocalTracePtr const &channelLocalTrace,
     epics::pvData::String const & recordName)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
@@ -31,31 +31,31 @@ ChannelLocalDebugRecordPtr ChannelLocalDebugRecord::create(
     StructureConstPtr topStructure =
         fieldCreate->createStructure(argNames,argFields);
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
-    ChannelLocalDebugRecordPtr pvRecord(
-        new ChannelLocalDebugRecord(channelLocalDebug,recordName,pvStructure));
+    ChannelLocalTraceRecordPtr pvRecord(
+        new ChannelLocalTraceRecord(channelLocalTrace,recordName,pvStructure));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
-ChannelLocalDebugRecord::ChannelLocalDebugRecord(
-    ChannelLocalDebugPtr const &channelLocalDebug,
+ChannelLocalTraceRecord::ChannelLocalTraceRecord(
+    ChannelLocalTracePtr const &channelLocalTrace,
     epics::pvData::String const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure),
-  channelLocalDebug(channelLocalDebug)
+  channelLocalTrace(channelLocalTrace)
 {
 }
 
-ChannelLocalDebugRecord::~ChannelLocalDebugRecord()
+ChannelLocalTraceRecord::~ChannelLocalTraceRecord()
 {
 }
 
-void ChannelLocalDebugRecord::destroy()
+void ChannelLocalTraceRecord::destroy()
 {
     PVRecord::destroy();
 }
 
-bool ChannelLocalDebugRecord::init()
+bool ChannelLocalTraceRecord::init()
 {
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
@@ -65,9 +65,9 @@ bool ChannelLocalDebugRecord::init()
     return true;
 }
 
-void ChannelLocalDebugRecord::process()
+void ChannelLocalTraceRecord::process()
 {
-    channelLocalDebug->setLevel(pvValue->get());
+    channelLocalTrace->setLevel(pvValue->get());
 }
 
 

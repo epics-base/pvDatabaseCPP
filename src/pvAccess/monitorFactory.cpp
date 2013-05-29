@@ -130,7 +130,7 @@ public:
     MonitorLocal(
         MonitorRequester::shared_pointer const & channelMonitorRequester,
         PVRecordPtr const &pvRecord,
-        ChannelLocalDebugPtr const &channelLocalDebug);
+        ChannelLocalTracePtr const &channelLocalTrace);
     PVCopyPtr getPVCopy() { return pvCopy;}
     PVCopyMonitorPtr getPVCopyMonitor() { return pvCopyMonitor;}
 private:
@@ -140,7 +140,7 @@ private:
     }
     MonitorRequester::shared_pointer monitorRequester;
     PVRecordPtr pvRecord;
-    ChannelLocalDebugPtr channelLocalDebug;
+    ChannelLocalTracePtr channelLocalTrace;
     bool isDestroyed;
     bool firstMonitor;
     PVCopyPtr pvCopy;
@@ -153,10 +153,10 @@ private:
 MonitorLocal::MonitorLocal(
     MonitorRequester::shared_pointer const & channelMonitorRequester,
     PVRecordPtr const &pvRecord,
-    ChannelLocalDebugPtr const &channelLocalDebug)
+    ChannelLocalTracePtr const &channelLocalTrace)
 : monitorRequester(channelMonitorRequester),
   pvRecord(pvRecord),
-  channelLocalDebug(channelLocalDebug),
+  channelLocalTrace(channelLocalTrace),
   isDestroyed(false),
   firstMonitor(true)
 {
@@ -314,7 +314,7 @@ std::cout << "MonitorFactory::destroy " << isDestroyed << std::endl;
     if(isDestroyed) return;
     isDestroyed = true;
     while(true) {
-        std::set<MonitorLocalPtr>::iterator it;
+        std::multiset<MonitorLocalPtr>::iterator it;
         it = monitorLocalList.begin();
         if(it==monitorLocalList.end()) break;
         monitorLocalList.erase(it);
@@ -328,7 +328,7 @@ MonitorPtr MonitorFactory::createMonitor(
     PVRecordPtr const & pvRecord,
     MonitorRequester::shared_pointer const & monitorRequester,
     PVStructurePtr const & pvRequest,
-    ChannelLocalDebugPtr const &channelLocalDebug)
+    ChannelLocalTracePtr const &channelLocalTrace)
 {
     Lock xx(mutex);
     if(isDestroyed) {
@@ -336,10 +336,10 @@ MonitorPtr MonitorFactory::createMonitor(
         return nullMonitor;
     }
     MonitorLocalPtr monitor(new MonitorLocal(
-        monitorRequester,pvRecord,channelLocalDebug));
+        monitorRequester,pvRecord,channelLocalTrace));
     bool result = monitor->init(pvRequest);
     if(!result) return nullMonitor;
-    if(channelLocalDebug->getLevel()>0)
+    if(channelLocalTrace->getLevel()>0)
     {
         std::cout << "MonitorFactory::createMonitor";
         std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
@@ -361,7 +361,7 @@ MonitorAlgorithmCreatePtr MonitorFactory::getMonitorAlgorithmCreate(
 {
     Lock xx(mutex);
     if(isDestroyed) return nullMonitorAlgorithmCreate;
-//    std::set<MonitorAlgorithmCreatePtr>::iterator iter;
+//    std::multiset<MonitorAlgorithmCreatePtr>::iterator iter;
 //    for(iter = monitorAlgorithmCreateList.begin();
 //    iter!= monitorAlgorithmCreateList.end();
 //    ++iter)
