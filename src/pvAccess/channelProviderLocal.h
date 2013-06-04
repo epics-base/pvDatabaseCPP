@@ -137,6 +137,7 @@ private:
 
 class ChannelLocal :
   public epics::pvAccess::Channel,
+  public PVRecordClient,
   public std::tr1::enable_shared_from_this<ChannelLocal>
 {
 public:
@@ -190,6 +191,7 @@ public:
         epics::pvData::PVStructurePtr const &pvRequest);
     virtual void printInfo();
     virtual void printInfo(epics::pvData::StringBuilder out);
+    virtual void detach(PVRecordPtr const &pvRecord);
     // following called by derived classes
     void addChannelProcess(epics::pvAccess::ChannelProcess::shared_pointer const &);
     void addChannelGet(epics::pvAccess::ChannelGet::shared_pointer const &);

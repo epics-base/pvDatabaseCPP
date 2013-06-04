@@ -807,6 +807,7 @@ void ChannelLocal::destroy()
         if(beingDestroyed) return;
         beingDestroyed = true;
     }
+    pvRecord->removePVRecordClient(getPtrSelf());
     while(true) {
         std::multiset<ChannelProcess::shared_pointer>::iterator it;
         it = channelProcessList.begin();
@@ -852,6 +853,10 @@ void ChannelLocal::destroy()
     provider->removeChannel(getPtrSelf());
 }
 
+void ChannelLocal::detach(PVRecordPtr const & pvRecord)
+{
+    destroy();
+}
 
 void ChannelLocal::addChannelProcess(ChannelProcess::shared_pointer const & channelProcess)
 {

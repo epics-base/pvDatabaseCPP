@@ -221,6 +221,7 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
             std::cout << "ChannelProviderLocal::createChannel";
             std::cout << " channelName " << channelName << std::endl;
         }
+        pvRecord->addPVRecordClient(channel);
         channelList.insert(channel);
         return channel;
     }   
