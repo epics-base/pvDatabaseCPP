@@ -14,11 +14,8 @@
 #include <stdexcept>
 #include <memory>
 
-#include <pv/pvType.h>
-#include <pv/pvIntrospect.h>
-#include <pv/pvData.h>
-
 #include <pv/pvDatabase.h>
+#include <pv/pvAccess.h>
 
 namespace epics { namespace pvDatabase { 
 

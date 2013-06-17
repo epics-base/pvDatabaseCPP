@@ -21,84 +21,38 @@ using namespace std;
 
 static String providerName("local");
 
-class LocalChannelCTX;
-typedef std::tr1::shared_ptr<LocalChannelCTX> LocalChannelCTXPtr;
+class LocalChannelProviderFactory;
+typedef std::tr1::shared_ptr<LocalChannelProviderFactory> LocalChannelProviderFactoryPtr;
 
-class LocalChannelCTX :
-    public epics::pvData::Runnable,
-    public std::tr1::enable_shared_from_this<LocalChannelCTX>
+class LocalChannelProviderFactory : public ChannelProviderFactory
 {
+    
 public:
-    POINTER_DEFINITIONS(LocalChannelCTX);
-    static LocalChannelCTXPtr create(
-        ChannelProviderLocalPtr const &channelProvider);
-    ChannelProviderLocalPtr getChannelProviderLocal() {return channelProvider;}
-    virtual ~LocalChannelCTX();
-    virtual void run();
-private:
-    LocalChannelCTX(
-        ChannelProviderLocalPtr const &channelProvider);
-    shared_pointer getPtrSelf()
+    POINTER_DEFINITIONS(LocalChannelProviderFactory);
+    virtual String getFactoryName() { return providerName;}
+    static LocalChannelProviderFactoryPtr create(
+        ChannelProviderLocalPtr const &channelProvider)
     {
-        return shared_from_this();
+        LocalChannelProviderFactoryPtr xxx(
+            new LocalChannelProviderFactory(channelProvider));
+        registerChannelProviderFactory(xxx);
+        return xxx;
     }
-    epics::pvData::Event event;
+    virtual  ChannelProvider::shared_pointer sharedInstance()
+    {
+        return channelProvider;
+    }
+    virtual  ChannelProvider::shared_pointer newInstance()
+    {
+        return channelProvider;
+    }
+private:
+    LocalChannelProviderFactory(
+        ChannelProviderLocalPtr const &channelProvider)
+    : channelProvider(channelProvider)
+    {}
     ChannelProviderLocalPtr channelProvider;
-    epics::pvAccess::ServerContextImpl::shared_pointer ctx;
-    epics::pvData::Thread *thread;
 };
-
-LocalChannelCTXPtr LocalChannelCTX::create(
-    ChannelProviderLocalPtr const & channelProvider)
-{
-    static LocalChannelCTXPtr pvServiceChannelCTX;
-    static Mutex mutex;
-    Lock xx(mutex);
-
-   if(pvServiceChannelCTX.get()==0) {
-      pvServiceChannelCTX = LocalChannelCTXPtr(
-          new LocalChannelCTX(channelProvider));
-   }
-   return pvServiceChannelCTX;
-}
-
-LocalChannelCTX::LocalChannelCTX(
-    ChannelProviderLocalPtr const &channelProvider)
-:
-  channelProvider(channelProvider),
-  ctx(ServerContextImpl::create()),
-  thread(new Thread(
-      String("pvServiceChannel"),
-      lowerPriority,
-      this,
-      epicsThreadStackBig))
-{}
-
-LocalChannelCTX::~LocalChannelCTX()
-{
-std::cout << "LocalChannelCTX::~LocalChannelCTX()" << std::endl;
-    ctx->shutdown();
-    // we need thead.waitForCompletion()
-    event.wait();
-    epicsThreadSleep(1.0);
-std::cout << "LocalChannelCTX::run() calling channelProvider->destroy()" << std::endl;
-    if(channelProvider!=NULL) channelProvider->destroy();
-    ctx.reset();
-    channelProvider.reset();
-    delete thread;
-}
-void LocalChannelCTX::run()
-{
-    registerChannelProvider(channelProvider);
-    String providerName = channelProvider->getProviderName();
-    ctx->setChannelProviderName(providerName);
-    ctx->initialize(getChannelAccess());
-    ctx->printInfo();
-    ctx->run(0);
-    ctx->destroy();
-    event.signal();
-}
-
 
 ChannelProviderLocalPtr getChannelProviderLocal()
 {
@@ -108,7 +62,7 @@ ChannelProviderLocalPtr getChannelProviderLocal()
     if(channelProviderLocal.get()==NULL) {
         channelProviderLocal = ChannelProviderLocalPtr(
             new ChannelProviderLocal());
-        LocalChannelCTX::create(channelProviderLocal);
+        LocalChannelProviderFactory::create(channelProviderLocal);
     }
     return channelProviderLocal;
 }

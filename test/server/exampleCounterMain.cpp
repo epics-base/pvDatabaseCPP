@@ -22,6 +22,7 @@
 #include <pv/standardPVField.h>
 #include <pv/exampleCounter.h>
 #include <pv/channelProviderLocal.h>
+#include <pv/serverContext.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -39,6 +40,7 @@ int main(int argc,char *argv[])
     bool result = master->addRecord(pvRecord);
     cout << "result of addRecord " << recordName << " " << result << endl;
     pvRecord.reset();
+    startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleServer\n";
     string str;
     while(true) {

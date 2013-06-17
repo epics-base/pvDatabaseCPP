@@ -13,7 +13,6 @@
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
-using namespace epics::pvAccess;
 using namespace std;
 
 namespace epics { namespace pvDatabase { 
@@ -91,7 +90,10 @@ bool RecordListRecord::init()
 void RecordListRecord::process()
 {
     PVStringArrayPtr pvNames = PVDatabase::getMaster()->getRecordNames();
-    names->replace(pvNames->viewUnsafe());
+std::vector<String> const & xxx = pvNames->getVector();
+size_t n = xxx.size();
+names->put(0,n,xxx,0);
+//    names->replace(pvNames->viewUnsafe()); for pvDataCPP-md
     String message("");
     if(database->get().compare("master")!=0) {
         message += " can only access master ";

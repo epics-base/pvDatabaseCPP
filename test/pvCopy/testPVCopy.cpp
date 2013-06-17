@@ -194,15 +194,18 @@ static void testPVScalarArray(
     BitSetPtr bitSet;
     String builder;
     size_t offset;
+ConvertPtr convert = getConvert();
     size_t n = 5;
-    shared_vector<double> values(n);
+DoubleArray values(n);
+//    shared_vector<double> values(n);
 
     pvRecord->lock_guard();
     cout << endl;
     pvStructureRecord = pvRecord->getPVRecordStructure()->getPVStructure();
     pvValueRecord = pvStructureRecord->getScalarArrayField(valueNameRecord,scalarType);
     for(size_t i=0; i<n; i++) values[i] = i;
-    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
+convert->fromDoubleArray(pvValueRecord,0,n,get(values),0);
+//     pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
     StructureConstPtr structure = pvCopy->getStructure();
     builder.clear(); structure->toString(&builder);
     cout << "structure from copy" << endl << builder << endl;
@@ -214,7 +217,8 @@ static void testPVScalarArray(
     cout << "after initCopy pvValueCopy " << builder << endl;
     cout << endl;
     for(size_t i=0; i<n; i++) values[i] = i + .06;
-    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
+convert->fromDoubleArray(pvValueRecord,0,n,get(values),0);
+//    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
     pvCopy->updateCopySetBitSet(pvStructureCopy,bitSet,true);
     builder.clear(); pvValueCopy->toString(&builder);
     cout << "after put(i+ .06) pvValueCopy " << builder << endl;
@@ -233,7 +237,8 @@ static void testPVScalarArray(
     cout << endl;
     bitSet->clear();
     for(size_t i=0; i<n; i++) values[i] = i + 1.0;
-    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
+convert->fromDoubleArray(pvValueRecord,0,n,get(values),0);
+//    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
     builder.clear();
     bitSet->toString(&builder);
     cout << "before updateCopyFromBitSet";
@@ -257,7 +262,8 @@ static void testPVScalarArray(
     cout << " bitSet " << builder;
     cout << endl;
     for(size_t i=0; i<n; i++) values[i] = i + 2.0;
-    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
+convert->fromDoubleArray(pvValueRecord,0,n,get(values),0);
+//    pvValueRecord->PVScalarArray::putFrom<pvDouble>(values);
     bitSet->set(0);
     cout << "before updateRecord";
     builder.clear(); pvValueRecord->toString(&builder);

@@ -15,7 +15,7 @@
 #include <map>
 #include <deque>
 
-#include <pv/pvAccess.h>
+#include <pv/pvData.h>
 #include <pv/convert.h>
 
 namespace epics { namespace pvDatabase { 

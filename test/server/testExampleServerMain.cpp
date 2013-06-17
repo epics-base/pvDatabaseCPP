@@ -24,6 +24,7 @@
 #include <pv/powerSupplyRecordTest.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/recordList.h>
+#include <pv/serverContext.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -83,6 +84,7 @@ int main(int argc,char *argv[])
         pvRecord->process();
     }
     result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     recordName = "exampleDoubleArray";
     pvStructure = standardPVField->scalarArray(scalarType,properties);
     pvRecord = PVRecord::create(recordName,pvStructure);
@@ -91,6 +93,7 @@ int main(int argc,char *argv[])
         pvRecord->process();
     }
     result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     recordName = "examplePowerSupply";
     pvStructure = createPowerSupply();
     PowerSupplyRecordTestPtr psr =
@@ -101,8 +104,11 @@ int main(int argc,char *argv[])
     }
     result = master->addRecord(psr);
     recordName = "laptoprecordListPGRPC";
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     pvRecord = RecordListRecord::create(recordName);
     result = master->addRecord(pvRecord);
+    ServerContext::shared_pointer ctx =
+        startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleServer\n";
     PVStringArrayPtr pvNames = master->getRecordNames();
     String buffer;
@@ -115,6 +121,7 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
+    ctx->destroy();
     return 0;
 }
 
