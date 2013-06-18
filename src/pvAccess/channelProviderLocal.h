@@ -52,7 +52,7 @@ typedef std::multiset<MonitorLocalPtr> MonitorLocalList;
 class ChannelLocalTrace {
 public:
     ChannelLocalTrace()
-    : channelLocalTraceLevel(0)
+    : channelLocalTraceLevel(3)
     {}
     ~ChannelLocalTrace(){}
     void setLevel(int level)

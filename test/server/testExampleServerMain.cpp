@@ -121,7 +121,10 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
+    channelProvider->destroy();
+    channelProvider.reset();
     ctx->destroy();
+    ctx.reset();
     return 0;
 }
 
