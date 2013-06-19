@@ -17,7 +17,9 @@ namespace epics { namespace pvDatabase {
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
-using namespace std;
+using std::tr1::static_pointer_cast;
+using std::cout;
+using std::endl;
 
 static String providerName("local");
 
@@ -76,9 +78,9 @@ ChannelProviderLocal::ChannelProviderLocal()
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
-    if(channelLocalTrace->getLevel()>0)
+//    if(channelLocalTrace->getLevel()>0)
     {
-        std::cout << "~ChannelProviderLocal()" << std::endl;
+        cout << "~ChannelProviderLocal()" << endl;
     }
 }
 
@@ -87,8 +89,8 @@ void ChannelProviderLocal::destroy()
     Lock xx(mutex);
     if(channelLocalTrace->getLevel()>0)
     {
-        std::cout << "ChannelProviderLocal::destroy";
-        std::cout << " destroyed " << beingDestroyed << std::endl;
+        cout << "ChannelProviderLocal::destroy";
+        cout << " destroyed " << beingDestroyed << endl;
     }
     if(beingDestroyed) return;
     beingDestroyed = true;
@@ -96,8 +98,12 @@ void ChannelProviderLocal::destroy()
     while(true) {
         iter = channelList.begin();
         if(iter==channelList.end()) break;
+        if(channelLocalTrace->getLevel()>0)
+        {
+            cout << "ChannelProviderLocal destroying channel " << (*iter).get();
+            cout << " channelName " << (*iter)->getChannelName() << endl;
+        }
         (*iter)->destroy();
-        channelList.erase(iter);
     }
     pvDatabase->destroy();
 }
@@ -114,7 +120,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     Lock xx(mutex);
     if(channelLocalTrace->getLevel()>2)
     {
-        std::cout << "ChannelProviderLocal::channelFind" << std::endl;
+        cout << "ChannelProviderLocal::channelFind" << endl;
     }
     bool found = false;
     ChannelLocalList::iterator iter;
@@ -172,8 +178,8 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
             channel);
         if(channelLocalTrace->getLevel()>1)
         {
-            std::cout << "ChannelProviderLocal::createChannel";
-            std::cout << " channelName " << channelName << std::endl;
+            cout << "ChannelProviderLocal::createChannel " << channel.get();
+            cout << " channelName " << channelName << endl;
         }
         pvRecord->addPVRecordClient(channel);
         channelList.insert(channel);
@@ -192,8 +198,8 @@ void ChannelProviderLocal::removeChannel(
     Lock xx(mutex);
     if(channelLocalTrace->getLevel()>0)
     {
-        std::cout << "ChannelProviderLocal::removeChannel";
-        std::cout << " destroyed " << beingDestroyed << std::endl;
+        cout << "ChannelProviderLocal::removeChannel " << channel.get();
+        cout << " destroyed " << beingDestroyed << endl;
     }
     if(beingDestroyed) return;
     ChannelLocalList::iterator iter;
@@ -202,8 +208,8 @@ void ChannelProviderLocal::removeChannel(
         if((*iter).get()==channel.get()) {
             if(channelLocalTrace->getLevel()>1)
             {
-                std::cout << "ChannelProviderLocal::removeChannel";
-                std::cout << " channelName " << channel->getChannelName() << std::endl;
+                cout << "ChannelProviderLocal::removeChannel " << (*iter).get();
+                cout << " channelName " << channel->getChannelName() << endl;
             }
             channelList.erase(iter);
             return;

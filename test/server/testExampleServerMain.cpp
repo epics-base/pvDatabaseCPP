@@ -121,10 +121,12 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
-    channelProvider->destroy();
-    channelProvider.reset();
+cout << "calling ctx->destroy()" << endl;
     ctx->destroy();
-    ctx.reset();
+    epicsThreadSleep(1.0);
+cout << "calling channelProvider->destroy()" << endl;
+    channelProvider->destroy();
+    epicsThreadSleep(1.0);
     return 0;
 }
 
