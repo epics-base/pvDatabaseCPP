@@ -13,13 +13,16 @@
 #include <memory>
 #include <sstream>
 
-#include <pv/pvCopy.h>
+#include <pv/channelProviderLocal.h>
+
 
 namespace epics { namespace pvDatabase { 
 
 using namespace epics::pvData;
 using std::tr1::static_pointer_cast;
 using std::size_t;
+using std::cout;
+using std::endl;
 
 static PVCopyPtr NULLPVCopy;
 static FieldConstPtr NULLField;
@@ -73,9 +76,19 @@ PVCopyPtr PVCopy::create(
     return pvCopy;
 }
 
-PVCopy::PVCopy(PVRecordPtr const &pvRecord)
+PVCopy::PVCopy(
+    PVRecordPtr const &pvRecord)
 : pvRecord(pvRecord)
 {
+}
+
+void PVCopy::destroy()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "PVCopy::destroy" << endl;
+    }
+    headNode.reset();
 }
 
 PVRecordPtr PVCopy::getPVRecord()
@@ -990,24 +1003,41 @@ PVCopyMonitor::PVCopyMonitor(
   pvCopy(pvCopy),
   pvCopyMonitorRequester(pvCopyMonitorRequester),
   isGroupPut(false),
-  dataChanged(false)
+  dataChanged(false),
+  isMonitoring(false)
 {
 }
 
 PVCopyMonitor::~PVCopyMonitor()
 {
-    pvRecord.reset();
-    headNode.reset();
-    pvCopy.reset();
-    pvCopyMonitorRequester.reset();
-    changeBitSet.reset();
-    overrunBitSet.reset();
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "~PVCopyMonitor" << endl;
+    }
 }
 
+void PVCopyMonitor::destroy()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "PVCopyMonitor::destroy()" << endl;
+    }
+    stopMonitoring();
+    pvCopyMonitorRequester.reset();
+    pvCopy.reset();
+}
+ 
 void PVCopyMonitor::startMonitoring(
     BitSetPtr const  &changeBitSet,
     BitSetPtr const  &overrunBitSet)
 {
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "PVCopyMonitor::startMonitoring()" << endl;
+    }
+    Lock xx(mutex);
+    if(isMonitoring) return;
+    isMonitoring = true;
     this->changeBitSet = changeBitSet;
     this->overrunBitSet = overrunBitSet;
     isGroupPut = false;
@@ -1027,7 +1057,13 @@ void PVCopyMonitor::startMonitoring(
 
 void PVCopyMonitor::stopMonitoring()
 {
-std::cout << "PVCopyMonitor::stopMonitoring()" << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "PVCopyMonitor::stopMonitoring()" << endl;
+    }
+    Lock xx(mutex);
+    if(!isMonitoring) return;
+    isMonitoring = false;
     pvRecord->removeListener(getPtrSelf());
 }
 
@@ -1048,6 +1084,10 @@ void PVCopyMonitor::switchBitSets(
 
 void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)
 {
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "PVCopyMonitor::detach()" << endl;
+    }
 }
 
 void PVCopyMonitor::dataPut(PVRecordFieldPtr const & pvRecordField)

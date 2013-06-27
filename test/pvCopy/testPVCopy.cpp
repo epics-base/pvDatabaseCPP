@@ -25,9 +25,7 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
-#include <pv/pvData.h>
-#include <pv/pvAccess.h>
-#include <pv/pvCopy.h>
+#include <pv/channelProviderLocal.h>
 #include <pv/powerSupplyRecordTest.h>
 
 

@@ -38,6 +38,7 @@ PVRecord::PVRecord(
   convert(getConvert()),
   thelock(mutex),
   depthGroupPut(0),
+  traceLevel(0),
   isDestroyed(false)
 {
     thelock.unlock();

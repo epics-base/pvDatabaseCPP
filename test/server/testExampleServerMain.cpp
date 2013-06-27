@@ -20,10 +20,11 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
-#include <pv/exampleCounter.h>
 #include <pv/powerSupplyRecordTest.h>
 #include <pv/channelProviderLocal.h>
+#include <pv/exampleCounter.h>
 #include <pv/recordList.h>
+#include <pv/traceRecord.h>
 #include <pv/serverContext.h>
 
 using namespace std;
@@ -63,13 +64,16 @@ int main(int argc,char *argv[])
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
-    channelProvider->createChannelLocalTraceRecord("channelLocalTrace");
-    StandardPVFieldPtr standardPVField = getStandardPVField();
-    String properties;
-    ScalarType scalarType;
     PVRecordPtr pvRecord;
     String recordName;
     bool result(false);
+    recordName = "traceRecordPGRPC";
+    pvRecord = TraceRecord::create(recordName);
+    result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
+    StandardPVFieldPtr standardPVField = getStandardPVField();
+    String properties;
+    ScalarType scalarType;
     recordName = "exampleCounter";
     pvRecord = ExampleCounter::create(recordName);
     result = master->addRecord(pvRecord);
@@ -103,10 +107,11 @@ int main(int argc,char *argv[])
         return 1;
     }
     result = master->addRecord(psr);
-    recordName = "laptoprecordListPGRPC";
     if(!result) cout<< "record " << recordName << " not added" << endl;
+    recordName = "laptoprecordListPGRPC";
     pvRecord = RecordListRecord::create(recordName);
     result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     ServerContext::shared_pointer ctx =
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleServer\n";
@@ -121,12 +126,9 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
-cout << "calling ctx->destroy()" << endl;
     ctx->destroy();
     epicsThreadSleep(1.0);
-cout << "calling channelProvider->destroy()" << endl;
     channelProvider->destroy();
-    epicsThreadSleep(1.0);
     return 0;
 }
 

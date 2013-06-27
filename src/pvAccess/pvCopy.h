@@ -14,8 +14,8 @@
 #include <stdexcept>
 #include <memory>
 
-#include <pv/pvDatabase.h>
 #include <pv/pvAccess.h>
+#include <pv/pvDatabase.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -48,6 +48,7 @@ public:
         epics::pvData::PVStructurePtr const &pvRequest,
         epics::pvData::String const & structureName);
     virtual ~PVCopy(){}
+    virtual void destroy();
     PVRecordPtr getPVRecord();
     epics::pvData::StructureConstPtr getStructure();
     epics::pvData::PVStructurePtr createPVStructure();
@@ -163,6 +164,7 @@ class PVCopyMonitor :
 public:
     POINTER_DEFINITIONS(PVCopyMonitor);
     virtual ~PVCopyMonitor();
+    virtual void destroy();
     void startMonitoring(
         epics::pvData::BitSetPtr const &changeBitSet,
         epics::pvData::BitSetPtr const &overrunBitSet);
@@ -202,12 +204,15 @@ private:
     epics::pvData::BitSetPtr overrunBitSet;
     bool isGroupPut;
     bool dataChanged;
+    bool isMonitoring;
+    epics::pvData::Mutex mutex;
 };
 
 class PVCopyMonitorRequester
 {
 public:
     POINTER_DEFINITIONS(PVCopyMonitorRequester);
+    virtual ~PVCopyMonitorRequester() {}
     virtual void dataChanged() = 0;
     virtual void unlisten() = 0;
 };

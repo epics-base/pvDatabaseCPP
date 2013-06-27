@@ -9,23 +9,27 @@ pvDatabase_LIBS += Com pvData pvAccess
 
 SRC_DIRS += $(DATABASE)/database
 INC += pvDatabase.h
-INC += powerSupplyRecordTest.h
-INC += exampleCounter.h
-INC += recordList.h
 LIBSRCS += pvRecord.cpp
 LIBSRCS += pvDatabase.cpp
-LIBSRCS += recordList.cpp
 
 SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h
 INC += pvCopy.h
 INC += monitorAlgorithm.h
-INC += channelLocalTraceRecord.h
 LIBSRCS += channelProviderLocal.cpp
 LIBSRCS += channelLocal.cpp
 LIBSRCS += pvCopy.cpp
 LIBSRCS += monitorFactory.cpp
-LIBSRCS += channelLocalTraceRecord.cpp
+
+SRC_DIRS += $(DATABASE)/special
+INC += recordList.h
+INC += traceRecord.h
+INC += powerSupplyRecordTest.h
+LIBSRCS += recordList.cpp
+LIBSRCS += traceRecord.cpp
+
+SRC_DIRS += $(DATABASE)/example
+INC += exampleCounter.h
 
 
 include $(TOP)/configure/RULES

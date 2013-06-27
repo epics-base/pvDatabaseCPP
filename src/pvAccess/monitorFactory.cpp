@@ -20,7 +20,8 @@ namespace epics { namespace pvDatabase {
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
-using std::tr1::dynamic_pointer_cast;
+using std::cout;
+using std::endl;
 
 static MonitorAlgorithmCreatePtr nullMonitorAlgorithmCreate;
 static MonitorPtr nullMonitor;
@@ -129,8 +130,7 @@ public:
     bool init(PVStructurePtr const & pvRequest);
     MonitorLocal(
         MonitorRequester::shared_pointer const & channelMonitorRequester,
-        PVRecordPtr const &pvRecord,
-        ChannelLocalTracePtr const &channelLocalTrace);
+        PVRecordPtr const &pvRecord);
     PVCopyPtr getPVCopy() { return pvCopy;}
     PVCopyMonitorPtr getPVCopyMonitor() { return pvCopyMonitor;}
 private:
@@ -140,23 +140,19 @@ private:
     }
     MonitorRequester::shared_pointer monitorRequester;
     PVRecordPtr pvRecord;
-    ChannelLocalTracePtr channelLocalTrace;
     bool isDestroyed;
     bool firstMonitor;
     PVCopyPtr pvCopy;
     MonitorQueuePtr queue;
     PVCopyMonitorPtr pvCopyMonitor;
-//    std::list<MonitorFieldNodePtr> monitorFieldList;
     Mutex mutex;
 };
 
 MonitorLocal::MonitorLocal(
     MonitorRequester::shared_pointer const & channelMonitorRequester,
-    PVRecordPtr const &pvRecord,
-    ChannelLocalTracePtr const &channelLocalTrace)
+    PVRecordPtr const &pvRecord)
 : monitorRequester(channelMonitorRequester),
   pvRecord(pvRecord),
-  channelLocalTrace(channelLocalTrace),
   isDestroyed(false),
   firstMonitor(true)
 {
@@ -164,12 +160,18 @@ MonitorLocal::MonitorLocal(
 
 MonitorLocal::~MonitorLocal()
 {
-std::cout << "MonitorLocal::~MonitorLocal()" << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "MonitorLocal::~MonitorLocal()" << endl;
+    }
 }
 
 void MonitorLocal::destroy()
 {
-std::cout << "MonitorLocal::destroy " << isDestroyed << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "MonitorLocal::destroy " << isDestroyed << endl;
+    }
     {
         Lock xx(mutex);
         if(isDestroyed) return;
@@ -177,24 +179,29 @@ std::cout << "MonitorLocal::destroy " << isDestroyed << std::endl;
     }
     unlisten();
     stop();
-//    monitorFieldList.clear();
+    pvCopyMonitor->destroy();
+    pvCopy->destroy();
     pvCopyMonitor.reset();
     queue.reset();
     pvCopy.reset();
-    monitorRequester.reset();
-    pvRecord.reset();
 }
 
 Status MonitorLocal::start()
 {
-//std::cout << "MonitorLocal::start" << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "MonitorLocal::start() "  << endl;
+    }
     firstMonitor = true;
     return queue->start();
 }
 
 Status MonitorLocal::stop()
 {
-std::cout << "MonitorLocal::stop" << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "MonitorLocal::stop() "  << endl;
+    }
     pvCopyMonitor->stopMonitoring();
     queue->stop();
     return Status::Ok;
@@ -202,13 +209,19 @@ std::cout << "MonitorLocal::stop" << std::endl;
 
 MonitorElementPtr MonitorLocal::poll()
 {
-//std::cout << "MonitorLocal::poll" << std::endl;
+    if(pvRecord->getTraceLevel()>1)
+    {
+        cout << "MonitorLocal::poll() "  << endl;
+    }
     return queue->poll();
 }
 
 void MonitorLocal::dataChanged()
 {
-//std::cout << "MonitorLocal::dataChanged" << std::endl;
+    if(pvRecord->getTraceLevel()>1)
+    {
+        cout << "MonitorLocal::dataChanged() "  << endl;
+    }
     if(firstMonitor) {
     	queue->dataChanged();
     	firstMonitor = false;
@@ -222,13 +235,19 @@ void MonitorLocal::dataChanged()
 
 void MonitorLocal::unlisten()
 {
-std::cout << "MonitorLocal::unlisten" << std::endl;
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "MonitorLocal::unlisten() "  << endl;
+    }
     monitorRequester->unlisten(getPtrSelf());
 }
 
 void MonitorLocal::release(MonitorElementPtr const & monitorElement)
 {
-//std::cout << "MonitorLocal::release" << std::endl;
+    if(pvRecord->getTraceLevel()>1)
+    {
+        cout << "MonitorLocal::release() "  << endl;
+    }
     queue->release(monitorElement);
 }
 
@@ -309,26 +328,15 @@ MonitorFactory::~MonitorFactory()
 
 void MonitorFactory::destroy()
 {
-std::cout << "MonitorFactory::destroy " << isDestroyed << std::endl;
     Lock lock(mutex);
     if(isDestroyed) return;
     isDestroyed = true;
-    while(true) {
-        std::multiset<MonitorLocalPtr>::iterator it;
-        it = monitorLocalList.begin();
-        if(it==monitorLocalList.end()) break;
-        monitorLocalList.erase(it);
-        lock.unlock();
-            it->get()->destroy();
-        lock.lock();
-    }
 }
 
 MonitorPtr MonitorFactory::createMonitor(
     PVRecordPtr const & pvRecord,
     MonitorRequester::shared_pointer const & monitorRequester,
-    PVStructurePtr const & pvRequest,
-    ChannelLocalTracePtr const &channelLocalTrace)
+    PVStructurePtr const & pvRequest)
 {
     Lock xx(mutex);
     if(isDestroyed) {
@@ -336,15 +344,14 @@ MonitorPtr MonitorFactory::createMonitor(
         return nullMonitor;
     }
     MonitorLocalPtr monitor(new MonitorLocal(
-        monitorRequester,pvRecord,channelLocalTrace));
+        monitorRequester,pvRecord));
     bool result = monitor->init(pvRequest);
     if(!result) return nullMonitor;
-    if(channelLocalTrace->getLevel()>0)
+    if(pvRecord->getTraceLevel()>0)
     {
-        std::cout << "MonitorFactory::createMonitor";
-        std::cout << " recordName " << pvRecord->getRecordName() << std::endl;
+        cout << "MonitorFactory::createMonitor";
+        cout << " recordName " << pvRecord->getRecordName() << endl;
     }
-    monitorLocalList.insert(monitor);
     return monitor;
 }
 

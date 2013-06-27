@@ -67,6 +67,11 @@ public:
      */
     virtual void process() {}
     /**
+     *  Destroy the PVRecord. Release any resources used and 
+     *  get rid of listeners and requesters.
+     */
+    virtual void destroy();
+    /**
      * Creates a <b>dump</b> record, i.e. a record where process does nothing. 
      * @param recordName The name of the record, which is also the channelName.
      * @param pvStructure The top level structure.
@@ -79,11 +84,6 @@ public:
      * The Destructor. Must be virtual.
      */
     virtual ~PVRecord();
-    /**
-     *  Destroy the PVRecord. Release any resources used and 
-     *  get rid of listeners and requesters.
-     */
-    virtual void destroy();
     /**
      * Get the name of the record.
      * @return The name.
@@ -218,6 +218,16 @@ public:
      * @param indentLevel The indentation level.
      */
     void toString(epics::pvData::StringBuilder buf,int indentLevel);
+    /**
+     * get trace level (0,1,2) means (nothing,lifetime,process)
+     * @return the level
+     */
+    int getTraceLevel() {return traceLevel;}
+    /**
+     * set trace level (0,1) means (lifetime,process)
+     * @param level The level
+     */
+    void setTraceLevel(int level) {traceLevel = level;}
 protected:
     /**
      * Constructor
@@ -254,6 +264,7 @@ private:
     epics::pvData::Mutex mutex;
     epics::pvData::Lock thelock;
     std::size_t depthGroupPut;
+    int traceLevel;
     bool isDestroyed;
 };
 

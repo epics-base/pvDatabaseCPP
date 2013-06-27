@@ -1,4 +1,4 @@
-/* channelLocalTraceRecord.h */
+/* traceRecord.h */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -8,39 +8,39 @@
  * @author mrk
  * @date 2013.04.18
  */
-#ifndef CHANNELLOCALTRACERECORD_H
-#define CHANNELLOCALTRACERECORD_H
+#ifndef TRACERECORD_H
+#define TRACERECORD_H
 
 #include <pv/channelProviderLocal.h>
 
 namespace epics { namespace pvDatabase { 
 
 
-class ChannelLocalTraceRecord;
-typedef std::tr1::shared_ptr<ChannelLocalTraceRecord> ChannelLocalTraceRecordPtr;
+class TraceRecord;
+typedef std::tr1::shared_ptr<TraceRecord> TraceRecordPtr;
 
-class ChannelLocalTraceRecord :
+class TraceRecord :
     public PVRecord
 {
 public:
-    POINTER_DEFINITIONS(ChannelLocalTraceRecord);
-    static ChannelLocalTraceRecordPtr create(
-        ChannelLocalTracePtr const &channelLocalTrace,
+    POINTER_DEFINITIONS(TraceRecord);
+    static TraceRecordPtr create(
         epics::pvData::String const & recordName);
-    virtual ~ChannelLocalTraceRecord();
+    virtual ~TraceRecord();
     virtual void destroy();
     virtual bool init();
     virtual void process();
 private:
-    ChannelLocalTraceRecord(
-        ChannelLocalTracePtr const &channelLocalTrace,
+    TraceRecord(
         epics::pvData::String const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    ChannelLocalTracePtr channelLocalTrace;
-    epics::pvData::PVIntPtr pvValue;
+    PVDatabasePtr pvDatabase;
+    epics::pvData::PVStringPtr pvRecordName;
+    epics::pvData::PVIntPtr pvLevel;
+    epics::pvData::PVStringPtr pvResult;
     bool isDestroyed;
 };
 
 }}
 
-#endif  /* CHANNELLOCALTRACERECORD_H */
+#endif  /* TRACERECORD_H */
