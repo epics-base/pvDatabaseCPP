@@ -20,6 +20,7 @@ namespace epics { namespace pvDatabase {
 
 using namespace epics::pvData;
 using std::tr1::static_pointer_cast;
+using std::tr1::dynamic_pointer_cast;
 using std::size_t;
 using std::cout;
 using std::endl;
@@ -35,13 +36,11 @@ struct CopyNode {
     CopyNode()
     : isStructure(false),
       structureOffset(0),
-      nfields(0),
-      shareData(false)
+      nfields(0)
     {}
     bool isStructure;
     size_t structureOffset; // In the copy
     size_t nfields;
-    bool shareData;
     PVStructurePtr options;
 };
     
@@ -734,23 +733,7 @@ void PVCopy::referenceImmutable(
         CopyRecordNodePtr recordNode = 
              static_pointer_cast<CopyRecordNode>(node);
         PVRecordFieldPtr recordPVField = recordNode->recordPVField;
-        bool shareData = false;
-        if(node->options.get()!=NULL) {
-            PVFieldPtr pv = node->options->getSubField("_options");
-            if(pv.get()!=NULL) {
-                PVStructurePtr xxx = static_pointer_cast<PVStructure>(pv);
-                pv = xxx->getSubField("shareData");
-                if(pv.get()!=NULL) {
-                    PVStringPtr yyy = xxx->getStringField("shareData");
-                    shareData = (yyy->get().compare("true")==0) ? true : false;
-                }
-            }
-        }
-    	if(shareData) {
-            makeShared(pvField,recordNode->recordPVField);
-        } else {
-            referenceImmutable(pvField,recordPVField);
-        }
+        referenceImmutable(pvField,recordPVField);
     }
 }
 
@@ -780,13 +763,6 @@ void PVCopy::referenceImmutable(
     }
 }
 
-void PVCopy::makeShared(
-    PVFieldPtr const &copyPVField,
-    PVRecordFieldPtr const &recordPVField)
-{
-    throw std::logic_error(String("Not Implemented"));
-}
-
 void PVCopy::updateStructureNodeSetBitSet(
     PVStructurePtr const &pvCopy,
     CopyStructureNodePtr const &structureNode,
@@ -803,24 +779,7 @@ void PVCopy::updateStructureNodeSetBitSet(
         } else {
             CopyRecordNodePtr recordNode =
                 static_pointer_cast<CopyRecordNode>(node);
-            bool shareData = false;
-            if(node->options.get()!=NULL) {
-                PVFieldPtr pv = node->options->getSubField("_options");
-                if(pv.get()!=NULL) {
-                    PVStructurePtr xxx =
-                        static_pointer_cast<PVStructure>(pv);
-                    pv = xxx->getSubField("shareData");
-                    if(pv.get()!=NULL) {
-                        PVStringPtr yyy = xxx->getStringField("shareData");
-                        shareData = (yyy->get().compare("true")==0) ? true : false;
-                    }
-                }
-            }
-            if(shareData) {
-            	bitSet->set(pvField->getFieldOffset());
-            } else {
-                updateSubFieldSetBitSet(pvField,recordNode->recordPVField,bitSet);
-            }
+            updateSubFieldSetBitSet(pvField,recordNode->recordPVField,bitSet);
         }
     }
 }

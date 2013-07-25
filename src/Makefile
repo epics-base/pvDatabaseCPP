@@ -7,6 +7,10 @@ LIBRARY_IOC += pvDatabase
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 pvDatabase_LIBS += Com pvData pvAccess
 
+SRC_DIRS += $(DATABASE)/pvData
+INC += pvSubArrayCopy.h
+LIBSRCS += pvSubArrayCopy.cpp
+
 SRC_DIRS += $(DATABASE)/database
 INC += pvDatabase.h
 LIBSRCS += pvRecord.cpp
@@ -17,9 +21,13 @@ INC += channelProviderLocal.h
 INC += pvCopy.h
 INC += monitorAlgorithm.h
 LIBSRCS += channelProviderLocal.cpp
-LIBSRCS += channelLocal.cpp
 LIBSRCS += pvCopy.cpp
+LIBSRCS += channelLocal.cpp
 LIBSRCS += monitorFactory.cpp
+
+SRC_DIRS += $(DATABASE)/v3IOC
+DBD += PVAServerRegister.dbd
+LIBSRCS += PVAServerRegister.cpp
 
 SRC_DIRS += $(DATABASE)/special
 INC += recordList.h
@@ -27,10 +35,6 @@ INC += traceRecord.h
 INC += powerSupplyRecordTest.h
 LIBSRCS += recordList.cpp
 LIBSRCS += traceRecord.cpp
-
-SRC_DIRS += $(DATABASE)/example
-INC += exampleCounter.h
-
 
 include $(TOP)/configure/RULES
 

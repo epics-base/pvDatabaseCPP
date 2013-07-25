@@ -1,0 +1,3 @@
+registrar("startPVAServerRegister")
+registrar("stopPVAServerRegister")
+registrar("pvdblRegister")

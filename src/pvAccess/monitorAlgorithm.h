@@ -6,7 +6,7 @@
  */
 /**
  * @author Marty Kraimer
- * @data 2013.04
+ * @date 2013.04
  */
 #ifndef MONITORALGORITHM_H
 #define MONITORALGORITHM_H

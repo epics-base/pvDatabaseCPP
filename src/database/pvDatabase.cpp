@@ -6,7 +6,7 @@
  */
 /**
  * @author mrk
- * @data 2012.11.21
+ * @date 2012.11.21
  */
 
 #include <pv/pvDatabase.h>
@@ -85,13 +85,13 @@ PVStringArrayPtr PVDatabase::getRecordNames()
     PVStringArrayPtr pvStringArray = static_pointer_cast<PVStringArray>
         (getPVDataCreate()->createPVScalarArray(pvString));
     size_t len = recordMap.size();
-    std::vector<String> names(len);
+    shared_vector<String> names(len);
     PVRecordMap::iterator iter;
     size_t i = 0;
     for(iter = recordMap.begin(); iter!=recordMap.end(); ++iter) {
         names[i++] = (*iter).first;
     }
-    pvStringArray->put(0,len,names,0);
+    pvStringArray->replace(names);
     return pvStringArray;
 }
 

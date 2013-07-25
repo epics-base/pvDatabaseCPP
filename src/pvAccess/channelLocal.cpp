@@ -15,11 +15,13 @@
 
 #include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
+#include <pv/pvSubArrayCopy.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
+using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
 
@@ -759,6 +761,8 @@ void ChannelPutGetLocal::getGet()
     }
 }
 
+typedef std::tr1::shared_ptr<PVArray> PVArrayPtr;
+
 class ChannelArrayLocal :
     public ChannelArray,
     public std::tr1::enable_shared_from_this<ChannelArrayLocal>
@@ -791,8 +795,8 @@ private:
     ChannelArrayLocal(
         ChannelLocalPtr const &channelLocal,
         ChannelArrayRequester::shared_pointer const & channelArrayRequester,
-        PVScalarArrayPtr const &pvArray,
-        PVScalarArrayPtr const &pvCopy,
+        PVArrayPtr const &pvArray,
+        PVArrayPtr const &pvCopy,
         PVRecordPtr const &pvRecord)
     : 
       isDestroyed(false),
@@ -810,12 +814,13 @@ private:
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelArrayRequester::shared_pointer channelArrayRequester,;
-    PVScalarArrayPtr pvArray;
-    PVScalarArrayPtr pvCopy;
+    PVArrayPtr pvArray;
+    PVArrayPtr pvCopy;
     PVRecordPtr pvRecord;
     Mutex mutex;
     Lock thelock;
 };
+
 
 ChannelArrayLocalPtr ChannelArrayLocal::create(
     ChannelLocalPtr const &channelLocal,
@@ -852,18 +857,26 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
         channelArrayRequester->channelArrayConnect(status,channelArray,pvArray);
         return channelArray;
     }
-    if(pvField->getField()->getType()!=scalarArray)
+    if(pvField->getField()->getType()!=scalarArray && pvField->getField()->getType()!=structureArray)
     {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,fieldName +" not scalarArray");
+            Status::Status::STATUSTYPE_ERROR,fieldName +" not array");
         ChannelArrayLocalPtr channelArray;
-        PVScalarArrayPtr pvArray;
+        PVArrayPtr pvArray;
         channelArrayRequester->channelArrayConnect(status,channelArray,pvArray);
         return channelArray;
     }
-    PVScalarArrayPtr pvArray = static_pointer_cast<PVScalarArray>(pvField);
-    PVScalarArrayPtr pvCopy = getPVDataCreate()->createPVScalarArray(
-        pvArray->getScalarArray()->getElementType());
+    PVArrayPtr pvArray = static_pointer_cast<PVArray>(pvField);
+    PVArrayPtr pvCopy;
+    if(pvField->getField()->getType()==scalarArray) {
+        PVScalarArrayPtr xxx = static_pointer_cast<PVScalarArray>(pvField);
+        pvCopy = getPVDataCreate()->createPVScalarArray(
+            xxx->getScalarArray()->getElementType());
+    } else {
+        PVStructureArrayPtr xxx = static_pointer_cast<PVStructureArray>(pvField);
+        pvCopy = getPVDataCreate()->createPVStructureArray(
+            xxx->getStructureArray());
+    }
     
     ChannelArrayLocalPtr array(new ChannelArrayLocal(
         channelLocal,
@@ -913,8 +926,13 @@ void ChannelArrayLocal::getArray(bool lastRequest,int offset, int count)
     }
     pvRecord->lock();
     try {
-        size_t len = getConvert()->copyScalarArray(pvArray,offset,pvCopy,0,count);
-        if(!pvCopy->isImmutable()) pvCopy->setLength(len);
+        if(count<0) count = pvArray->getLength();
+        size_t capacity = pvArray->getCapacity();
+        if(capacity!=0) {
+            pvCopy->setCapacity(capacity);
+            pvCopy->setLength(count);
+            copy(*pvArray.get(),offset,*pvCopy.get(),0,count);
+        }
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -937,10 +955,12 @@ void ChannelArrayLocal::putArray(bool lastRequest,int offset, int count)
     {
        cout << "ChannelArrayLocal::putArray" << endl;
     }
-    if(count<=0) count = pvCopy->getLength();
     pvRecord->lock();
     try {
-        getConvert()->copyScalarArray(pvCopy,0,pvArray,offset,count);
+        if(count<=0) count = pvCopy->getLength();
+        if(pvArray->getCapacity()<count) pvArray->setCapacity(count);
+        if(pvArray->getLength()<count) pvArray->setLength(count);
+        copy(*pvCopy.get(),0,*pvArray.get(),offset,count);
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -964,20 +984,21 @@ void ChannelArrayLocal::setLength(bool lastRequest,int length, int capacity)
     {
        cout << "ChannelArrayLocal::setLength" << endl;
     }
-    if(capacity>=0 && !pvArray->isCapacityMutable()) {
-         Status status(
-             Status::Status::STATUSTYPE_ERROR,
-            "capacityImnutable");
-         channelArrayRequester->setLengthDone(status);
-         return;
-    }
     pvRecord->lock();
     try {
-        if(length>0) {
-            if(pvArray->getLength()!=length) pvArray->setLength(length);
+        if(capacity>=0 && !pvArray->isCapacityMutable()) {
+             Status status(
+                 Status::Status::STATUSTYPE_ERROR,
+                "capacityImnutable");
+             channelArrayRequester->setLengthDone(status);
+             pvRecord->unlock();
+             return;
         }
         if(capacity>0) {
             if(pvArray->getCapacity()!=capacity) pvArray->setCapacity(capacity);
+        }
+        if(length>0) {
+            if(pvArray->getLength()!=length) pvArray->setLength(length);
         }
     } catch(...) {
         pvRecord->unlock();

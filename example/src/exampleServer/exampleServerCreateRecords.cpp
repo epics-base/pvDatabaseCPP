@@ -1,4 +1,4 @@
-/*testExampleRecordMain.cpp */
+/*exampleServerCreateRecords.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -6,6 +6,7 @@
  */
 /**
  * @author mrk
+ * @date 2013.07.24
  */
 
 /* Author: Marty Kraimer */
@@ -16,6 +17,7 @@
 #include <string>
 #include <cstdio>
 #include <memory>
+#include <vector>
 #include <iostream>
 
 #include <pv/standardField.h>
@@ -25,7 +27,7 @@
 #include <pv/exampleCounter.h>
 #include <pv/recordList.h>
 #include <pv/traceRecord.h>
-#include <pv/serverContext.h>
+#include <pv/exampleServerCreateRecords.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -33,12 +35,13 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
 
+static FieldCreatePtr fieldCreate = getFieldCreate();
+static StandardFieldPtr standardField = getStandardField();
+static PVDataCreatePtr pvDataCreate = getPVDataCreate();
+static StandardPVFieldPtr standardPVField = getStandardPVField();
 
 static PVStructurePtr createPowerSupply()
 {
-    FieldCreatePtr fieldCreate = getFieldCreate();
-    StandardFieldPtr standardField = getStandardField();
-    PVDataCreatePtr pvDataCreate = getPVDataCreate();
     size_t nfields = 5;
     StringArray names;
     names.reserve(nfields);
@@ -59,11 +62,47 @@ static PVStructurePtr createPowerSupply()
             fieldCreate->createStructure(names,powerSupply));
 }
 
+static void createStructureArrayRecord(
+    PVDatabasePtr const &master,
+    ScalarType scalarType,
+    String const &recordName)
+{
+    StructureConstPtr structure = standardField->scalar(
+        pvDouble,
+        String("value,alarm,timeStamp"));
+    StringArray names(2);
+    FieldConstPtrArray fields(2);
+    names[0] = "timeStamp";
+    names[1] = "value";
+    fields[0] = standardField->timeStamp();
+    fields[1] = fieldCreate->createStructureArray(structure);
+    StructureConstPtr top = fieldCreate->createStructure(names,fields);
+    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);
+    PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
+    bool result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
+}
 
-int main(int argc,char *argv[])
+static void createRecords(
+    PVDatabasePtr const &master,
+    ScalarType scalarType,
+    String const &recordNamePrefix,
+    String const &properties)
+{
+    String recordName = recordNamePrefix;
+    PVStructurePtr pvStructure = standardPVField->scalar(scalarType,properties);
+    PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
+    bool result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
+    recordName += "Array";
+    pvStructure = standardPVField->scalarArray(scalarType,properties);
+    pvRecord = PVRecord::create(recordName,pvStructure);
+    result = master->addRecord(pvRecord);
+}
+
+void ExampleServerCreateRecords::create()
 {
     PVDatabasePtr master = PVDatabase::getMaster();
-    ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     PVRecordPtr pvRecord;
     String recordName;
     bool result(false);
@@ -71,40 +110,27 @@ int main(int argc,char *argv[])
     pvRecord = TraceRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    StandardPVFieldPtr standardPVField = getStandardPVField();
     String properties;
-    ScalarType scalarType;
     recordName = "exampleCounter";
     pvRecord = ExampleCounter::create(recordName);
     result = master->addRecord(pvRecord);
     properties = "alarm,timeStamp";
-    scalarType = pvDouble;
-    recordName = "exampleDouble";
-    PVStructurePtr pvStructure;
-    pvStructure = standardPVField->scalar(scalarType,properties);
-    pvRecord = PVRecord::create(recordName,pvStructure);
-    {
-        pvRecord->lock_guard();
-        pvRecord->process();
-    }
-    result = master->addRecord(pvRecord);
-    if(!result) cout<< "record " << recordName << " not added" << endl;
-    recordName = "exampleDoubleArray";
-    pvStructure = standardPVField->scalarArray(scalarType,properties);
-    pvRecord = PVRecord::create(recordName,pvStructure);
-    {
-        pvRecord->lock_guard();
-        pvRecord->process();
-    }
-    result = master->addRecord(pvRecord);
-    if(!result) cout<< "record " << recordName << " not added" << endl;
+    createRecords(master,pvBoolean,"exampleBoolean",properties);
+    createRecords(master,pvByte,"exampleByte",properties);
+    createRecords(master,pvShort,"exampleShort",properties);
+    createRecords(master,pvInt,"exampleInt",properties);
+    createRecords(master,pvLong,"exampleLong",properties);
+    createRecords(master,pvFloat,"exampleFloat",properties);
+    createRecords(master,pvDouble,"exampleDouble",properties);
+    createRecords(master,pvString,"exampleString",properties);
+    createStructureArrayRecord(master,pvDouble,"exampleStructureArray");
     recordName = "examplePowerSupply";
-    pvStructure = createPowerSupply();
+    PVStructurePtr pvStructure = createPowerSupply();
     PowerSupplyRecordTestPtr psr =
         PowerSupplyRecordTest::create(recordName,pvStructure);
     if(psr.get()==NULL) {
         cout << "PowerSupplyRecordTest::create failed" << endl;
-        return 1;
+        return;
     }
     result = master->addRecord(psr);
     if(!result) cout<< "record " << recordName << " not added" << endl;
@@ -112,23 +138,5 @@ int main(int argc,char *argv[])
     pvRecord = RecordListRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    ServerContext::shared_pointer ctx =
-        startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
-    cout << "exampleServer\n";
-    PVStringArrayPtr pvNames = master->getRecordNames();
-    String buffer;
-    pvNames->toString(&buffer);
-    cout << "recordNames" << endl << buffer << endl;
-    string str;
-    while(true) {
-        cout << "Type exit to stop: \n";
-        getline(cin,str);
-        if(str.compare("exit")==0) break;
-
-    }
-    ctx->destroy();
-    epicsThreadSleep(1.0);
-    channelProvider->destroy();
-    return 0;
 }
 

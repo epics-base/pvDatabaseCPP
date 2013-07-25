@@ -25,10 +25,6 @@ class PVCopyMonitor;
 typedef std::tr1::shared_ptr<PVCopyMonitor> PVCopyMonitorPtr;
 class PVCopyMonitorRequester;
 typedef std::tr1::shared_ptr<PVCopyMonitorRequester> PVCopyMonitorRequesterPtr;
-class SharePVScalarArray;
-typedef std::tr1::shared_ptr<SharePVScalarArray> SharePVScalarArrayPtr;
-class SharePVStructureArray;
-typedef std::tr1::shared_ptr<SharePVStructureArray> SharePVStructureArrayPtr;
 
 struct CopyNode;
 typedef std::tr1::shared_ptr<CopyNode> CopyNodePtr;
@@ -125,9 +121,6 @@ private:
     void referenceImmutable(
         epics::pvData::PVFieldPtr const &copyPVField,
         PVRecordFieldPtr const &recordPVField);
-    void makeShared(
-        epics::pvData::PVFieldPtr const &copyPVField,
-        PVRecordFieldPtr const &recordPVField);
     void updateStructureNodeSetBitSet(
         epics::pvData::PVStructurePtr const &pvCopy,
         CopyStructureNodePtr const &structureNode,
@@ -216,113 +209,6 @@ public:
     virtual void dataChanged() = 0;
     virtual void unlisten() = 0;
 };
-
-
-#ifdef MUSTIMPLEMENT
-template<typename T>
-class SharePVScalarArray :
-    public epics::pvData::PVScalarArray
-{
-public:
-    POINTER_DEFINITIONS(SharePVScalarArray)
-    typedef T  value_type;
-    typedef T* pointer;
-    typedef const T* const_pointer;
-    typedef epics::pvData::PVArrayData<T> ArrayDataType;
-
-    SharePVScalarArray(
-        PVRecordFieldPtr const &pvRecordField,
-        epics::pvData::PVStructurePtr const &parent,
-        epics::pvData::PVScalarArrayPtr const &pvShare);
-    virtual ~SharePVScalarArray();
-    void lockShare() const;
-    void unlockShare() const;
-    virtual void message(
-        epics::pvData::String const & message,
-        epics::pvData::MessageType messageType);
-    virtual void setImmutable();
-    bool isImmutable();
-    virtual void setCapacity(std::size_t capacity);
-    void setLength(std::size_t length);
-    std::size_t getCapacity() const;
-    std::size_t getLength() const;
-    bool isCapacityMutable();
-    void setCapacityMutable(bool isMutable);
-    virtual std::size_t get(std::size_t offset, std::size_t length, ArrayDataType &data) = 0;
-    virtual std::size_t put(std::size_t offset,std::size_t length, pointer from, std::size_t fromOffset) = 0;
-    virtual void shareData(pointer value,std::size_t capacity,std::size_t length) = 0;
-    virtual bool equals(epics::pvData::PVFieldPtr const &pv);
-    virtual void serialize(
-        epics::pvData::ByteBufferPtr *pbuffer,
-        epics::pvData::SerializableControl *pflusher) const;
-    virtual void deserialize(
-        epics::pvData::ByteBuffer *pbuffer,
-        epics::pvData::DeserializableControl *pflusher);
-    virtual void serialize(
-        epics::pvData::ByteBuffer *pbuffer,
-        epics::pvData::SerializableControl *pflusher, std::size_t offset, std::size_t count) const;
-private:
-    PVRecordField &pvRecordField;
-};
-
-typedef SharePVScalarArray<bool> SharePVBooleanArray;
-typedef SharePVScalarArray<epics::pvData::int8> SharePVByteArray;
-typedef SharePVScalarArray<epics::pvData::int16> SharePVShortArray;
-typedef SharePVScalarArray<epics::pvData::int32> SharePVIntArray;
-typedef SharePVScalarArray<epics::pvData::int64> SharePVLongArray;
-typedef SharePVScalarArray<float> SharePVFloatArray;
-typedef SharePVScalarArray<double> SharePVDoubleArray;
-typedef SharePVScalarArray<epics::pvData::String> SharePVStringArray;
-
-
-class SharePVStructureArray :
-    public epics::pvData::PVStructureArray
-{
-public:
-    POINTER_DEFINITIONS(SharePVStructureArray)
-    SharePVStructureArray(
-        PVRecordFieldPtr const &pvRecordField,
-        epics::pvData::PVStructurePtr const &parent,
-        epics::pvData::PVStructureArrayPtr const &pvShare);
-    virtual ~SharePVStructureArray();
-    virtual epics::pvData::StructureArrayConstPtr getStructureArray();
-    void lockShare() const;
-    void unlockShare() const;
-    virtual void message(
-        epics::pvData::String const &message,
-        epics::pvData::MessageType messageType);
-    virtual void setImmutable();
-    bool isImmutable();
-    virtual void setCapacity(std::size_t capacity);
-    void setLength(std::size_t length);
-    std::size_t getCapacity() const;
-    std::size_t getLength() const;
-    bool isCapacityMutable();
-    void setCapacityMutable(bool isMutable);
-    virtual void shareData(
-        epics::pvData::PVStructurePtrArrayPtr const & value,
-        std::size_t capacity,std::size_t length);
-    virtual std::size_t get(std::size_t offset, std::size_t length,
-        epics::pvData::StructureArrayData &data);
-    virtual std::size_t put(std::size_t offset,std::size_t length,
-        epics::pvData::PVStructurePtrArrayPtr const & from,
-        std::size_t fromOffset);
-    virtual bool equals(epics::pvData::PVField & &pv);
-    virtual void serialize(
-        epics::pvData::ByteBuffer *pbuffer,
-        epics::pvData::SerializableControl *pflusher) const;
-    virtual void deserialize(
-        epics::pvData::ByteBuffer *pbuffer,
-        epics::pvData::DeserializableControl *pflusher);
-    virtual void serialize(
-        epics::pvData::ByteBuffer *pbuffer,
-        epics::pvData::SerializableControl *pflusher,
-        std::size_t offset, std::size_t count) const;
-private:
-    PVRecordField &pvRecordField;
-};
-#endif
-
 
 }}
 

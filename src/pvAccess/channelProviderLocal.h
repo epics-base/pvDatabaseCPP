@@ -6,7 +6,7 @@
  */
 /**
  * @author Marty Kraimer
- * @data 2013.04
+ * @date 2013.04
  */
 #ifndef CHANNELPROVIDERLOCAL_H
 #define CHANNELPROVIDERLOCAL_H

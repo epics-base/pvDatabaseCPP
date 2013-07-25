@@ -1,7 +1,6 @@
-TOP = ..
+TOP = ../..
 include $(TOP)/configure/CONFIG
-DIRS += record
-DIRS += pvCopy
-DIRS += server
+DIRS += exampleCounter
+DIRS += exampleServer
 include $(TOP)/configure/RULES_DIRS
 

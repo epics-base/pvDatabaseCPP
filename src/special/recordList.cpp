@@ -90,9 +90,7 @@ bool RecordListRecord::init()
 void RecordListRecord::process()
 {
     PVStringArrayPtr pvNames = PVDatabase::getMaster()->getRecordNames();
-    std::vector<String> const & xxx = pvNames->getVector();
-    size_t n = xxx.size();
-    names->put(0,n,xxx,0);
+    names->replace(pvNames->view());
     String message("");
     if(database->get().compare("master")!=0) {
         message += " can only access master ";
