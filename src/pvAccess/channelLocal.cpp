@@ -280,7 +280,7 @@ ChannelGetLocalPtr ChannelGetLocal::create(
     PVCopyPtr pvCopy = PVCopy::create(
         pvRecord,
         pvRequest,
-        "field");
+        "");
     if(pvCopy.get()==NULL) {
         Status status(
             Status::Status::STATUSTYPE_ERROR,
@@ -434,7 +434,7 @@ ChannelPutLocalPtr ChannelPutLocal::create(
     PVCopyPtr pvCopy = PVCopy::create(
         pvRecord,
         pvRequest,
-        "field");
+        "");
     if(pvCopy.get()==NULL) {
         Status status(
             Status::Status::STATUSTYPE_ERROR,

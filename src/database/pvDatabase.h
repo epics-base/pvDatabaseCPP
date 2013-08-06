@@ -46,7 +46,7 @@ typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
  * @author mrk
  */
 class PVRecord :
-     public epics::pvData::Requester,
+     public virtual epics::pvData::Requester,
      public std::tr1::enable_shared_from_this<PVRecord>
 {
 public:

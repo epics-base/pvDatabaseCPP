@@ -91,7 +91,8 @@ PVStringArrayPtr PVDatabase::getRecordNames()
     for(iter = recordMap.begin(); iter!=recordMap.end(); ++iter) {
         names[i++] = (*iter).first;
     }
-    pvStringArray->replace(names);
+    shared_vector<const String> temp(freeze(names));
+    pvStringArray->replace(temp);
     return pvStringArray;
 }
 

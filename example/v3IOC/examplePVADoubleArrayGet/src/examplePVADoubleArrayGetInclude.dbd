@@ -1,0 +1,4 @@
+include "base.dbd"
+include "PVAServerRegister.dbd"
+include "PVAClientRegister.dbd"
+registrar("examplePVADoubleArrayGetRegister")

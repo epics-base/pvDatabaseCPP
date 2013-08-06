@@ -38,7 +38,7 @@
 <h1>pvDatabaseCPP</h1>
 <!-- Maturity: Working Draft or Request for Comments, or Recommendation, and date. -->
 
-<h2 class="nocount">EPICS v4 Working Group, Working Draft, 25-Jul-2013</h2>
+<h2 class="nocount">EPICS v4 Working Group, Working Draft, 06-Aug-2013</h2>
 <dl>
     <dt>Latest version:</dt>
     <dd><a
@@ -47,13 +47,14 @@
     <dt>This version:</dt>
     <dd><a
        href=
-"http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20130725.html">
-pvDatabaseCPP20130725.html</a>
+"http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20130806.html">
+pvDatabaseCPP20130806.html</a>
     </dd>
     <dt>Previous version:</dt>
     <dd><a
-       href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20130627.html">
-pvDatabaseCPP20130627.html</a>
+       href=
+"http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/pvDatabaseCPP/raw-file/tip/documentation/pvDatabaseCPP_20130725.html">
+pvDatabaseCPP20130725.html</a>
     </dd>
   <dt>Editors:</dt>
     <dd>Marty Kraimer, BNL</dd>
@@ -77,7 +78,7 @@ The minimum that an extenson must provide is a top level PVStructure and a proce
 
 <h2 class="nocount">Status of this Document</h2>
 
-<p>This is the 25-Jul-2013 version of the definition of pvDatabaseCPP.
+<p>This is the 06-Aug-2013 version of the definition of pvDatabaseCPP.
 <p><b>NOTE:</b>
 This is built against pvDataCPP-md NOT against pvDataCPP.
 To build you must also
@@ -90,11 +91,8 @@ This project is ready for alpha users.
 </p>
 <p>Future enhancements in priority order:</p>
 <dl>
-   <dt>pvAccess directly to local channelProvider</dt>
-      <dd>Create an example record that communicates with another
-       record via pvAccess but directly connects to channelProviderLocal.
-       Thus channelGet and monitor of arrays will be done without
-       copying raw array data.</dd>
+   <dt>Termination issues.</dt>
+     <dd>There are memory leak and other issues when either the main programs or v3IOC terminates.</dd>
    <dt>Array performance</dt>
       <dd>Create an example record that continuously creates array data.
       The idea is to compare performance allocating memory from the
@@ -105,8 +103,6 @@ This project is ready for alpha users.
    <dt>Monitor Algorithms</dt>
        <dd>Monitor algorithms have not been implemented.
         Thus all monitors are onPut.</dd>
-   <dt>Memory leaks</dt>
-      <dd>I think all memory leaks have been fixed.</dd>
    <dt>Testing</dt>
        <dd>Needs more testing</dd>
 </dl>
@@ -157,7 +153,13 @@ A record is smart because code can be attached to a record, which is accessed vi
     <dt>exampleServer</dt>
        <dd>This example has a set of PVRecords.
       Again the records can be deployed either as a standalone process or
-     as part of a V3IOC.
+     as part of a V3IOC.</dd>
+     <dt>examplePVADoubleArrayGet</dt>
+       <dd>This is an example PVRecord that uses channelGet to get an array of doubles from
+       another PVRecord via pvAccess. The example shows how to get the value either via
+       remote pvAccess or by directly accessing the local channelProvider.
+      Again the records can be deployed either as a standalone process or
+     as part of a V3IOC.</dd>
 </dl>
 <p><b>database</b> provides base classes that make it easy to create record instances.
 The code attached to each record must create the top
@@ -171,10 +173,10 @@ level PVStructure and the following three methods:</p>
     <dd>This is what makes a record smart.
      </dd>
   <dt>destroy</dt>
-     <dd>This releases and resorurces used by the impplementation.</dd>
+     <dd>This releases and resources used by the implementation.</dd>
 </dl>
 <h3>Getting started</h3>
-<p>Included with this project are two examples that are useful for
+<p>Included with this project are three examples that are useful for
 seeing how pvDatabase can be used by clients.
 Each can be deployed either as a standalone process or as part of a V3IOC.
 The examples are:
@@ -188,6 +190,10 @@ The examples are:
      <dd>This has a database with several records.</dd>
    <dt>exampleServer</dt>
       <dd>This is exampleServer as part of a V3IOC</dd>
+    <dt>examplePVADoubleArrayGetMain</dt>
+       <dd>This is the example of how to use pvAccess to get data.</dd>
+    <dt>examplePVADoubleArrayGet</dt>
+      <dd>This is examplePVADoubleArrayGet as part of a V3IOC</dd>
 </dt>
 </p>
 <h3>exampleCounter</h3>
@@ -218,24 +224,11 @@ exampleCounter is a pvRecord.
 After successfully running exampleCounterMain and exampleCounter then
 try starting exampleServerMain and exampleServer.
 </p>
-<h3>swtshell</h3>
-<p>The Java program
-<a
-      href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/swtshellJava/raw-file/tip/documentation/swtshellJava.html">
-      swtshell</a>
-can be used to access  pvDatabase.</p>
-<p>In particular read the sections "Getting Started" and "Simple Example".
-They will work on the exampleServer with the following differences:
-<dl>
-   <dt>startExample.zip</dt>
-     <dd>Do NOT use this. Instead run exampleServer</dd>
-   <dt>channelList result</dt>
-     <dd>The result of channelList will show the list of records that
-       exampleServer has rather than the records from startExample.zip</dd>
-</dl>
-</p>
 <h3>exampleServer</h3>
-<p>The exampleServer pvDatabase includes the following records:
+<p>This example provides the exampleCounter record in addition to a number of other PVRecords.
+Like exampleCounter it can be started either as a standalone main program or as
+a part of a V3IOC.
+The exampleServer pvDatabase includes the following records:</p>
 <dl>
    <dt>exampleCounter</dt>
      <dd>A record that is an instance of exampleCounter described below.
@@ -257,6 +250,22 @@ They will work on the exampleServer with the following differences:
      <dd>This can be used via channelPutGet to set the trace level of another record.</dd>
 </dl>
 <p>It also has a number of other scalar and array records.</p>
+<h3>swtshell</h3>
+<p>The Java program
+<a
+      href="http://epics-pvdata.hg.sourceforge.net/hgweb/epics-pvdata/swtshellJava/raw-file/tip/documentation/swtshellJava.html">
+      swtshell</a>
+can be used to access  pvDatabase.</p>
+<p>In particular read the sections "Getting Started" and "Simple Example".
+They will work on the exampleServer with the following differences:
+<dl>
+   <dt>startExample.zip</dt>
+     <dd>Do NOT use this. Instead run exampleServer</dd>
+   <dt>channelList result</dt>
+     <dd>The result of channelList will show the list of records that
+       exampleServer has rather than the records from startExample.zip</dd>
+</dl>
+</p>
 
 <h3>Relationship with pvIOCJava.</h3>
 <p>This document descibes a C++ implementation of some of the components in pvIOCJava,
@@ -579,6 +588,32 @@ The following are the minimium features required</p>
      </dd>
 </dl>
 <p>The following sections describes the classes required for the first phase.</p>
+
+<h2>iocshell commands</h2>
+<p>The following iocsh commands are provided:</p>
+<dl>
+   <dt>startPVAClient</dt>
+     <dd>Starts the client side of pvAccess.s
+        It makes channel provider <b>pvAccess</b> available.
+        After startPVAServer is called the channel provider <b>local</b> will
+        also be available.
+     </dd>
+   <dt>stopPVAClient</dt>
+      <dd>Stops pvAccess.</dd>
+   <dt>startPVAServer</dt>
+      <dd>Starts the local channel provider</p>
+   <dt>stopPVAServer</dt>
+      <dd>Stop the local channel provider</dd>
+   <dt>pvdbl</dt>
+      <dd>Provides a list of all the pvRecords in database <b>master</b>
+      It is similar to the iocsh command <b>dbl</b></dd>
+</dl>
+<p>The client commands are provided via PVAClientRegister.dbd and the othet commands
+via PVAServerRegister.dbd.</p>
+<p>In addition any code that implements a PVRecord must implement an ioc command.
+The directory example has examples of how to implement the registration code.
+See example/v3IOC/exampleCounter/src/ for a simple example.</p>
+
 
 <h2>database</h2>
 <p>This directory has the following files:</p>
@@ -1236,6 +1271,314 @@ if(!result) cout&lt;&lt; "record " &lt;&lt; recordName &lt;&lt; " not added" &lt
 <h3>powerSupplyRecordTest</h3>
 <p>This simulates a simple power supply record.
 It is used for testing.</p>
+<h2>Accessing Other PVRecords</h2>
+<p>This section 1) starts with a discussion of accessing data via pvAccess
+and 2) gives a brief description of an example that gets data for an array of doubles.</p>
+<h3>Discussion</h3>
+<h4>Access Alternatives</h4>
+<p>The process routine of a PVRecord can access other PVRecords in two ways:</p>
+<dl>
+  <dt>Directly accessing local pvDatabase</dt>
+    <dd>
+    If the other PVRecord is accessed via the master PVDatabase then
+    threading issues are up to the implementation.
+    For now this method will not be discussed.</dd>
+  <dt>Access via pvAccess</dt>
+    <dd>
+      If access is via pvAccess then locking is handled by pvAccess.</dd>
+</dl>
+<p>Access via pvAccess can be done either by local or remote channel provider.</p>
+</dl>
+<dl>
+  <dt>Access via channelProviderLocal</dt>
+    <dd>
+    If the local pvAccess server is used the implementation must be careful that it does not
+    caused deadlocks.
+    When the process method is called the pvRecord for the process method is locked.
+    When it makes a pvAccess get, put, etc request the other record is locked.
+    Thus if a set of pvAccess links are implemented the possibility of deadlocks
+    exists. A simple example is two records that have links to each other.
+    More complex sets are easily created.
+    Unless the developer has complete control of the set of records then remote pvAccess should
+    be used.
+    But this results in more context switches.
+    </dd>
+   <dt>Access via remote pvAccess</dt>
+      <dd>If remote pvAccess is used then all lockimg issues are handled by pvAccess.
+      The linked channel can be a pvRecord in the local pvDatabase or can be implemented
+      by a remote pvAccess server.</dd>
+</dl>
+<h4>Data synchronization</h4>
+<p>If pvAccess is used then it handles data synchronization.
+This is done by making a copy of the data that is transfered between the two pvRecords.
+This is true if either remote or local pvAccess is used.
+Each get, put, etc request results in data being copied between the two records.</p>
+<p>
+If the linked channel is a local pvRecord then,
+for scalar and structure arrays,
+raw data is NOT copied for gets.
+This is because pvData uses shared_vector to hold the raw data.
+Instead of copying the raw data the reference count is incremented.</p>
+<p>For puts the linked array will force a new allocation of the raw data in the linked record,
+i. e. copy on write semantics are enforced. This is done automatically
+by pvData and not by pvDatabase.</p>
+<h4>Some details</h4>
+<p>As mentioned before a pvDatabase server can be either a separate process,
+i. e. a main program, or can be part of a v3IOC.</p>
+<p>A main pvDatabase server issues the following calls:</p>
+<pre>
+ ClientFactory::start();
+ ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
+ ...
+ ServerContext::shared_pointer serverContext = startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
+</pre>
+<p>The first call is only necessary if some of the pvRecords
+have pvAccess links.
+These must be called before any code that uses links is initialized.
+After these two calls there will be two channel providers: <b>local</b>, and <b>pvAccess</b>.
+
+</p>
+<p>A pvDatabase that is part of a V3IOC has the following in the st.cmd file.</p>
+<pre>
+...
+iocInit()
+startPVAClient
+startPVAServer
+## commands to create pvRecords
+</pre>
+<p>
+Once the client and local provider code has started then the following creates a channel access link.
+</p>
+<pre>
+PVDatabasePtr master = PVDatabase::getMaster();
+ChannelAccess::shared_pointer channelAccess = getChannelAccess();
+ChannelProvider::shared_pointer provider = channelAccess-&gt;getProvider(providerName);
+Channel::shared_pointer channel = provider-&gt;createChannel(channelName,channelRequester);
+</pre>
+<h3>examplePVADoubleArrayGet</h3>
+examplePVADoubleArrayGet shows how to use pvAccess to get data.</p>
+<p>The code resides in three directories:</p>
+<dl>
+   <dt>example/src/examplePVADoubleArrayGet</dt>
+      <dd>This is the implementation code for the example.</dd>
+   <dt>example/examplePVADoubleArrayGet</dt>
+      <dd>This is the code that starts the example as a main program.</dd>
+   <dt>example/v3IOC/examplePVADoubleArrayGet/src</dt>
+      <dd>This is the code for starting the example as part of a V3IOC.</dd>
+   <dt>iocBoot/examplePVADoubleArrayGet</dt>
+      <dd>This has the st.cmd files to start the example.</dd>
+</dl>
+<h4>examplePVADoubleArrayGet Implementation</h4>
+<p>examplePVADoubleArrayGet.h contains the following:</p>
+<pre>
+...
+class ExamplePVADoubleArrayGet :
+    public PVRecord,
+    public epics::pvAccess::ChannelRequester,
+    public epics::pvAccess::ChannelGetRequester
+{
+public:
+    POINTER_DEFINITIONS(ExamplePVADoubleArrayGet);
+    static ExamplePVADoubleArrayGetPtr create(
+        epics::pvData::String const &amp; recordName,
+        epics::pvData::String const &amp; providerName,
+        epics::pvData::String const &amp; channelName
+        );
+    virtual ~ExamplePVADoubleArrayGet() {}
+    virtual void destroy();
+    virtual bool init();
+    virtual void process();
+    virtual void channelCreated(
+        const epics::pvData::Status&amp; status,
+        epics::pvAccess::Channel::shared_pointer const &amp; channel);
+    virtual void channelStateChange(
+        epics::pvAccess::Channel::shared_pointer const &amp; channel,
+        epics::pvAccess::Channel::ConnectionState connectionState);
+    virtual void channelGetConnect(
+        const epics::pvData::Status&amp; status,
+        epics::pvAccess::ChannelGet::shared_pointer const &amp; channelGet,
+        epics::pvData::PVStructure::shared_pointer const &amp; pvStructure,
+        epics::pvData::BitSet::shared_pointer const &amp; bitSet);
+    virtual void getDone(const epics::pvData::Status&amp; status);
+private:
+...
+</pre>
+<p>All the non-static methods are either PVRecord, PVChannel, or PVChannelGet methods
+and will not be discussed further.
+The create method is called to create a new PVRecord instance with code that will issue
+a ChannelGet::get request every time the process method of the instance is called.
+Some other pvAccess client can issue a channelGet, to the record instance, with a request
+to process in order to test the example.</p>
+<p>All of the initialization is done by a combination of the create and init methods so
+lets look at them:</p>
+<pre>
+ExamplePVADoubleArrayGetPtr ExamplePVADoubleArrayGet::create(
+    String const &amp; recordName,
+    String const &amp; providerName,
+    String const &amp; channelName)
+{
+    PVStructurePtr pvStructure = getStandardPVField()-&gt;scalarArray(
+        pvDouble,"alarm.timeStamp");
+    ExamplePVADoubleArrayGetPtr pvRecord(
+        new ExamplePVADoubleArrayGet(
+           recordName,providerName,channelName,pvStructure));
+    if(!pvRecord-&gt;init()) pvRecord.reset();
+    return pvRecord;
+}
+</pre>
+<p>This first creates a new ExamplePVADoubleArrayGet instance,
+and then calls the init method and the returns a ExamplePVADoubleArrayGetPtr.
+Note that if init returns false it returns a pointer to NULL.</p>
+<p>The init method is:</p>
+<pre>
+bool ExamplePVADoubleArrayGet::init()
+{
+    initPVRecord();
+
+    PVStructurePtr pvStructure = getPVRecordStructure()-&gt;getPVStructure();
+    pvTimeStamp.attach(pvStructure-&gt;getSubField("timeStamp"));
+    pvAlarm.attach(pvStructure-&gt;getSubField("alarm"));
+    pvValue = static_pointer_cast&lt;PVDoubleArray&gt;(
+        pvStructure-&gt;getScalarArrayField("value",pvDouble));
+    if(pvValue==NULL) {
+        return false;
+    }
+    ChannelAccess::shared_pointer channelAccess = getChannelAccess();
+    ChannelProvider::shared_pointer provider =
+        channelAccess-&gt;getProvider(providerName);
+    if(provider==NULL) {
+         cout &lt;&lt; getRecordName() &lt;&lt; " provider "
+              &lt;&lt; providerName &lt;&lt; " does not exist" &lt;&lt; endl;
+        return false;
+    }
+    ChannelRequester::shared_pointer channelRequester =
+        dynamic_pointer_cast&lt;ChannelRequester&gt;(getPtrSelf());
+    channel = provider-&gt;createChannel(channelName,channelRequester);
+    event.wait();
+    if(!status.isOK()) {
+        cout &lt;&lt; getRecordName() &lt;&lt; " createChannel failed "
+             &lt;&lt; status.getMessage() &lt;&lt; endl;
+        return false;
+    }
+    ChannelGetRequester::shared_pointer channelGetRequester =
+        dynamic_pointer_cast&lt;ChannelGetRequester&gt;(getPtrSelf());
+    PVStructurePtr pvRequest = getCreateRequest()-&gt;createRequest(
+        "value,alarm,timeStamp",getPtrSelf());
+    channelGet = channel-&gt;createChannelGet(channelGetRequester,pvRequest);
+    event.wait();
+    if(!status.isOK()) {
+        cout &lt;&lt; getRecordName() &lt;&lt; " createChannelGet failed "
+             &lt;&lt; status.getMessage() &lt;&lt; endl;
+        return false;
+    }
+    getPVValue = static_pointer_cast&lt;PVDoubleArray&gt;(
+        getPVStructure-&gt;getScalarArrayField("value",pvDouble));
+    if(getPVValue==NULL) {
+        cout &lt;&lt; getRecordName() &lt;&lt; " get value not  PVDoubleArray" &lt;&lt; endl;
+        return false;
+    }
+    return true;
+}
+</pre>
+<p>This first makes sure the pvStructure has the fields it requires:</p>
+<dl>
+  <dt>timeStamp</dt>
+    <dd>A timeStamp structure. This will be set to the current time when process is called.</dd>
+  <dt>alarm</dt>
+    <dd>An alarm structure. This will be used to pass status information to the client when
+      process is called.</dd>
+  <dt>value</dt>
+     <dd>This must be a scalarArray of type double.
+       It is where data is copied when the channelGet is issued.</dd>
+</dl>
+<p>Next it makes sure the channelProvider exists.</p>
+<p>Next it creates the channel and waits until it connects.</p>
+<p>Next it creates the channelGet and waits until it is created.</p>
+<p>Next it makes sure it has connected to a double array field.</p>
+<p>If anything goes wrong during initialization it returns false.
+This a return of true means that it has successfully created a channelGet and is ready
+to issue gets when process is called.</p>
+<p>Look at the code for more details.</p>
+<h4>Starting the example as a main program</h4>
+<pre>
+...
+int main(int argc,char *argv[])
+{
+    PVDatabasePtr master = PVDatabase::getMaster();
+    ClientFactory::start();
+    ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
+    PVRecordPtr pvRecord;
+    bool result(false);
+    String recordName;
+    PVStructurePtr pvStructure = standardPVField-&gt;scalarArray(
+        pvDouble,"alarm,timeStamp");
+    recordName = "doubleArray";
+    pvRecord = PVRecord::create(recordName,pvStructure);
+    result = master-&gt;addRecord(pvRecord);
+    if(!result) cout&lt;&lt; "record " &lt;&lt; recordName &lt;&lt; " not added" &lt;&lt; endl;
+    ServerContext::shared_pointer serverContext = startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
+    recordName = "examplePVADoubleArrayGet";
+    if(argc&gt;1) recordName = argv[1];
+    String providerName("local");
+    if(argc&gt;2) providerName = argv[2];
+    String channelName("doubleArray");
+    if(argc&gt;3) channelName = argv[3];
+    pvRecord = ExamplePVADoubleArrayGet::create(
+        recordName,providerName,channelName);
+    if(pvRecord!=NULL) {
+        result = master-&gt;addRecord(pvRecord);
+        cout &lt;&lt; "result of addRecord " &lt;&lt; recordName &lt;&lt; " " &lt;&lt; result &lt;&lt; endl;
+    } else {
+        cout &lt;&lt; "ExamplePVADoubleArrayGet::create failed" &lt;&lt; endl;
+    }
+    string str;
+    while(true) {
+        cout &lt;&lt; "Type exit to stop: \n";
+        getline(cin,str);
+        if(str.compare("exit")==0) break;
+
+    }
+    serverContext-&gt;shutdown();
+    epicsThreadSleep(1.0);
+    serverContext-&gt;destroy();
+    ClientFactory::stop();
+    channelProvider-&gt;destroy();
+    return 0;
+}
+</pre>
+<p>The first statements initializes the client factory and localChannelProvider.</p>
+<p>
+It then creates a PVRecord that has a double array as the value field.
+The name of the record is <b>doubleArray</b>.
+This is the record that can be accessed via pvAccess if the channelName is 
+<b>doubleArray</b>.
+</p>
+<p>It then creates a examplePVADoubleArrayGet instance.</p>
+<p>It the runs forever until the exit is typed.</p>
+
+<h4>Start the example as part of a V3IOC</h4>
+The directory example/v3IOC/examplePVADoubleArrayGet has two subdirectories: Db and src.
+These are like for any other V3IOC application.
+The Db directory is for a regular ai record.
+The src directory has code similar to any V3IOC application.
+In particular it has definitions and code for creating the following iocsh commands:</p>
+<pre>
+examplePVADoubleArrayGetRegister recordName providerName channelName
+</pre>
+where
+<dl>
+   <dt>recordName</dt>
+   <dt>providerName</dt>
+   <dt>channelName</dt>
+</dl>
+<p>The directory iocBoot/examplePVADoubleArrayGet has two st.cmd files:</p>
+<dl>
+   <dt>st.local</dt>
+     <dd>This creates the example using localChannelProvider.</dd>
+   <dt>st.remote</dt>
+     <dd>This creates the example using the remote channel provider.</dd>
+</dl>
+
 
 </div>
 </body>

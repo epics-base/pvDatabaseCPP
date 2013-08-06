@@ -14,6 +14,10 @@ SRC_DIRS += $(EXAMPLESRC)/exampleServer
 INC+= exampleServerCreateRecords.h
 LIBSRCS += exampleServerCreateRecords.cpp
 
+SRC_DIRS += $(EXAMPLESRC)/examplePVADoubleArrayGet
+INC+= examplePVADoubleArrayGet.h
+LIBSRCS += examplePVADoubleArrayGet.cpp
+
 
 include $(TOP)/configure/RULES
 

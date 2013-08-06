@@ -27,7 +27,9 @@ LIBSRCS += monitorFactory.cpp
 
 SRC_DIRS += $(DATABASE)/v3IOC
 DBD += PVAServerRegister.dbd
+DBD += PVAClientRegister.dbd
 LIBSRCS += PVAServerRegister.cpp
+LIBSRCS += PVAClientRegister.cpp
 
 SRC_DIRS += $(DATABASE)/special
 INC += recordList.h

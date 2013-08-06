@@ -31,13 +31,15 @@ void copy(
         throw std::length_error("pvSubArrayCopy from length error");
     }
     size_t capacity = pvTo.getCapacity();
-    if(toOffset+len>capacity) pvTo.setCapacity(toOffset+len);
+    if(toOffset+len>capacity) capacity = toOffset + len;
+    shared_vector<T> temp(capacity);
     typename PVValueArray<T>::const_svector vecFrom = pvFrom.view();
     typename PVValueArray<T>::const_svector vecTo = pvTo.view();
-    shared_vector<T> temp;
-    pvTo.swap(temp);
+    for(size_t i=0; i<toOffset; ++i) temp[i] = vecTo[i];
     for(size_t i=0; i<len; ++i) temp[i + toOffset] = vecFrom[i + fromOffset];
-    pvTo.replace(temp);
+    for(size_t i=len + toOffset; i<capacity; ++i) temp[i] = vecTo[i];
+    shared_vector<const T> temp2(freeze(temp));
+    pvTo.replace(temp2);
 }
 
 void copy(
@@ -162,15 +164,15 @@ void copy(
         throw std::length_error("pvSubArrayCopy from length error");
     }
     size_t capacity = to.getCapacity();
-    if(toOffset+len>capacity) to.setCapacity(toOffset+len);
+    if(toOffset+len>capacity) capacity = toOffset+len;
+    shared_vector<PVStructurePtr> temp(capacity);
     typename PVValueArray<PVStructurePtr>::const_svector vecFrom = from.view();
     typename PVValueArray<PVStructurePtr>::const_svector vecTo = to.view();
-    shared_vector<PVStructurePtr> temp;
-    to.swap(temp);
-    for(size_t i=0; i<len; ++i) {
-        temp[i + toOffset] = vecFrom[i + fromOffset];
-    }
-    to.replace(temp);
+    for(size_t i=0; i<toOffset; ++i) temp[i] = vecTo[i];
+    for(size_t i=0; i<len; ++i) temp[i + toOffset] = vecFrom[i + fromOffset];
+    for(size_t i=len + toOffset; i<capacity; ++i) temp[i] = vecTo[i];
+    shared_vector<const PVStructurePtr> temp2(freeze(temp));
+    to.replace(temp2);
 }
 
 void copy(
