@@ -11,10 +11,12 @@
 
 #include <sstream>
 
+#include <pv/thread.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
+#include <pv/timeStamp.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
@@ -220,7 +222,7 @@ void MonitorLocal::dataChanged()
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "MonitorLocal::dataChanged() "  << endl;
+        cout << "MonitorLocal::dataChanged() "  "firstMonitor " << firstMonitor << endl;
     }
     if(firstMonitor) {
     	queue->dataChanged();
@@ -389,11 +391,6 @@ NOQueue::NOQueue(
    changedBitSet(new BitSet(pvCopyStructure->getNumberFields())),
    overrunBitSet(new BitSet(pvCopyStructure->getNumberFields()))
 {
-    monitorElement->pvStructurePtr = pvCopyStructure;
-    monitorElement->changedBitSet =
-        BitSetPtr(new BitSet(pvCopyStructure->getNumberFields()));
-    monitorElement->overrunBitSet =
-        BitSetPtr(new BitSet(pvCopyStructure->getNumberFields()));
 }
 
 Status NOQueue::start()
@@ -404,8 +401,8 @@ Status NOQueue::start()
     changedBitSet->clear();
     overrunBitSet->clear();
     monitorLocal->getPVCopyMonitor()->startMonitoring(
-        monitorElement->changedBitSet,
-        monitorElement->overrunBitSet);
+        changedBitSet,
+        overrunBitSet);
     return Status::Ok;
 }
 
@@ -415,36 +412,31 @@ void NOQueue::stop()
 
 bool NOQueue::dataChanged()
 {
-   Lock xx(mutex);
-   (*changedBitSet) |= (*monitorElement->changedBitSet);
-   (*overrunBitSet) |= (*monitorElement->overrunBitSet);
-   gotMonitor = true;
-   return wasReleased ? true : false;
+    Lock xx(mutex);
+    monitorLocal->getPVCopy()->updateCopyFromBitSet(
+           pvCopyStructure, changedBitSet);
+    gotMonitor = true;
+    return wasReleased;
 }
 
 MonitorElementPtr NOQueue::poll()
 {
-   Lock xx(mutex);
-   if(!gotMonitor) return NULLMonitorElement;
-   BitSetPtr changed = monitorElement->changedBitSet;
-   BitSetPtr overrun = monitorElement->overrunBitSet;
-   (*changed) |= (*changedBitSet);
-   (*overrun) |= (*overrunBitSet);
-   monitorLocal->getPVCopy()->updateCopyFromBitSet(
-       pvCopyStructure, changed,true);
-   BitSetUtil::compress(changed,pvCopyStructure);
-   BitSetUtil::compress(overrun,pvCopyStructure);
-   changedBitSet->clear();
-   overrunBitSet->clear();
-   return monitorElement;
+    Lock xx(mutex);
+    if(!gotMonitor) return NULLMonitorElement;
+    getConvert()->copyStructure(pvCopyStructure,monitorElement->pvStructurePtr);
+    BitSetUtil::compress(changedBitSet,pvCopyStructure);
+    BitSetUtil::compress(overrunBitSet,pvCopyStructure);
+    (*monitorElement->changedBitSet) = (*changedBitSet);
+    (*monitorElement->overrunBitSet) = (*overrunBitSet);
+    changedBitSet->clear();
+    overrunBitSet->clear();
+    return monitorElement;
 }
 
 void NOQueue::release(MonitorElementPtr const &monitorElement)
 {
-   Lock xx(mutex);
-   gotMonitor = false;
-   monitorElement->changedBitSet->clear();
-   monitorElement->overrunBitSet->clear();
+    Lock xx(mutex);
+    gotMonitor = false;
 }
 
 RealQueue::RealQueue(
@@ -478,11 +470,15 @@ bool RealQueue::dataChanged()
     Lock xx(mutex);
     PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
     monitorLocal->getPVCopy()->updateCopyFromBitSet(
-        pvStructure,monitorElement->changedBitSet,false);
-    MonitorElementPtr newElement = queue.getFree();
-    if(newElement==NULL) {
+        pvStructure,monitorElement->changedBitSet);
+    if(queue.getNumberFree()==0) {
+        if(queueIsFull) return false;
         queueIsFull = true;
         return true;
+    }
+    MonitorElementPtr newElement = queue.getFree();
+    if(newElement==NULL) {
+        throw  std::logic_error(String("RealQueue::dataChanged() logic error"));
     }
     BitSetUtil::compress(monitorElement->changedBitSet,pvStructure);
     BitSetUtil::compress(monitorElement->overrunBitSet,pvStructure);
@@ -490,7 +486,7 @@ bool RealQueue::dataChanged()
     newElement->changedBitSet->clear();
     newElement->overrunBitSet->clear();
     monitorLocal->getPVCopyMonitor()->switchBitSets(
-        newElement->changedBitSet,newElement->overrunBitSet,false);
+        newElement->changedBitSet,newElement->overrunBitSet);
     queue.setUsed(monitorElement);
     monitorElement = newElement;
     return true;
@@ -498,30 +494,15 @@ bool RealQueue::dataChanged()
 
 MonitorElementPtr RealQueue::poll()
 {
-   Lock xx(mutex);
-   return queue.getUsed();
+    Lock xx(mutex);
+    return queue.getUsed();
 }
 
 void RealQueue::release(MonitorElementPtr const &currentElement)
 {
-   Lock xx(mutex);
-   queue.releaseUsed(currentElement);
-   currentElement->changedBitSet->clear();
-   currentElement->overrunBitSet->clear();
-   if(!queueIsFull) return;
-   queueIsFull = false;
-    PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
-    MonitorElementPtr newElement = queue.getFree();
-    BitSetUtil::compress(monitorElement->changedBitSet,pvStructure);
-    BitSetUtil::compress(monitorElement->overrunBitSet,pvStructure);
-    convert->copy(pvStructure,newElement->pvStructurePtr);
-    newElement->changedBitSet->clear();
-    newElement->overrunBitSet->clear();
-    monitorLocal->getPVCopyMonitor()->switchBitSets(
-        newElement->changedBitSet,newElement->overrunBitSet,false);
-    queue.setUsed(monitorElement);
-    monitorElement = newElement;
-   
+    Lock xx(mutex);
+    queue.releaseUsed(currentElement);
+    queueIsFull = false;
 }
 
 MonitorFactoryPtr getMonitorFactory()

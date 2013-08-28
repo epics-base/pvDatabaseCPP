@@ -18,6 +18,12 @@ SRC_DIRS += $(EXAMPLESRC)/examplePVADoubleArrayGet
 INC+= examplePVADoubleArrayGet.h
 LIBSRCS += examplePVADoubleArrayGet.cpp
 
+SRC_DIRS += $(EXAMPLESRC)/arrayPerformance
+INC+= arrayPerformance.h
+LIBSRCS += arrayPerformance.cpp
+INC+= longArrayMonitor.h
+LIBSRCS += longArrayMonitor.cpp
+
 
 include $(TOP)/configure/RULES
 

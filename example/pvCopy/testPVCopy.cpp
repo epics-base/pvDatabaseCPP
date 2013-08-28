@@ -116,7 +116,6 @@ static void testPVScalar(
     size_t offset;
     ConvertPtr convert = getConvert();
 
-    pvRecord->lock_guard();
     cout << endl;
     pvStructureRecord = pvRecord->getPVRecordStructure()->getPVStructure();
     pvField = pvStructureRecord->getSubField(valueNameRecord);
@@ -129,11 +128,11 @@ static void testPVScalar(
     pvField = pvStructureCopy->getSubField(valueNameCopy);
     pvValueCopy = static_pointer_cast<PVScalar>(pvField);
     bitSet = BitSetPtr(new BitSet(pvStructureCopy->getNumberFields()));
-    pvCopy->initCopy(pvStructureCopy, bitSet, true);
+    pvCopy->initCopy(pvStructureCopy, bitSet);
     cout << "after initCopy pvValueCopy " << convert->toDouble(pvValueCopy);
     cout << endl;
     convert->fromDouble(pvValueRecord,.06);
-    pvCopy->updateCopySetBitSet(pvStructureCopy,bitSet,true);
+    pvCopy->updateCopySetBitSet(pvStructureCopy,bitSet);
     cout << "after put(.06) pvValueCopy " << convert->toDouble(pvValueCopy);
     builder.clear();
     bitSet->toString(&builder);
@@ -156,7 +155,7 @@ static void testPVScalar(
     cout << " bitSet " << builder;
     cout << endl;
     bitSet->set(0);
-    pvCopy->updateCopyFromBitSet(pvStructureCopy,bitSet,true);
+    pvCopy->updateCopyFromBitSet(pvStructureCopy,bitSet);
     cout << "after updateCopyFromBitSet";
     cout << " recordValue " << convert->toDouble(pvValueRecord);
     cout << " copyValue " << convert->toDouble(pvValueCopy);
@@ -169,7 +168,7 @@ static void testPVScalar(
     cout << " copyValue " << convert->toDouble(pvValueCopy);
     cout << " bitSet " << builder;
     cout << endl;
-    pvCopy->updateRecord(pvStructureCopy,bitSet,true);
+    pvCopy->updateRecord(pvStructureCopy,bitSet);
     cout << "after updateRecord";
     cout << " recordValue " << convert->toDouble(pvValueRecord);
     cout << " copyValue " << convert->toDouble(pvValueCopy);
@@ -194,7 +193,6 @@ static void testPVScalarArray(
     size_t offset;
     size_t n = 5;
     shared_vector<double> values(n);
-    pvRecord->lock_guard();
     cout << endl;
     pvStructureRecord = pvRecord->getPVRecordStructure()->getPVStructure();
     pvValueRecord = pvStructureRecord->getScalarArrayField(valueNameRecord,scalarType);
@@ -207,7 +205,7 @@ static void testPVScalarArray(
     pvStructureCopy = pvCopy->createPVStructure();
     pvValueCopy = pvStructureCopy->getScalarArrayField(valueNameCopy,scalarType);
     bitSet = BitSetPtr(new BitSet(pvStructureCopy->getNumberFields()));
-    pvCopy->initCopy(pvStructureCopy, bitSet, true);
+    pvCopy->initCopy(pvStructureCopy, bitSet);
     builder.clear(); pvValueCopy->toString(&builder);
     cout << "after initCopy pvValueCopy " << builder << endl;
     cout << endl;
@@ -215,7 +213,7 @@ static void testPVScalarArray(
     for(size_t i=0; i<n; i++) values[i] = i + .06;
     const shared_vector<const double> yyy(freeze(values));
     pvValueRecord->putFrom(yyy);
-    pvCopy->updateCopySetBitSet(pvStructureCopy,bitSet,true);
+    pvCopy->updateCopySetBitSet(pvStructureCopy,bitSet);
     builder.clear(); pvValueCopy->toString(&builder);
     cout << "after put(i+ .06) pvValueCopy " << builder << endl;
     builder.clear();
@@ -248,7 +246,7 @@ static void testPVScalarArray(
     bitSet->toString(&builder);
     cout << endl;
     bitSet->set(0);
-    pvCopy->updateCopyFromBitSet(pvStructureCopy,bitSet,true);
+    pvCopy->updateCopyFromBitSet(pvStructureCopy,bitSet);
     cout << "after updateCopyFromBitSet";
     builder.clear(); pvValueRecord->toString(&builder);
     cout << " recordValue " << builder << endl;
@@ -272,7 +270,7 @@ static void testPVScalarArray(
     bitSet->toString(&builder);
     cout << " bitSet " << builder;
     cout << endl;
-    pvCopy->updateRecord(pvStructureCopy,bitSet,true);
+    pvCopy->updateRecord(pvStructureCopy,bitSet);
     cout << "after updateRecord";
     builder.clear(); pvValueRecord->toString(&builder);
     cout << " recordValue " << builder << endl;

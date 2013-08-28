@@ -77,10 +77,12 @@ ChannelProviderLocal::ChannelProviderLocal()
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
+    cout << "~ChannelProviderLocal()" << endl;
 }
 
 void ChannelProviderLocal::destroy()
 {
+    cout << "ChannelProviderLocal::destroy()" << endl;
     Lock xx(mutex);
     if(beingDestroyed) return;
     beingDestroyed = true;

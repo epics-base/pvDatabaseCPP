@@ -13,6 +13,7 @@
 
 #include <epicsThread.h>
 
+#include <pv/timeStamp.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
@@ -80,24 +81,8 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void process(bool lastRequest);
     virtual void destroy();
-    virtual void lock()
-    {
-        thelock.lock();
-        if(pvRecord->getTraceLevel()>2)
-        {
-            cout << "ChannelProcessLocal::lock";
-            cout << " recordName " << pvRecord->getRecordName() << endl;
-        }
-    }
-    virtual void unlock()
-    {
-        thelock.unlock();
-        if(pvRecord->getTraceLevel()>2)
-        {
-            cout << "ChannelProcessLocal::unlock";
-            cout << " recordName " << pvRecord->getRecordName() << endl;
-        }
-    }
+    virtual void lock() {mutex.lock();}
+    virtual void unlock() {mutex.unlock();}
 private:
     shared_pointer getPtrSelf()
     {
@@ -113,10 +98,8 @@ private:
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
-      thelock(mutex),
       nProcess(nProcess)
     {
-        thelock.unlock();
     }
     bool isDestroyed;
     bool callProcess;
@@ -124,7 +107,6 @@ private:
     ChannelProcessRequester::shared_pointer channelProcessRequester,;
     PVRecordPtr pvRecord;
     Mutex mutex;
-    Lock thelock;
     int nProcess;
 };
 
@@ -174,8 +156,11 @@ void ChannelProcessLocal::destroy()
         cout << "ChannelProcessLocal::destroy";
         cout << " destroyed " << isDestroyed << endl;
     }
-    if(isDestroyed) return;
-    isDestroyed = true;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        isDestroyed = true;
+    }
     channelLocal.reset();
 }
 
@@ -229,8 +214,8 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void get(bool lastRequest);
     virtual void destroy();
-    virtual void lock() {thelock.lock();}
-    virtual void unlock() {thelock.unlock();}
+    virtual void lock() {mutex.lock();}
+    virtual void unlock() {mutex.unlock();}
 private:
     shared_pointer getPtrSelf()
     {
@@ -253,10 +238,8 @@ private:
       pvCopy(pvCopy),
       pvStructure(pvStructure),
       bitSet(bitSet),
-      pvRecord(pvRecord),
-      thelock(mutex)
+      pvRecord(pvRecord)
     {
-        thelock.unlock();
     }
     bool firstTime;
     bool isDestroyed;
@@ -268,7 +251,6 @@ private:
     BitSetPtr bitSet;
     PVRecordPtr pvRecord;
     Mutex mutex;
-    Lock thelock;
 };
 
 ChannelGetLocalPtr ChannelGetLocal::create(
@@ -323,8 +305,11 @@ void ChannelGetLocal::destroy()
         cout << "ChannelGetLocal::destroy";
         cout << " destroyed " << isDestroyed << endl;
     }
-    if(isDestroyed) return;
-    isDestroyed = true;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        isDestroyed = true;
+    }
     channelLocal.reset();
 }
 
@@ -345,7 +330,7 @@ void ChannelGetLocal::get(bool lastRequest)
             pvRecord->process();
             pvRecord->endGroupPut();
         }
-        pvCopy->updateCopySetBitSet(pvStructure, bitSet, false);
+        pvCopy->updateCopySetBitSet(pvStructure, bitSet);
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -385,8 +370,8 @@ public:
     virtual void put(bool lastRequest);
     virtual void get();
     virtual void destroy();
-    virtual void lock() {thelock.lock();}
-    virtual void unlock() {thelock.unlock();}
+    virtual void lock() {mutex.lock();}
+    virtual void unlock() {mutex.unlock();}
 private:
     shared_pointer getPtrSelf()
     {
@@ -408,10 +393,8 @@ private:
       pvCopy(pvCopy),
       pvStructure(pvStructure),
       bitSet(bitSet),
-      pvRecord(pvRecord),
-      thelock(mutex)
+      pvRecord(pvRecord)
     {
-        thelock.unlock();
     }
     bool isDestroyed;
     bool callProcess;
@@ -422,7 +405,6 @@ private:
     BitSetPtr bitSet;
     PVRecordPtr pvRecord;
     Mutex mutex;
-    Lock thelock;
 };
 
 ChannelPutLocalPtr ChannelPutLocal::create(
@@ -476,8 +458,11 @@ void ChannelPutLocal::destroy()
         cout << "ChannelPutLocal::destroy";
         cout << " destroyed " << isDestroyed << endl;
     }
-    if(isDestroyed) return;
-    isDestroyed = true;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        isDestroyed = true;
+    }
     channelLocal.reset();
 }
 
@@ -494,7 +479,7 @@ void ChannelPutLocal::get()
     bitSet->set(0);
     pvRecord->lock();
     try {
-        pvCopy->updateCopyFromBitSet(pvStructure, bitSet, false);
+        pvCopy->updateCopyFromBitSet(pvStructure, bitSet);
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -519,7 +504,7 @@ void ChannelPutLocal::put(bool lastRequest)
     pvRecord->lock();
     try {
         pvRecord->beginGroupPut();
-        pvCopy->updateRecord(pvStructure, bitSet, false);
+        pvCopy->updateRecord(pvStructure, bitSet);
         if(callProcess) {
              pvRecord->process();
         }
@@ -560,8 +545,8 @@ public:
     virtual void getPut();
     virtual void getGet();
     virtual void destroy();
-    virtual void lock() {thelock.lock();}
-    virtual void unlock() {thelock.unlock();}
+    virtual void lock() {mutex.lock();}
+    virtual void unlock() {mutex.unlock();}
 private:
     shared_pointer getPtrSelf()
     {
@@ -589,10 +574,8 @@ private:
       pvGetStructure(pvGetStructure),
       putBitSet(putBitSet),
       getBitSet(getBitSet),
-      pvRecord(pvRecord),
-      thelock(mutex)
+      pvRecord(pvRecord)
     {
-        thelock.unlock();
     }
     bool isDestroyed;
     bool callProcess;
@@ -606,7 +589,6 @@ private:
     BitSetPtr getBitSet;
     PVRecordPtr pvRecord;
     Mutex mutex;
-    Lock thelock;
 };
 
 ChannelPutGetLocalPtr ChannelPutGetLocal::create(
@@ -642,6 +624,15 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
     PVStructurePtr pvGetStructure = pvGetCopy->createPVStructure();
     BitSetPtr   putBitSet(new BitSet(pvPutStructure->getNumberFields()));
     BitSetPtr   getBitSet(new BitSet(pvGetStructure->getNumberFields()));
+    pvRecord->lock();
+    try {
+        pvPutCopy->initCopy(pvPutStructure,putBitSet);
+        pvGetCopy->initCopy(pvGetStructure,getBitSet);
+    } catch(...) {
+        pvRecord->unlock();
+        throw;
+    }
+    pvRecord->unlock();
     ChannelPutGetLocalPtr putGet(new ChannelPutGetLocal(
         getProcess(pvRequest,true),
         channelLocal,
@@ -671,8 +662,11 @@ void ChannelPutGetLocal::destroy()
         cout << "ChannelPutGetLocal::destroy";
         cout << " destroyed " << isDestroyed << endl;
     }
-    if(isDestroyed) return;
-    isDestroyed = true;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        isDestroyed = true;
+    }
     channelLocal.reset();
 }
 
@@ -690,9 +684,9 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
     pvRecord->lock();
     try {
         pvRecord->beginGroupPut();
-        pvPutCopy->updateRecord(pvPutStructure, putBitSet, false);
+        pvPutCopy->updateRecord(pvPutStructure, putBitSet);
         if(callProcess) pvRecord->process();
-        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
+        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
         pvRecord->endGroupPut();
     } catch(...) {
         pvRecord->unlock();
@@ -720,7 +714,7 @@ void ChannelPutGetLocal::getPut()
     } 
     pvRecord->lock();
     try {
-        pvPutCopy->updateCopySetBitSet(pvPutStructure, putBitSet, false);
+        pvPutCopy->updateCopySetBitSet(pvPutStructure, putBitSet);
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -746,7 +740,7 @@ void ChannelPutGetLocal::getGet()
     } 
     pvRecord->lock();
     try {
-        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet, false);
+        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
     } catch(...) {
         pvRecord->unlock();
         throw;
@@ -785,8 +779,8 @@ public:
     virtual void putArray(bool lastRequest,int offset, int count);
     virtual void setLength(bool lastRequest,int length, int capacity);
     virtual void destroy();
-    virtual void lock() {thelock.lock();}
-    virtual void unlock() {thelock.unlock();}
+    virtual void lock() {mutex.lock();}
+    virtual void unlock() {mutex.unlock();}
 private:
     shared_pointer getPtrSelf()
     {
@@ -805,10 +799,8 @@ private:
       channelArrayRequester(channelArrayRequester),
       pvArray(pvArray),
       pvCopy(pvCopy),
-      pvRecord(pvRecord),
-      thelock(mutex)
+      pvRecord(pvRecord)
     {
-        thelock.unlock();
     }
     bool isDestroyed;
     bool callProcess;
@@ -818,7 +810,6 @@ private:
     PVArrayPtr pvCopy;
     PVRecordPtr pvRecord;
     Mutex mutex;
-    Lock thelock;
 };
 
 
@@ -891,10 +882,6 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     }
     channelArrayRequester->channelArrayConnect(
         Status::Ok, array, pvCopy);
-    if(pvRecord->getTraceLevel()>0)
-    {
-       cout << "ChannelArrayLocal::create" << endl;
-    }
     return array;
 }
 
@@ -906,8 +893,11 @@ void ChannelArrayLocal::destroy()
         cout << "ChannelArrayLocal::destroy";
         cout << " destroyed " << isDestroyed << endl;
     }
-    if(isDestroyed) return;
-    isDestroyed = true;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        isDestroyed = true;
+    }
     channelLocal.reset();
 }
 
@@ -968,7 +958,6 @@ void ChannelArrayLocal::putArray(bool lastRequest,int offset, int count)
     pvRecord->unlock();
     channelArrayRequester->putArrayDone(Status::Ok);
     if(lastRequest) destroy();
-    pvRecord->unlock();
 }
 
 void ChannelArrayLocal::setLength(bool lastRequest,int length, int capacity)
@@ -1061,7 +1050,7 @@ void ChannelLocal::destroy()
 
 void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 {
-    if(pvRecord->getTraceLevel()>1) {
+    if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::detach() " << endl;
     }
     destroy();

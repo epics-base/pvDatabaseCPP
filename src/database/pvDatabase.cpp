@@ -29,10 +29,8 @@ PVDatabasePtr PVDatabase::getMaster()
 }
 
 PVDatabase::PVDatabase()
-: thelock(mutex),
-  isDestroyed(false)
+: isDestroyed(false)
 {
-    thelock.unlock();
 }
 
 PVDatabase::~PVDatabase()
@@ -42,88 +40,132 @@ PVDatabase::~PVDatabase()
 void PVDatabase::destroy()
 {
     lock();
-    if(isDestroyed) {
+    try {
+        if(isDestroyed) {
+            unlock();
+            return;
+        }
+        isDestroyed = true;
+        PVRecordMap::iterator iter;
+        while(true) {
+            iter = recordMap.begin();
+            if(iter==recordMap.end()) break;
+            PVRecordPtr pvRecord = (*iter).second;
+            recordMap.erase(iter);
+            if(pvRecord.get()!=NULL) pvRecord->destroy();
+        }
         unlock();
-        return;
-    }
-    isDestroyed = true;
-    PVRecordMap::iterator iter;
-    while(true) {
-        iter = recordMap.begin();
-        if(iter==recordMap.end()) break;
-        PVRecordPtr pvRecord = (*iter).second;
-        recordMap.erase(iter);
+    } catch (...) {
         unlock();
-        if(pvRecord.get()!=NULL) pvRecord->destroy();
-        lock();
+        throw;
     }
 }
 
 void PVDatabase::lock() {
-    thelock.lock();
+    mutex.lock();
 }
 
 void PVDatabase::unlock() {
-    thelock.unlock();
+    mutex.unlock();
 }
 
 PVRecordPtr PVDatabase::findRecord(String const& recordName)
 {
-    lock_guard();
-    PVRecordPtr xxx;
-    if(isDestroyed) return xxx;
-    PVRecordMap::iterator iter = recordMap.find(recordName);
-    if(iter!=recordMap.end()) {
-         return (*iter).second;
+    lock();
+    try {
+        PVRecordPtr xxx;
+        if(isDestroyed) {
+            unlock();
+            return xxx;
+        }
+        PVRecordMap::iterator iter = recordMap.find(recordName);
+        if(iter!=recordMap.end()) {
+             unlock();
+             return (*iter).second;
+        }
+        unlock();
+        return xxx;
+    } catch(...) {
+        unlock();
+        throw;
     }
-    return xxx;
 }
 
 PVStringArrayPtr PVDatabase::getRecordNames()
 {
-    lock_guard();
-    PVStringArrayPtr pvStringArray = static_pointer_cast<PVStringArray>
-        (getPVDataCreate()->createPVScalarArray(pvString));
-    size_t len = recordMap.size();
-    shared_vector<String> names(len);
-    PVRecordMap::iterator iter;
-    size_t i = 0;
-    for(iter = recordMap.begin(); iter!=recordMap.end(); ++iter) {
-        names[i++] = (*iter).first;
+    lock();
+    try {
+        PVStringArrayPtr xxx;
+        if(isDestroyed) {
+            unlock();
+            return xxx;
+        }
+        PVStringArrayPtr pvStringArray = static_pointer_cast<PVStringArray>
+            (getPVDataCreate()->createPVScalarArray(pvString));
+        size_t len = recordMap.size();
+        shared_vector<String> names(len);
+        PVRecordMap::iterator iter;
+        size_t i = 0;
+        for(iter = recordMap.begin(); iter!=recordMap.end(); ++iter) {
+            names[i++] = (*iter).first;
+        }
+        shared_vector<const String> temp(freeze(names));
+        pvStringArray->replace(temp);
+        unlock();
+        return pvStringArray;
+    } catch(...) {
+        unlock();
+        throw;
     }
-    shared_vector<const String> temp(freeze(names));
-    pvStringArray->replace(temp);
-    return pvStringArray;
 }
 
 bool PVDatabase::addRecord(PVRecordPtr const & record)
 {
-    lock_guard();
-    if(isDestroyed) return false;
-    String recordName = record->getRecordName();
-    PVRecordMap::iterator iter = recordMap.find(recordName);
-    if(iter!=recordMap.end()) {
-         return false;
+    lock();
+    try {
+        if(isDestroyed) {
+            unlock();
+            return false;
+        }
+        String recordName = record->getRecordName();
+        PVRecordMap::iterator iter = recordMap.find(recordName);
+        if(iter!=recordMap.end()) {
+             unlock();
+             return false;
+        }
+        record->start();
+        recordMap.insert(PVRecordMap::value_type(recordName,record));
+        unlock();
+        return true;
+    } catch(...) {
+        unlock();
+        throw;
     }
-    recordMap.insert(PVRecordMap::value_type(recordName,record));
-    return true;
 }
 
 bool PVDatabase::removeRecord(PVRecordPtr const & record)
 {
     lock();
-    if(isDestroyed) return false;
-    String recordName = record->getRecordName();
-    PVRecordMap::iterator iter = recordMap.find(recordName);
-    if(iter!=recordMap.end())  {
-        PVRecordPtr pvRecord = (*iter).second;
-        recordMap.erase(iter);
+    try {
+        if(isDestroyed) {
+            unlock();
+            return false;
+        }
+        String recordName = record->getRecordName();
+        PVRecordMap::iterator iter = recordMap.find(recordName);
+        if(iter!=recordMap.end())  {
+            PVRecordPtr pvRecord = (*iter).second;
+            recordMap.erase(iter);
+            if(pvRecord.get()!=NULL) pvRecord->destroy();
+            unlock();
+            return true;
+        }
         unlock();
-        if(pvRecord.get()!=NULL) pvRecord->destroy();
-        return true;
+        return false;
+    } catch(...) {
+        unlock();
+        throw;
     }
-    unlock();
-    return false;
 }
 
 String PVDatabase::getRequesterName()

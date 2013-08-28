@@ -47,7 +47,8 @@ int main(int argc,char *argv[])
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
     pvRecord.reset();
-    startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
+    ServerContext::shared_pointer pvaServer = 
+        startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleCounter\n";
     string str;
     while(true) {
@@ -56,6 +57,10 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
+    pvaServer->shutdown();
+    epicsThreadSleep(1.0);
+    pvaServer->destroy();
+    channelProvider->destroy();
     return 0;
 }
 

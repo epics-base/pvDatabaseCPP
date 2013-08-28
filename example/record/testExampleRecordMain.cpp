@@ -64,7 +64,7 @@ static PVStructurePtr createPowerSupply()
 }
 
 
-int main(int argc,char *argv[])
+void test()
 {
     StandardPVFieldPtr standardPVField = getStandardPVField();
     String properties;
@@ -77,11 +77,13 @@ int main(int argc,char *argv[])
     pvStructure = standardPVField->scalar(scalarType,properties);
     PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
     {
-        pvRecord->lock_guard();
+        pvRecord->lock();
         pvRecord->process();
+        pvRecord->unlock();
     }
     cout << "processed exampleDouble "  << endl;
     pvRecord->destroy();
+    pvRecord.reset();
     recordName = "powerSupplyExample";
     pvStructure.reset();
     pvStructure = createPowerSupply();
@@ -89,14 +91,16 @@ int main(int argc,char *argv[])
         PowerSupplyRecordTest::create(recordName,pvStructure);
     if(psr.get()==NULL) {
         cout << "PowerSupplyRecordTest::create failed" << endl;
-        return 1;
+        return;
     }
+    pvStructure.reset();
     double voltage,power,current;
     {
-        psr->lock_guard();
+        psr->lock();
         voltage = psr->getVoltage();
         power = psr->getPower();
         current = psr->getCurrent();
+        psr->unlock();
     }
     cout << "initial ";
     cout << " voltage " << voltage ;
@@ -110,21 +114,29 @@ int main(int argc,char *argv[])
     cout << " power " << power;
     cout << endl;
     {
-        psr->lock_guard();
+        psr->lock();
         psr->put(power,voltage);
         psr->process();
+        psr->unlock();
     }
     {
-        psr->lock_guard();
+        psr->lock();
         cout << "after put ";
         cout << " voltage " << psr->getVoltage() ;
         cout << " power " << psr->getPower();
         cout <<  " current " << psr->getCurrent();
         cout << endl;
+        psr->unlock();
     }
     PVDatabasePtr pvDatabase = PVDatabase::getMaster();
     pvDatabase->addRecord(psr);
+    psr.reset();
     pvDatabase->destroy();
+}
+
+int main(int argc,char *argv[])
+{
+    test();
     return 0;
 }
 

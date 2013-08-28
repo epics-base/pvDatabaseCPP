@@ -70,7 +70,6 @@ private:
     epics::pvData::Alarm alarm;
     epics::pvAccess::Channel::shared_pointer channel;
     epics::pvAccess::ChannelGet::shared_pointer channelGet;
-    epics::pvData::Mutex mutex;
     epics::pvData::Event event;
     epics::pvData::Status status;
     epics::pvData::PVStructurePtr getPVStructure;

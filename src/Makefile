@@ -25,7 +25,7 @@ LIBSRCS += pvCopy.cpp
 LIBSRCS += channelLocal.cpp
 LIBSRCS += monitorFactory.cpp
 
-SRC_DIRS += $(DATABASE)/v3IOC
+SRC_DIRS += $(DATABASE)/V3IOC
 DBD += PVAServerRegister.dbd
 DBD += PVAClientRegister.dbd
 LIBSRCS += PVAServerRegister.cpp

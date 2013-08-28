@@ -13,6 +13,8 @@
 #include <memory>
 #include <sstream>
 
+#include <pv/thread.h>
+
 #include <pv/channelProviderLocal.h>
 
 
@@ -170,124 +172,99 @@ PVRecordFieldPtr PVCopy::getRecordPVField(size_t structureOffset)
 
 void PVCopy::initCopy(
     PVStructurePtr const  &copyPVStructure,
-    BitSetPtr const  &bitSet,
-    bool lockRecord)
+    BitSetPtr const  &bitSet)
 {
     bitSet->clear();
     bitSet->set(0);
-    updateCopyFromBitSet(copyPVStructure,bitSet,lockRecord);
+    updateCopyFromBitSet(copyPVStructure,bitSet);
 }
 
 void PVCopy::updateCopySetBitSet(
     PVStructurePtr const  &copyPVStructure,
-    BitSetPtr const  &bitSet,
-    bool lockRecord)
+    BitSetPtr const  &bitSet)
 {
-    if(lockRecord) pvRecord->lock();
-    try {
-        if(headNode->isStructure) {
-            CopyStructureNodePtr node = static_pointer_cast<CopyStructureNode>(headNode);
-            updateStructureNodeSetBitSet(copyPVStructure,node,bitSet);
-        } else {
-            CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(headNode);
-            PVRecordFieldPtr pvRecordField= recordNode->recordPVField;
-            PVFieldPtr copyPVField = copyPVStructure;
-            PVFieldPtrArray const & pvCopyFields = copyPVStructure->getPVFields();
-            if(pvCopyFields.size()==1) {
-                copyPVField = pvCopyFields[0];
-            }
-            PVFieldPtr pvField = pvRecordField->getPVField();
-            if(pvField->getField()->getType()==epics::pvData::structure) {
-                updateSubFieldSetBitSet(copyPVField,pvRecordField,bitSet);
-                return;
-            }
-            if(pvCopyFields.size()!=1) {
-                throw std::logic_error("Logic error");
-            }
-            ConvertPtr convert = getConvert();
-            bool isEqual = convert->equals(copyPVField,pvField);
-            if(!isEqual) {
-                convert->copy(pvField, copyPVField);
-                bitSet->set(copyPVField->getFieldOffset());
-            }
+    if(headNode->isStructure) {
+        CopyStructureNodePtr node = static_pointer_cast<CopyStructureNode>(headNode);
+        updateStructureNodeSetBitSet(copyPVStructure,node,bitSet);
+    } else {
+        CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(headNode);
+        PVRecordFieldPtr pvRecordField= recordNode->recordPVField;
+        PVFieldPtr copyPVField = copyPVStructure;
+        PVFieldPtrArray const & pvCopyFields = copyPVStructure->getPVFields();
+        if(pvCopyFields.size()==1) {
+            copyPVField = pvCopyFields[0];
         }
-        if(lockRecord) pvRecord->unlock();
-    } catch(...) {
-        if(lockRecord) pvRecord->unlock();
-        throw;
+        PVFieldPtr pvField = pvRecordField->getPVField();
+        if(pvField->getField()->getType()==epics::pvData::structure) {
+            updateSubFieldSetBitSet(copyPVField,pvRecordField,bitSet);
+            return;
+        }
+        if(pvCopyFields.size()!=1) {
+            throw std::logic_error("Logic error");
+        }
+        ConvertPtr convert = getConvert();
+        bool isEqual = convert->equals(copyPVField,pvField);
+        if(!isEqual) {
+            convert->copy(pvField, copyPVField);
+            bitSet->set(copyPVField->getFieldOffset());
+        }
     }
 }
 
 void PVCopy::updateCopyFromBitSet(
     PVStructurePtr const  &copyPVStructure,
-    BitSetPtr const  &bitSet,
-    bool lockRecord)
+    BitSetPtr const  &bitSet)
 {
     bool doAll = bitSet->get(0);
-    if(lockRecord) pvRecord->lock();
-    try {
-        if(headNode->isStructure) {
-            CopyStructureNodePtr node = static_pointer_cast<CopyStructureNode>(headNode);
-            updateStructureNodeFromBitSet(copyPVStructure,node,bitSet,true,doAll);
+    if(headNode->isStructure) {
+        CopyStructureNodePtr node = static_pointer_cast<CopyStructureNode>(headNode);
+        updateStructureNodeFromBitSet(copyPVStructure,node,bitSet,true,doAll);
+    } else {
+        CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(headNode);
+        PVFieldPtrArray const & pvCopyFields = copyPVStructure->getPVFields();
+        if(pvCopyFields.size()==1) {
+            updateSubFieldFromBitSet(
+                pvCopyFields[0],
+                recordNode->recordPVField,bitSet,
+                true,doAll);
         } else {
-            CopyRecordNodePtr recordNode = static_pointer_cast<CopyRecordNode>(headNode);
-            PVFieldPtrArray const & pvCopyFields = copyPVStructure->getPVFields();
-            if(pvCopyFields.size()==1) {
-                updateSubFieldFromBitSet(
-                    pvCopyFields[0],
-                    recordNode->recordPVField,bitSet,
-                    true,doAll);
-            } else {
-                updateSubFieldFromBitSet(
-                    copyPVStructure,
-                    recordNode->recordPVField,bitSet,
-                    true,doAll);
-            }
+            updateSubFieldFromBitSet(
+                copyPVStructure,
+                recordNode->recordPVField,bitSet,
+                true,doAll);
         }
-        if(lockRecord) pvRecord->unlock();
-    } catch(...) {
-        if(lockRecord) pvRecord->unlock();
-        throw;
     }
 }
 
 void PVCopy::updateRecord(
     PVStructurePtr const  &copyPVStructure,
-    BitSetPtr const  &bitSet,
-    bool lockRecord)
+    BitSetPtr const  &bitSet)
 {
     bool doAll = bitSet->get(0);
-    if(lockRecord) pvRecord->lock();
-    try {
-        pvRecord->beginGroupPut();
-        if(headNode->isStructure) {
-            CopyStructureNodePtr node =
-                static_pointer_cast<CopyStructureNode>(headNode);
-            updateStructureNodeFromBitSet(
-                copyPVStructure,node,bitSet,false,doAll);
+    pvRecord->beginGroupPut();
+    if(headNode->isStructure) {
+        CopyStructureNodePtr node =
+            static_pointer_cast<CopyStructureNode>(headNode);
+        updateStructureNodeFromBitSet(
+            copyPVStructure,node,bitSet,false,doAll);
+    } else {
+        CopyRecordNodePtr recordNode =
+            static_pointer_cast<CopyRecordNode>(headNode);
+        PVFieldPtrArray const & pvCopyFields =
+            copyPVStructure->getPVFields();
+        if(pvCopyFields.size()==1) {
+            updateSubFieldFromBitSet(
+                pvCopyFields[0],
+                recordNode->recordPVField,bitSet,
+                false,doAll);
         } else {
-            CopyRecordNodePtr recordNode =
-                static_pointer_cast<CopyRecordNode>(headNode);
-            PVFieldPtrArray const & pvCopyFields =
-                copyPVStructure->getPVFields();
-            if(pvCopyFields.size()==1) {
-                updateSubFieldFromBitSet(
-                    pvCopyFields[0],
-                    recordNode->recordPVField,bitSet,
-                    false,doAll);
-            } else {
-                updateSubFieldFromBitSet(
-                    copyPVStructure,
-                    recordNode->recordPVField,bitSet,
-                    false,doAll);
-            }
+            updateSubFieldFromBitSet(
+                copyPVStructure,
+                recordNode->recordPVField,bitSet,
+                false,doAll);
         }
-        pvRecord->endGroupPut();
-        if(lockRecord) pvRecord->unlock();
-    } catch(...) {
-        if(lockRecord) pvRecord->unlock();
-        throw;
     }
+    pvRecord->endGroupPut();
 }
 
 PVCopyMonitorPtr PVCopy::createPVCopyMonitor(
@@ -1028,17 +1005,10 @@ void PVCopyMonitor::stopMonitoring()
 
 void PVCopyMonitor::switchBitSets(
     BitSetPtr const &newChangeBitSet,
-    BitSetPtr const &newOverrunBitSet,
-    bool lockRecord)
+    BitSetPtr const &newOverrunBitSet)
 {
-    if(lockRecord) pvRecord->lock();
-    try {
-        changeBitSet = newChangeBitSet;
-        overrunBitSet = newOverrunBitSet;
-        if(lockRecord) pvRecord->unlock();
-    } catch(...) {
-        if(lockRecord) pvRecord->unlock();
-    }
+    changeBitSet = newChangeBitSet;
+    overrunBitSet = newOverrunBitSet;
 }
 
 void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)

@@ -55,20 +55,16 @@ public:
     PVRecordFieldPtr getRecordPVField(std::size_t structureOffset);
     void initCopy(
         epics::pvData::PVStructurePtr const  &copyPVStructure,
-        epics::pvData::BitSetPtr const  &bitSet,
-        bool lockRecord);
+        epics::pvData::BitSetPtr const  &bitSet);
     void updateCopySetBitSet(
         epics::pvData::PVStructurePtr const  &copyPVStructure,
-        epics::pvData::BitSetPtr const  &bitSet,
-        bool lockRecord);
+        epics::pvData::BitSetPtr const  &bitSet);
     void updateCopyFromBitSet(
         epics::pvData::PVStructurePtr const  &copyPVStructure,
-        epics::pvData::BitSetPtr const  &bitSet,
-        bool lockRecord);
+        epics::pvData::BitSetPtr const  &bitSet);
     void updateRecord(
         epics::pvData::PVStructurePtr const  &copyPVStructure,
-        epics::pvData::BitSetPtr const  &bitSet,
-        bool lockRecord);
+        epics::pvData::BitSetPtr const  &bitSet);
     PVCopyMonitorPtr createPVCopyMonitor(
         PVCopyMonitorRequesterPtr const  &pvCopyMonitorRequester);
     epics::pvData::PVStructurePtr getOptions(
@@ -164,7 +160,7 @@ public:
     void stopMonitoring();
     void switchBitSets(
         epics::pvData::BitSetPtr const &newChangeBitSet,
-        epics::pvData::BitSetPtr const &newOverrunBitSet, bool lockRecord);
+        epics::pvData::BitSetPtr const &newOverrunBitSet);
     // following are PVListener methods
     virtual void detach(PVRecordPtr const & pvRecord);
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField);

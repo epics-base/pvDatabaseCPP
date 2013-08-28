@@ -60,6 +60,11 @@ public:
      */
     virtual bool init() {initPVRecord(); return true;}
     /**
+     * Optional method for derived class.
+     * It is called before record is added to database.
+     */
+    virtual void start() {}
+    /**
      *  Must be implemented by derived classes.
      *  It is the method that makes a record smart.
      *  If it encounters errors it should raise alarms and/or
@@ -69,6 +74,8 @@ public:
     /**
      *  Destroy the PVRecord. Release any resources used and 
      *  get rid of listeners and requesters.
+     *  If derived class overrides this then it must call PVRecord::destroy()
+     *  after it has destroyed rewsorces it uses.
      */
     virtual void destroy();
     /**
@@ -113,12 +120,6 @@ public:
      * @return <b>true</b> if requester was removed.
      */
     bool removeRequester(epics::pvData::RequesterPtr const & requester);
-    /**
-     *  This is an inline method that locks the record.
-     *  The record will automatically
-     *   be unlocked when control leaves the block that has the call.
-     */
-    inline void lock_guard() { epics::pvData::Lock thelock(mutex); }
     /**
      * Lock the record.
      * Any code must lock while accessing a record.
@@ -262,7 +263,6 @@ private:
     std::list<PVRecordClientPtr> pvRecordClientList;
     std::list<epics::pvData::RequesterPtr> requesterList;
     epics::pvData::Mutex mutex;
-    epics::pvData::Lock thelock;
     std::size_t depthGroupPut;
     int traceLevel;
     bool isDestroyed;
@@ -553,10 +553,8 @@ private:
     PVDatabase();
     void lock();
     void unlock();
-    inline void lock_guard() { epics::pvData::Lock thelock(mutex); }
     PVRecordMap  recordMap;
     epics::pvData::Mutex mutex;
-    epics::pvData::Lock thelock;
     bool isDestroyed;
     
 };
