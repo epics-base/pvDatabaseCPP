@@ -12,6 +12,11 @@ longArrayMonitorMain_SRCS += longArrayMonitorMain.cpp
 longArrayMonitorMain_LIBS += pvDatabase pvAccess pvData Com
 longArrayMonitorMain_LIBS += pvDatabaseExample
 
+PROD_HOST += vectorPerformanceMain
+vectorPerformanceMain_SRCS += vectorPerformanceMain.cpp
+vectorPerformanceMain_LIBS += pvDatabase pvAccess pvData Com
+vectorPerformanceMain_LIBS += pvDatabaseExample
+
 
 
 include $(TOP)/configure/RULES

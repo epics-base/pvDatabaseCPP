@@ -8,6 +8,7 @@
  * @author mrk
  * @date 2013.08.08
  */
+
 #include <pv/lock.h>
 #include <pv/arrayPerformance.h>
 
@@ -18,6 +19,7 @@ using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::ostringstream;
 
 ArrayPerformancePtr ArrayPerformance::create(
     epics::pvData::String const & recordName,
@@ -87,7 +89,8 @@ ArrayPerformanceThread::ArrayPerformanceThread(ArrayPerformancePtr const & array
   arrayPerformance(arrayPerformance),
   isDestroyed(false),
   runReturned(false),
-  threadName("arrayPerformance")
+  threadName("arrayPerformance"),
+  value(0)
 {}
 
 void ArrayPerformanceThread::init()
@@ -138,17 +141,18 @@ void ArrayPerformanceThread::run()
         timeStamp.getCurrent();
         double diff = TimeStamp::diff(timeStamp,timeStampLast);
         if(diff>=1.0) {
-            cout << "arrayPerformance value " << value;
-            cout << " time " << diff;
+            ostringstream out;
+            out << "arrayPerformance value " << value;
+            out << " time " << diff;
             double iterations = nSinceLastReport;
             iterations /= diff;
-            cout << " iterations/sec " << iterations;
+            out << " iterations/sec " << iterations;
             double elementSize = arrayPerformance->size;
             double elementsPerSecond = elementSize*nSinceLastReport;
             elementsPerSecond /= diff;
             elementsPerSecond /= 1e6;
-            cout << " elements/sec " << elementsPerSecond << "million" << endl;
-            cout.flush();
+            out << " elements/sec " << elementsPerSecond << "million";
+            cout << out.str() << endl;
             timeStampLast = timeStamp;
             nSinceLastReport = 0;
         }

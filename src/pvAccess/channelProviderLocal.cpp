@@ -18,10 +18,41 @@ namespace epics { namespace pvDatabase {
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
+using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
 
 static String providerName("local");
+
+class MockChannelFind : public ChannelFind
+{
+public:
+    typedef std::tr1::shared_ptr<MockChannelFind> shared_pointer;
+
+    MockChannelFind(ChannelProvider::shared_pointer &provider) : m_provider(provider)
+    {
+    }
+
+    virtual ~MockChannelFind() {}
+
+    virtual void destroy()
+    {
+        // one instance for all, do not delete at all
+    }
+    virtual ChannelProvider::shared_pointer getChannelProvider()
+    {
+        return m_provider.lock();
+    };
+
+    virtual void cancelChannelFind()
+    {
+        throw std::runtime_error("not supported");
+    }
+
+private:
+    ChannelProvider::weak_pointer m_provider;
+};
+
 
 class LocalChannelProviderFactory;
 typedef std::tr1::shared_ptr<LocalChannelProviderFactory> LocalChannelProviderFactoryPtr;
@@ -64,6 +95,8 @@ ChannelProviderLocalPtr getChannelProviderLocal()
     if(channelProviderLocal.get()==NULL) {
         channelProviderLocal = ChannelProviderLocalPtr(
             new ChannelProviderLocal());
+        ChannelProvider::shared_pointer xxx = dynamic_pointer_cast<ChannelProvider>(channelProviderLocal);
+        channelProviderLocal->channelFinder = MockChannelFind::shared_pointer(new MockChannelFind(xxx));
         LocalChannelProviderFactory::create(channelProviderLocal);
     }
     return channelProviderLocal;
@@ -103,14 +136,14 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     if(pvRecord.get()!=NULL) {
         channelFindRequester->channelFindResult(
             Status::Ok,
-            ChannelFind::shared_pointer(),
+            channelFinder,
             true);
         
     } else {
         Status notFoundStatus(Status::STATUSTYPE_ERROR,String("pv not found"));
         channelFindRequester->channelFindResult(
             notFoundStatus,
-            ChannelFind::shared_pointer(),
+            channelFinder,
             false);
     }
     return ChannelFind::shared_pointer();

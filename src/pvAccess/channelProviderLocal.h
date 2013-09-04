@@ -99,6 +99,7 @@ private:
     PVDatabasePtr pvDatabase;
     epics::pvData::Mutex mutex;
     bool beingDestroyed;
+    epics::pvAccess::ChannelFind::shared_pointer channelFinder;
     friend class ChannelProviderLocalRun;
 };
 

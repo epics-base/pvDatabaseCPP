@@ -90,6 +90,7 @@ private:
     bool runReturned;
     epics::pvData::String threadName;
     Event event;
+    Mutex mutex;
     std::auto_ptr<epicsThread> thread;
 };
 
@@ -163,9 +164,14 @@ void LAMMonitorRequester::run()
             return;
         }
         while(true) {
-            MonitorElementPtr monitorElement = longArrayMonitor->monitor->poll();
+            MonitorElementPtr monitorElement;
+            PVStructurePtr pvStructure;
+            {
+                 Lock xx(mutex);
+                 monitorElement = longArrayMonitor->monitor->poll();
+                 if(monitorElement!=NULL) pvStructure = monitorElement->pvStructurePtr;
+            }
             if(monitorElement==NULL) break;
-            PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
             pvTimeStamp.attach(pvStructure->getSubField("timeStamp"));
             pvTimeStamp.get(timeStamp);
             pvValue = dynamic_pointer_cast<PVLongArray>(pvStructure->getSubField("value"));
