@@ -166,8 +166,8 @@ void copy(
     size_t capacity = to.getCapacity();
     if(toOffset+len>capacity) capacity = toOffset+len;
     shared_vector<PVStructurePtr> temp(capacity);
-    typename PVValueArray<PVStructurePtr>::const_svector vecFrom = from.view();
-    typename PVValueArray<PVStructurePtr>::const_svector vecTo = to.view();
+    PVValueArray<PVStructurePtr>::const_svector vecFrom = from.view();
+    PVValueArray<PVStructurePtr>::const_svector vecTo = to.view();
     for(size_t i=0; i<toOffset; ++i) temp[i] = vecTo[i];
     for(size_t i=0; i<len; ++i) temp[i + toOffset] = vecFrom[i + fromOffset];
     for(size_t i=len + toOffset; i<capacity; ++i) temp[i] = vecTo[i];
