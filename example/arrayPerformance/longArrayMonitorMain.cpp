@@ -62,9 +62,10 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
+    ClientFactory::stop();
+    epicsThreadSleep(.1);
     longArrayMonitor->destroy();
     longArrayMonitor.reset();
-    ClientFactory::stop();
     return 0;
 }
 

@@ -37,6 +37,7 @@ public:
     : longArrayMonitor(longArrayMonitor)
     {}
     virtual ~LAMChannelRequester(){}
+    virtual void destroy(){longArrayMonitor.reset();}
     virtual String getRequesterName() { return requesterName;}
     virtual void message(String const & message, MessageType messageType)
        { messagePvt(message,messageType);}
@@ -184,7 +185,6 @@ void LAMMonitorRequester::run()
                 double diff = TimeStamp::diff(timeStamp,timeStampLast);
                 double elementsPerSecond = data.size();
                 elementsPerSecond = 1e-6*elementsPerSecond/diff;
-                cout.flush();
                 cout << "first " << first << " last " << last << " sum " << sum;
                 cout << " elements/sec " << elementsPerSecond << "million";
                 BitSetPtr changed = monitorElement->changedBitSet;
@@ -196,7 +196,6 @@ void LAMMonitorRequester::run()
                 overrun->toString(&buffer);
                 cout << " overrun " << buffer;
                 cout << endl;
-                cout.flush();
                 timeStampLast = timeStamp;
             } else {
                 cout << "size = 0" << endl;
@@ -282,6 +281,7 @@ void LongArrayMonitor::destroy()
     monitor.reset();
     channel->destroy();
     channel.reset();
+    channelRequester->destroy();
     channelRequester.reset();
 }
 

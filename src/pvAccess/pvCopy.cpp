@@ -16,6 +16,7 @@
 #include <pv/thread.h>
 
 #include <pv/channelProviderLocal.h>
+#include <pv/pvCopy.h>
 
 
 namespace epics { namespace pvDatabase { 
@@ -121,6 +122,11 @@ size_t PVCopy::getCopyOffset(PVRecordFieldPtr const &recordPVField)
         if((recordNode->recordPVField.get())==recordPVField.get()) {
              return headNode->structureOffset;
         }
+        PVStructure * parent = recordPVField->getPVField()->getParent();
+        size_t offsetParent = parent->getFieldOffset();
+        size_t off = recordPVField->getPVField()->getFieldOffset();
+        size_t offdiff = off -offsetParent;
+        if(offdiff<recordNode->nfields) return headNode->structureOffset + offdiff;
         return String::npos;
     }
     CopyStructureNodePtr node = static_pointer_cast<CopyStructureNode>(headNode);
@@ -977,10 +983,10 @@ void PVCopyMonitor::startMonitoring(
     this->changeBitSet = changeBitSet;
     this->overrunBitSet = overrunBitSet;
     isGroupPut = false;
-    pvRecord->addListener(getPtrSelf());
-    addListener(headNode);
     pvRecord->lock();
     try {
+        pvRecord->addListener(getPtrSelf());
+        addListener(headNode);
         changeBitSet->clear();
         overrunBitSet->clear();
         changeBitSet->set(0);

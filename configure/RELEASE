@@ -40,5 +40,5 @@ PVDATA=/home/mrk/hg/pvDataCPP
 PVACCESS=/home/mrk/hg/pvAccessCPP
 
 # set your EPICS_BASE, PVDATA and PVACCESS paths in here
--include $(TOP)/configure/RELEASE.local
 -include $(TOP)/../RELEASE.local
+-include $(TOP)/configure/RELEASE.local

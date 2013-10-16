@@ -28,6 +28,7 @@ using std::endl;
 static MonitorAlgorithmCreatePtr nullMonitorAlgorithmCreate;
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
+static Status wasDestroyedStatus(Status::Status::STATUSTYPE_ERROR,"was destroyed");
 
 static ConvertPtr convert = getConvert();
 
@@ -81,14 +82,12 @@ public:
     virtual MonitorElementPtr poll();
     virtual void release(MonitorElementPtr const &monitorElement);
 private:
-    MonitorLocalPtr monitorLocal;
+    std::tr1::weak_ptr<MonitorLocal> monitorLocal;
     PVStructurePtr pvCopyStructure;
     MonitorElementPtr monitorElement;
     bool gotMonitor;
-    bool wasReleased;
     BitSetPtr changedBitSet;
     BitSetPtr overrunBitSet;
-    Mutex mutex;
 };
 
 class RealQueue :
@@ -106,11 +105,10 @@ public:
     virtual MonitorElementPtr poll();
     virtual void release(MonitorElementPtr const &monitorElement);
 private:
-    MonitorLocalPtr monitorLocal;
+    std::tr1::weak_ptr<MonitorLocal> monitorLocal;
     Queue<MonitorElement> queue;
     bool queueIsFull;
     MonitorElementPtr monitorElement;
-    Mutex mutex;
 };
 
     
@@ -190,11 +188,15 @@ void MonitorLocal::destroy()
 
 Status MonitorLocal::start()
 {
-    if(pvRecord->getTraceLevel()>0)
     {
-        cout << "MonitorLocal::start() "  << endl;
+        Lock xx(mutex);
+        if(pvRecord->getTraceLevel()>0)
+        {
+            cout << "MonitorLocal::start() "  << endl;
+        }
+        if(isDestroyed) return wasDestroyedStatus;
+        firstMonitor = true;
     }
-    firstMonitor = true;
     return queue->start();
 }
 
@@ -211,11 +213,44 @@ Status MonitorLocal::stop()
 
 MonitorElementPtr MonitorLocal::poll()
 {
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "MonitorLocal::poll() "  << endl;
+    pvRecord->lock();
+    try {
+        Lock xx(mutex);
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "MonitorLocal::poll() "  << endl;
+        }
+        if(isDestroyed) {
+            pvRecord->unlock();
+            return NULLMonitorElement;
+        }
+        MonitorElementPtr element = queue->poll();
+        pvRecord->unlock();
+        return element;
+    } catch(...) {
+        pvRecord->unlock();
+        throw;
     }
-    return queue->poll();
+}
+
+void MonitorLocal::release(MonitorElementPtr const & monitorElement)
+{
+    pvRecord->lock();
+    try {
+        Lock xx(mutex);
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "MonitorLocal::release() "  << endl;
+        }
+        if(isDestroyed) {
+            return;
+        }
+        queue->release(monitorElement);
+        pvRecord->unlock();
+    } catch(...) {
+        pvRecord->unlock();
+        throw;
+    }
 }
 
 void MonitorLocal::dataChanged()
@@ -224,6 +259,8 @@ void MonitorLocal::dataChanged()
     {
         cout << "MonitorLocal::dataChanged() "  "firstMonitor " << firstMonitor << endl;
     }
+    Lock xx(mutex);
+    if(isDestroyed) return;
     if(firstMonitor) {
     	queue->dataChanged();
     	firstMonitor = false;
@@ -242,15 +279,6 @@ void MonitorLocal::unlisten()
         cout << "MonitorLocal::unlisten() "  << endl;
     }
     monitorRequester->unlisten(getPtrSelf());
-}
-
-void MonitorLocal::release(MonitorElementPtr const & monitorElement)
-{
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "MonitorLocal::release() "  << endl;
-    }
-    queue->release(monitorElement);
 }
 
 bool MonitorLocal::init(PVStructurePtr const & pvRequest)
@@ -273,10 +301,7 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
             }
         }
     }
-    if(queueSize==1) {
-        monitorRequester->message("queueSize can not be 1",errorMessage);
-        return false;
-    }
+
     pvField = pvRequest->getSubField("field");
     if(pvField.get()==NULL) {
         pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -297,7 +322,7 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
     }
     pvCopyMonitor = pvCopy->createPVCopyMonitor(getPtrSelf());
     // MARTY MUST IMPLEMENT periodic
-    if(queueSize==0) {
+    if(queueSize<2) {
         queue = NOQueuePtr(new NOQueue(getPtrSelf()));
     } else {
         std::vector<MonitorElementPtr> monitorElementArray;
@@ -387,7 +412,6 @@ NOQueue::NOQueue(
    pvCopyStructure(monitorLocal->getPVCopy()->createPVStructure()),
    monitorElement(new MonitorElement(pvCopyStructure)),
    gotMonitor(false),
-   wasReleased(false),
    changedBitSet(new BitSet(pvCopyStructure->getNumberFields())),
    overrunBitSet(new BitSet(pvCopyStructure->getNumberFields()))
 {
@@ -395,12 +419,12 @@ NOQueue::NOQueue(
 
 Status NOQueue::start()
 {
-    Lock xx(mutex);
     gotMonitor = true;
-    wasReleased = true;
     changedBitSet->clear();
     overrunBitSet->clear();
-    monitorLocal->getPVCopyMonitor()->startMonitoring(
+    MonitorLocalPtr ml = monitorLocal.lock();
+    if(ml==NULL) return wasDestroyedStatus;
+    ml->getPVCopyMonitor()->startMonitoring(
         changedBitSet,
         overrunBitSet);
     return Status::Ok;
@@ -412,17 +436,17 @@ void NOQueue::stop()
 
 bool NOQueue::dataChanged()
 {
-    Lock xx(mutex);
-    monitorLocal->getPVCopy()->updateCopyFromBitSet(
-           pvCopyStructure, changedBitSet);
     gotMonitor = true;
-    return wasReleased;
+    return true;
 }
 
 MonitorElementPtr NOQueue::poll()
 {
-    Lock xx(mutex);
     if(!gotMonitor) return NULLMonitorElement;
+    MonitorLocalPtr ml = monitorLocal.lock();
+    if(ml==NULL) return NULLMonitorElement;
+    ml->getPVCopy()->updateCopyFromBitSet(
+           pvCopyStructure, changedBitSet);
     getConvert()->copyStructure(pvCopyStructure,monitorElement->pvStructurePtr);
     BitSetUtil::compress(changedBitSet,pvCopyStructure);
     BitSetUtil::compress(overrunBitSet,pvCopyStructure);
@@ -435,7 +459,6 @@ MonitorElementPtr NOQueue::poll()
 
 void NOQueue::release(MonitorElementPtr const &monitorElement)
 {
-    Lock xx(mutex);
     gotMonitor = false;
 }
 
@@ -450,12 +473,13 @@ RealQueue::RealQueue(
 
 Status RealQueue::start()
 {
-    Lock xx(mutex);
     queue.clear();
     monitorElement = queue.getFree();
     monitorElement->changedBitSet->clear();
     monitorElement->overrunBitSet->clear();
-    monitorLocal->getPVCopyMonitor()->startMonitoring(
+    MonitorLocalPtr ml = monitorLocal.lock();
+    if(ml==NULL) return wasDestroyedStatus;
+    ml->getPVCopyMonitor()->startMonitoring(
         monitorElement->changedBitSet,
         monitorElement->overrunBitSet);
     return Status::Ok;
@@ -467,9 +491,10 @@ void RealQueue::stop()
 
 bool RealQueue::dataChanged()
 {
-    Lock xx(mutex);
     PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
-    monitorLocal->getPVCopy()->updateCopyFromBitSet(
+    MonitorLocalPtr ml = monitorLocal.lock();
+    if(ml==NULL) return false;
+    ml->getPVCopy()->updateCopyFromBitSet(
         pvStructure,monitorElement->changedBitSet);
     if(queue.getNumberFree()==0) {
         if(queueIsFull) return false;
@@ -485,7 +510,7 @@ bool RealQueue::dataChanged()
     convert->copy(pvStructure,newElement->pvStructurePtr);
     newElement->changedBitSet->clear();
     newElement->overrunBitSet->clear();
-    monitorLocal->getPVCopyMonitor()->switchBitSets(
+    ml->getPVCopyMonitor()->switchBitSets(
         newElement->changedBitSet,newElement->overrunBitSet);
     queue.setUsed(monitorElement);
     monitorElement = newElement;
@@ -494,13 +519,11 @@ bool RealQueue::dataChanged()
 
 MonitorElementPtr RealQueue::poll()
 {
-    Lock xx(mutex);
     return queue.getUsed();
 }
 
 void RealQueue::release(MonitorElementPtr const &currentElement)
 {
-    Lock xx(mutex);
     queue.releaseUsed(currentElement);
     queueIsFull = false;
 }

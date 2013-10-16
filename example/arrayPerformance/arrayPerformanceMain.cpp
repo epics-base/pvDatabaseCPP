@@ -77,6 +77,8 @@ int main(int argc,char *argv[])
     PVRecordPtr pvRecord;
     pvRecord = ArrayPerformance::create(recordName,size,delay);
     result = master->addRecord(pvRecord);
+    PVRecordPtr arrayPreformance = pvRecord;
+    arrayPreformance->setTraceLevel(1);
     pvRecord = TraceRecord::create("traceRecordPGRPC");
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
@@ -97,11 +99,14 @@ int main(int argc,char *argv[])
         if(str.compare("exit")==0) break;
 
     }
+    arrayPreformance.reset();
     for(size_t i=0; i<nMonitor; ++i) longArrayMonitor[i]->stop();
+    for(size_t i=0; i<nMonitor; ++i) longArrayMonitor[i]->destroy();
     pvaServer->shutdown();
     epicsThreadSleep(1.0);
     pvaServer->destroy();
     ClientFactory::stop();
+    epicsThreadSleep(1.0);
     channelProvider->destroy();
     return 0;
 }
