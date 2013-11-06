@@ -55,6 +55,13 @@ public:
         epics::pvData::PVStructure::shared_pointer const & pvStructure,
         epics::pvData::BitSet::shared_pointer const & bitSet);
     virtual void getDone(const epics::pvData::Status& status);
+    virtual epics::pvData::String getRequesterName() {return channelName;}
+    virtual void message(
+        epics::pvData::String const & message,
+        epics::pvData::MessageType messageType)
+        {
+           std::cout << "Why is ExamplePVADoubleArrayGet::message called\n";
+        }
 private:
     ExamplePVADoubleArrayGet(epics::pvData::String const & recordName,
         epics::pvData::String providerName,

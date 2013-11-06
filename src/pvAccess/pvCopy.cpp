@@ -350,7 +350,6 @@ bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
         pvRecord->getPVRecordStructure(),
         pvRequest,
         cacheInitStructure);
-    referenceImmutable(cacheInitStructure,headNode);
     return true;
 }
 
@@ -694,56 +693,6 @@ CopyNodePtr PVCopy::createStructureNodes(
     structureNode->nfields = pvFromStructure->getNumberFields();
     structureNode->options = pvOptions;
     return structureNode;
-}
-
-void PVCopy::referenceImmutable(
-    PVFieldPtr const &pvField,
-    CopyNodePtr const & node)
-
-{
-   if(node->isStructure) {
-        CopyStructureNodePtr structureNode =
-             static_pointer_cast<CopyStructureNode>(node);
-        CopyNodePtrArrayPtr nodes = structureNode->nodes;
-        PVStructurePtr pvStructure = static_pointer_cast<PVStructure>(pvField);
-        for(size_t i=0; i<nodes->size(); i++) {
-            CopyNodePtr nextNode = (*nodes)[i];
-            referenceImmutable(
-                pvStructure->getSubField(nextNode->structureOffset),
-                nextNode);
-        }
-    } else {
-        CopyRecordNodePtr recordNode = 
-             static_pointer_cast<CopyRecordNode>(node);
-        PVRecordFieldPtr recordPVField = recordNode->recordPVField;
-        referenceImmutable(pvField,recordPVField);
-    }
-}
-
-void PVCopy::referenceImmutable(
-    PVFieldPtr const &copyPVField,
-    PVRecordFieldPtr const &recordPVField)
-{
-    if(recordPVField->getPVField()->getField()->getType()
-    ==epics::pvData::structure) {
-        if(copyPVField->getField()->getType()!=epics::pvData::structure) {
-            throw std::logic_error(String("Logic error"));
-        }
-        PVStructurePtr pvStructure =
-            static_pointer_cast<PVStructure>(copyPVField);
-        PVFieldPtrArray const & copyPVFields = pvStructure->getPVFields();
-        PVRecordStructurePtr pvRecordStructure =
-            static_pointer_cast<PVRecordStructure>(recordPVField);
-        PVRecordFieldPtrArrayPtr recordPVFields =
-            pvRecordStructure->getPVRecordFields();
-        for(size_t i=0; i<copyPVFields.size(); i++) {
-            referenceImmutable(copyPVFields[i],(*recordPVFields)[i]);
-        }
-        return;
-    }
-    if(recordPVField->getPVField()->isImmutable()) {
-        getConvert()->copy(recordPVField->getPVField(), copyPVField);
-    }
 }
 
 void PVCopy::updateStructureNodeSetBitSet(

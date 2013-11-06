@@ -46,7 +46,6 @@ typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
  * @author mrk
  */
 class PVRecord :
-     public virtual epics::pvData::Requester,
      public std::tr1::enable_shared_from_this<PVRecord>
 {
 public:
@@ -108,18 +107,6 @@ public:
      */
     PVRecordFieldPtr findPVRecordField(
         epics::pvData::PVFieldPtr const & pvField);
-    /**
-     * Add a requester to receive messages.
-     * @param requester The requester.
-     * @return <b>true</b> if requester was added.
-     */
-    bool addRequester(epics::pvData::RequesterPtr const & requester);
-    /**
-     * Remove a requester.
-     * @param requester The requester.`
-     * @return <b>true</b> if requester was removed.
-     */
-    bool removeRequester(epics::pvData::RequesterPtr const & requester);
     /**
      * Lock the record.
      * Any code must lock while accessing a record.
@@ -184,31 +171,6 @@ public:
      */
     void endGroupPut();
     /**
-     * Virtual method of <b>Requester</b>
-     * @return the name of the requester.
-     */
-    epics::pvData::String getRequesterName() {return getRecordName();}
-    /**
-     * Can be called by implementation code.
-     * The message will be sent to every requester.
-     * @param message The message.
-     * @param messageType The severity of the message.
-     */
-    virtual void message(
-        epics::pvData::String const & message,
-        epics::pvData::MessageType messageType);
-    /**
-     * Called for a field. It will call the previous method
-     * after adding field name.
-     * @param pvRecordField The field for which the message is associated.
-     * @param message The message.
-     * @param messageType The severity of the message.
-     */
-    void message(
-        PVRecordFieldPtr const & pvRecordField,
-        epics::pvData::String const & message,
-        epics::pvData::MessageType messageType);
-    /**
      *  Calls the next method with indentLevel = 0.
      * @param buf String Builder.
      */
@@ -261,7 +223,6 @@ private:
     PVRecordStructurePtr pvRecordStructure;
     std::list<PVListenerPtr> pvListenerList;
     std::list<PVRecordClientPtr> pvRecordClientList;
-    std::list<epics::pvData::RequesterPtr> requesterList;
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;
@@ -341,16 +302,6 @@ public:
      * It is called whenever the put method is called.
      */
     virtual void postPut();
-    /**
-     * Called by implementation code.
-     * It calls PVRecord::message after prepending the full fieldname.
-     * @param message The message,
-     * @param messageType The message severity.
-     * @return
-     */
-    virtual void message(
-        epics::pvData::String const & message,
-        epics::pvData::MessageType messageType);
 protected:
     PVRecordFieldPtr getPtrSelf()
     {
@@ -495,7 +446,7 @@ public:
  * The interface to a database of PVRecords.
  * @author mrk
  */
-class PVDatabase : virtual public epics::pvData::Requester {
+class PVDatabase {
 public:
     POINTER_DEFINITIONS(PVDatabase);
     /**
@@ -535,20 +486,6 @@ public:
      * @return The names.
      */
     epics::pvData::PVStringArrayPtr getRecordNames();
-    /**
-     * Virtual method of Requester.
-     * @return The name.
-     */
-    virtual epics::pvData::String getRequesterName();
-    /**
-     * Virtual method of Requester.
-     * @param message The message.
-     * @param messageType The message severity.
-     * @return
-     */
-    virtual void message(
-        epics::pvData::String const & message,
-        epics::pvData::MessageType messageType);
 private:
     PVDatabase();
     void lock();
@@ -556,7 +493,6 @@ private:
     PVRecordMap  recordMap;
     epics::pvData::Mutex mutex;
     bool isDestroyed;
-    
 };
 
 }}

@@ -56,7 +56,6 @@ void PVRecord::initPVRecord()
     pvRecordStructure = PVRecordStructurePtr(
         new PVRecordStructure(pvStructure,parent,getPtrSelf()));
     pvRecordStructure->init();
-    pvStructure->setRequester(getPtrSelf());
 }
 
 void PVRecord::destroy()
@@ -71,16 +70,6 @@ void PVRecord::destroy()
             return;
         }
         isDestroyed = true;
-    
-        std::list<RequesterPtr>::iterator requesterIter;
-        while(true) {
-            requesterIter = requesterList.begin();
-            if(requesterIter==requesterList.end()) break;
-            requesterList.erase(requesterIter);
-            unlock();
-            (*requesterIter)->message("record destroyed",fatalErrorMessage);
-            lock();
-        }
     
         std::list<PVRecordClientPtr>::iterator clientIter;
         while(true) {
@@ -120,60 +109,6 @@ PVStructurePtr PVRecord::getPVStructure() {return pvStructure;}
 PVRecordFieldPtr PVRecord::findPVRecordField(PVFieldPtr const & pvField)
 {
     return findPVRecordField(pvRecordStructure,pvField);
-}
-
-bool PVRecord::addRequester(epics::pvData::RequesterPtr const & requester)
-{
-    if(traceLevel>2) {
-        cout << "PVRecord::addRequester() " << recordName << endl;
-    }
-    lock();
-    try {
-        if(isDestroyed) {
-            unlock();
-            return false;
-        }
-        std::list<RequesterPtr>::iterator iter;
-        for (iter = requesterList.begin(); iter!=requesterList.end(); iter++ ) {
-            if((*iter).get()==requester.get()) {
-                unlock();
-                return false;
-            }
-        }
-        requesterList.push_back(requester);
-        unlock();
-        return true;
-    } catch (...) {
-        unlock();
-        throw;
-    }
-}
-
-bool PVRecord::removeRequester(epics::pvData::RequesterPtr const & requester)
-{
-    if(traceLevel>2) {
-        cout << "PVRecord::removeRequester() " << recordName << endl;
-    }
-    lock();
-    try {
-        if(isDestroyed) {
-            unlock();
-            return false;
-        }
-        std::list<RequesterPtr>::iterator iter;
-        for (iter = requesterList.begin(); iter!=requesterList.end(); iter++ ) {
-            if((*iter).get()==requester.get()) {
-                requesterList.erase(iter);
-                unlock();
-                return true;
-            }
-        }
-        unlock();
-        return false;
-    } catch (...) {
-        unlock();
-        throw;
-    }
 }
 
 PVRecordFieldPtr PVRecord::findPVRecordField(
@@ -408,28 +343,6 @@ void PVRecord::endGroupPut()
    }
 }
 
-void PVRecord::message(String const & message,MessageType messageType)
-{
-    if(isDestroyed) return;
-    if(requesterList.size()==0 ) {
-        String xxx(getMessageTypeName(messageType) + " " + message);
-        printf("%s\n",xxx.c_str());
-        return;
-    }
-    std::list<epics::pvData::RequesterPtr>::iterator iter;
-    for(iter = requesterList.begin(); iter != requesterList.end(); ++iter) {
-        (*iter)->message(message,messageType);
-    }
-}
-
-void PVRecord::message(
-    PVRecordFieldPtr const & pvRecordField,
-    String const & message,
-    MessageType messageType)
-{
-     this->message(pvRecordField->getFullName() + " " + message,messageType);
-}
-
 void PVRecord::toString(StringBuilder buf)
 {
     toString(buf,0);
@@ -547,11 +460,6 @@ void PVRecordField::postSubField()
              (*iter)->postSubField();
         }
     }
-}
-
-void PVRecordField::message(String const & message,MessageType messageType)
-{
-    pvRecord->message(getPtrSelf(),message,messageType);
 }
 
 void PVRecordField::callListener()

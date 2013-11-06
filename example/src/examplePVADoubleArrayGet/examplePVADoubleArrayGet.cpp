@@ -83,8 +83,8 @@ bool ExamplePVADoubleArrayGet::init()
     }
     ChannelGetRequester::shared_pointer channelGetRequester =
         dynamic_pointer_cast<ChannelGetRequester>(getPtrSelf());
-    PVStructurePtr pvRequest = getCreateRequest()->createRequest(
-        "value,alarm,timeStamp",getPtrSelf());
+    PVStructurePtr pvRequest = CreateRequest::create()->createRequest(
+        "value,alarm,timeStamp");
     channelGet = channel->createChannelGet(channelGetRequester,pvRequest);
     event.wait();
     if(!status.isOK()) {

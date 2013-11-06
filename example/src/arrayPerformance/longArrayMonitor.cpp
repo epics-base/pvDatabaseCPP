@@ -251,10 +251,10 @@ bool LongArrayMonitor::init(
     String request("record[queueSize=");
     request += queueSize;
     request += "]field(value,timeStamp,alarm)";
-    PVStructurePtr pvRequest =
-        getCreateRequest()->createRequest(request,channelRequester);
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
+    PVStructurePtr pvRequest = createRequest->createRequest(request);
     if(pvRequest==NULL) {
-        cout << "request logic error " << request << endl;
+        cout << "request logic error " << createRequest->getMessage() << endl;
         return false;
     }
     monitor = channel->createMonitor(monitorRequester,pvRequest);

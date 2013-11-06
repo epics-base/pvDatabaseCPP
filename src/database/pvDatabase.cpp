@@ -168,14 +168,4 @@ bool PVDatabase::removeRecord(PVRecordPtr const & record)
     }
 }
 
-String PVDatabase::getRequesterName()
-{
-    static String name("masterDatabase");
-    return name;
-}
-
-void PVDatabase::message(String const & message,MessageType messageType)
-{
-}
-
 }}

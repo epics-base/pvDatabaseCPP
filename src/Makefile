@@ -7,10 +7,6 @@ LIBRARY_IOC += pvDatabase
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 pvDatabase_LIBS += Com pvData pvAccess
 
-SRC_DIRS += $(DATABASE)/pvData
-INC += pvSubArrayCopy.h
-LIBSRCS += pvSubArrayCopy.cpp
-
 SRC_DIRS += $(DATABASE)/database
 INC += pvDatabase.h
 LIBSRCS += pvRecord.cpp

@@ -297,7 +297,8 @@ static void scalarTest()
 
     pvRecord = createScalar("doubleRecord",pvDouble,"alarm,timeStamp,display");
     valueNameRecord = request = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl;
     cout << "pvRequest" << endl << builder;
@@ -306,7 +307,7 @@ static void scalarTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "";
     valueNameRecord = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -314,7 +315,7 @@ static void scalarTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,value";
     valueNameRecord = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -336,9 +337,10 @@ static void arrayTest()
     String valueNameRecord;
     String valueNameCopy;
 
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
     pvRecord = createScalarArray("doubleArrayRecord",pvDouble,"alarm,timeStamp");
     valueNameRecord = request = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl;
     cout << "pvRequest" << endl << builder;
@@ -347,7 +349,7 @@ static void arrayTest()
     testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "";
     valueNameRecord = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -355,7 +357,7 @@ static void arrayTest()
     testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,value";
     valueNameRecord = "value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -377,9 +379,10 @@ static void powerSupplyTest()
     String valueNameRecord;
     String valueNameCopy;
 
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
     pvRecord = createPowerSupply("powerSupply");
     valueNameRecord = request = "power.value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl;
     cout << "pvRequest" << endl << builder;
@@ -388,7 +391,7 @@ static void powerSupplyTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "";
     valueNameRecord = "power.value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -396,7 +399,7 @@ static void powerSupplyTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,voltage.value,power.value,current.value";
     valueNameRecord = "power.value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
@@ -404,7 +407,7 @@ static void powerSupplyTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,voltage{value,alarm},power{value,alarm,display},current.value";
     valueNameRecord = "power.value";
-    pvRequest = getCreateRequest()->createRequest(request,requester);
+    pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
