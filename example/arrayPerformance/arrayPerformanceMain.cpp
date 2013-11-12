@@ -44,10 +44,11 @@ int main(int argc,char *argv[])
     double delay = .01;
     String providerName("local");
     size_t nMonitor = 1;
-    bool useQueue = false;
+    int queueSize = 2;
+    double waitTime = 0.0;
     if(argc==2 && String(argv[1])==String("-help")) {
         cout << "arrayPerformanceMain recordName size";
-        cout << " delay providerName nMonitor useQueue" << endl;
+        cout << " delay providerName nMonitor queueSize waitTime" << endl;
         cout << "default" << endl;
         cout << "arrayPerformance ";
         cout << recordName << " ";
@@ -55,7 +56,8 @@ int main(int argc,char *argv[])
         cout << delay << " ";
         cout << providerName << " ";
         cout << nMonitor << " ";
-        cout << (useQueue ? "true" : "false") << endl;
+        cout << queueSize << " ";
+        cout << "0.0" << endl;
         return 0;
     }
     if(argc>1) recordName = argv[1];
@@ -63,14 +65,16 @@ int main(int argc,char *argv[])
     if(argc>3) delay = atof(argv[3]);
     if(argc>4) providerName = argv[4];
     if(argc>5) nMonitor = strtoul(argv[5],0,0);
-    if(argc>6) useQueue = (argv[6]==String("true") ? true : false);
+    if(argc>6) queueSize = strtol(argv[6],0,0);
+    if(argc>7) waitTime = atof(argv[7]);
     cout << "arrayPerformance ";
     cout << recordName << " ";
     cout << size << " ";
     cout << delay << " ";
     cout << providerName << " ";
     cout << nMonitor << " ";
-    cout << (useQueue ? "true" : "false") << endl;
+    cout << queueSize << " ";
+       cout << waitTime << endl;
     ClientFactory::start();
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
@@ -88,8 +92,9 @@ int main(int argc,char *argv[])
     std::vector<LongArrayMonitorPtr> longArrayMonitor(nMonitor);
     for(size_t i=0; i<nMonitor; ++i) {
        longArrayMonitor[i]
-         = LongArrayMonitor::create(providerName,recordName,useQueue);
+         = LongArrayMonitor::create(providerName,recordName,queueSize,waitTime);
     }
+    epicsThreadSleep(1.0);
     for(size_t i=0; i<nMonitor; ++i) longArrayMonitor[i]->start();
     cout << "arrayPerformance\n";
     string str;

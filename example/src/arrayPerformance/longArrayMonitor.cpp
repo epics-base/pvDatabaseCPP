@@ -67,8 +67,9 @@ class LAMMonitorRequester :
     public epicsThreadRunable
 {
 public:
-    LAMMonitorRequester(LongArrayMonitorPtr const &longArrayMonitor)
+    LAMMonitorRequester(LongArrayMonitorPtr const &longArrayMonitor,double waitTime)
     : longArrayMonitor(longArrayMonitor),
+      waitTime(waitTime),
       isDestroyed(false),
       runReturned(false),
       threadName("longArrayMonitor")
@@ -87,6 +88,7 @@ public:
 private:
     void handleMonitor();
     LongArrayMonitorPtr longArrayMonitor;
+    double waitTime;
     bool isDestroyed;
     bool runReturned;
     epics::pvData::String threadName;
@@ -173,6 +175,7 @@ void LAMMonitorRequester::run()
                  if(monitorElement!=NULL) pvStructure = monitorElement->pvStructurePtr;
             }
             if(monitorElement==NULL) break;
+            if(waitTime>0.0) epicsThreadSleep(waitTime);
             pvTimeStamp.attach(pvStructure->getSubField("timeStamp"));
             pvTimeStamp.get(timeStamp);
             pvValue = dynamic_pointer_cast<PVLongArray>(pvStructure->getSubField("value"));
@@ -219,10 +222,11 @@ void LAMMonitorRequester::unlisten(MonitorPtr const & monitor)
 LongArrayMonitorPtr LongArrayMonitor::create(
     String const &providerName,
     String const & channelName,
-    bool useQueue)
+    int queueSize,
+    double waitTime)
 {
     LongArrayMonitorPtr longArrayMonitor(new LongArrayMonitor());
-    if(!longArrayMonitor->init(providerName,channelName,useQueue)) longArrayMonitor.reset();
+    if(!longArrayMonitor->init(providerName,channelName,queueSize,waitTime)) longArrayMonitor.reset();
     return longArrayMonitor;
 }
 
@@ -233,10 +237,11 @@ LongArrayMonitor::~LongArrayMonitor() {}
 bool LongArrayMonitor::init(
     String const &providerName,
     String const &channelName,
-    bool useQueue)
+    int queueSize,
+    double waitTime)
 {
     channelRequester = LAMChannelRequesterPtr(new LAMChannelRequester(getPtrSelf()));
-    monitorRequester = LAMMonitorRequesterPtr(new LAMMonitorRequester(getPtrSelf()));
+    monitorRequester = LAMMonitorRequesterPtr(new LAMMonitorRequester(getPtrSelf(),waitTime));
     monitorRequester->init();
     ChannelProvider::shared_pointer channelProvider = getChannelAccess()->getProvider(providerName);
     if(channelProvider==NULL) {
@@ -246,10 +251,10 @@ bool LongArrayMonitor::init(
     channel = channelProvider->createChannel(channelName,channelRequester,0);
     event.wait();
     if(!status.isOK()) return false;
-    String queueSize("0");
-    if(useQueue) queueSize="2";
     String request("record[queueSize=");
-    request += queueSize;
+    char buff[20];
+    sprintf(buff,"%d",queueSize);
+    request += buff;
     request += "]field(value,timeStamp,alarm)";
     CreateRequest::shared_pointer createRequest = CreateRequest::create();
     PVStructurePtr pvRequest = createRequest->createRequest(request);

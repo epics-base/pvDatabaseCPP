@@ -38,21 +38,25 @@ using namespace epics::pvDatabase;
 int main(int argc,char *argv[])
 {
     String channelName("arrayPerformance");
-    bool useQueue = false;
+    int queueSize = 2;
+    double waitTime = 0.0;
     if(argc==2 && String(argv[1])==String("-help")) {
-        cout << "longArrayMonitorMain channelName useQueue" << endl;
+        cout << "longArrayMonitorMain channelName queueSize waitTime" << endl;
         cout << "default" << endl;
         cout << "longArrayMonitorMain " << channelName << " ";
-        cout << (useQueue ? "true" : "false") << endl;
+        cout << queueSize  << " ";
+        cout << "0.0"  << endl;
         return 0;
     }
     ClientFactory::start();
     if(argc>1) channelName = argv[1];
-    if(argc>2) useQueue = (String(argv[2])==String("true") ? true : false);
+    if(argc>2) queueSize = strtol(argv[2],0,0);
+    if(argc>3) waitTime = atof(argv[3]);
     cout << "longArrayMonitorMain " << channelName << " ";
-    cout << (useQueue ? "true" : "false") << endl;
+    cout << queueSize << " ";
+    cout << waitTime << endl;
     LongArrayMonitorPtr longArrayMonitor
-         = LongArrayMonitor::create("pvAccess",channelName,useQueue);
+         = LongArrayMonitor::create("pvAccess",channelName,queueSize,waitTime);
     longArrayMonitor->start();
     cout << "longArrayMonitor\n";
     string str;

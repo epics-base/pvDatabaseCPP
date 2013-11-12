@@ -18,8 +18,8 @@ INC += pvCopy.h
 INC += monitorAlgorithm.h
 LIBSRCS += channelProviderLocal.cpp
 LIBSRCS += pvCopy.cpp
-LIBSRCS += channelLocal.cpp
 LIBSRCS += monitorFactory.cpp
+LIBSRCS += channelLocal.cpp
 
 SRC_DIRS += $(DATABASE)/V3IOC
 DBD += PVAServerRegister.dbd

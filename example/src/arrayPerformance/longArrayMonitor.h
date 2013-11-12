@@ -38,7 +38,8 @@ public:
     static LongArrayMonitorPtr create(
         epics::pvData::String const & providerName,
         epics::pvData::String const & channelName,
-        bool useQueue = false);
+        int queueSize = 1,
+        double waitTime = 0.0);
     ~LongArrayMonitor();
     void start();
     void stop();
@@ -48,7 +49,8 @@ private:
     bool init(
         epics::pvData::String const & providerName,
         epics::pvData::String const & channelName,
-        bool useQueue);
+        int queueSize,
+        double waitTime);
     LongArrayMonitorPtr getPtrSelf()
     {
         return shared_from_this();
