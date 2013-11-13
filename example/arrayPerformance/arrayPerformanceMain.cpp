@@ -40,8 +40,8 @@ int main(int argc,char *argv[])
     bool result(false);
     String recordName;
     recordName = "arrayPerformance";
-    size_t size = 50000000;
-    double delay = .01;
+    size_t size = 10000000;
+    double delay = .0001;
     String providerName("local");
     size_t nMonitor = 1;
     int queueSize = 2;

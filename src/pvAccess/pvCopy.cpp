@@ -182,7 +182,14 @@ void PVCopy::initCopy(
 {
     bitSet->clear();
     bitSet->set(0);
-    updateCopyFromBitSet(copyPVStructure,bitSet);
+    pvRecord->lock();
+    try {
+        updateCopyFromBitSet(copyPVStructure,bitSet);
+    } catch(...) {
+        pvRecord->unlock();
+        throw;
+    }
+    pvRecord->unlock();
 }
 
 void PVCopy::updateCopySetBitSet(

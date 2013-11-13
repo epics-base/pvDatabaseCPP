@@ -37,8 +37,6 @@ static ConvertPtr convert = getConvert();
 
 class ElementQueue;
 typedef std::tr1::shared_ptr<ElementQueue> ElementQueuePtr;
-class SingleElementQueue;
-typedef std::tr1::shared_ptr<SingleElementQueue> SingleElementQueuePtr;
 class MultipleElementQueue;
 typedef std::tr1::shared_ptr<MultipleElementQueue> MultipleElementQueuePtr;
 
@@ -64,31 +62,6 @@ protected:
     }
 };
 
-class SingleElementQueue :
-    public ElementQueue
-{
-public:
-    POINTER_DEFINITIONS(SingleElementQueue);
-    virtual ~SingleElementQueue(){}
-    SingleElementQueue(
-        MonitorLocalPtr const &monitorLocal);
-   
-    virtual void destroy(){}
-    virtual Status start();
-    virtual Status stop();
-    virtual bool dataChanged(bool firstMonitor);
-    virtual MonitorElementPtr poll();
-    virtual void release(MonitorElementPtr const &monitorElement);
-private:
-    std::tr1::weak_ptr<MonitorLocal> monitorLocal;
-    PVStructurePtr pvCopyStructure;
-    MonitorElementPtr monitorElement;
-    bool gotMonitor;
-    BitSetPtr changedBitSet;
-    BitSetPtr overrunBitSet;
-    BitSetPtr dataChangedBitSet;
-    BitSetPtr dataOverrunBitSet;
-};
 
 typedef Queue<MonitorElement> MonitorElementQueue;
 typedef std::tr1::shared_ptr<MonitorElementQueue> MonitorElementQueuePtr;
@@ -312,25 +285,22 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
     }
     pvCopyMonitor = pvCopy->createPVCopyMonitor(getPtrSelf());
     // MARTY MUST IMPLEMENT periodic
-    if(queueSize<2) {
-        queue = SingleElementQueuePtr(new SingleElementQueue(getPtrSelf()));
-    } else {
-        std::vector<MonitorElementPtr> monitorElementArray;
-        monitorElementArray.reserve(queueSize);
-        size_t nfields = 0;
-        for(size_t i=0; i<queueSize; i++) {
-             PVStructurePtr pvStructure = pvCopy->createPVStructure();
-             if(nfields==0) nfields = pvStructure->getNumberFields();
-             MonitorElementPtr monitorElement(
-                 new MonitorElement(pvStructure));
-             monitorElementArray.push_back(monitorElement);
-        }
-        MonitorElementQueuePtr elementQueue(new MonitorElementQueue(monitorElementArray));
-        queue = MultipleElementQueuePtr(new MultipleElementQueue(
-            getPtrSelf(),
-            elementQueue,
-            nfields));
+    if(queueSize<2) queueSize = 2;
+    std::vector<MonitorElementPtr> monitorElementArray;
+    monitorElementArray.reserve(queueSize);
+    size_t nfields = 0;
+    for(size_t i=0; i<queueSize; i++) {
+         PVStructurePtr pvStructure = pvCopy->createPVStructure();
+         if(nfields==0) nfields = pvStructure->getNumberFields();
+         MonitorElementPtr monitorElement(
+             new MonitorElement(pvStructure));
+         monitorElementArray.push_back(monitorElement);
     }
+    MonitorElementQueuePtr elementQueue(new MonitorElementQueue(monitorElementArray));
+    queue = MultipleElementQueuePtr(new MultipleElementQueue(
+        getPtrSelf(),
+        elementQueue,
+        nfields));
     // MARTY MUST IMPLEMENT algorithm
     monitorRequester->monitorConnect(
         Status::Ok,
@@ -400,73 +370,6 @@ MonitorAlgorithmCreatePtr MonitorFactory::getMonitorAlgorithmCreate(
 //             return *iter;
 //    }
     return nullMonitorAlgorithmCreate;
-}
-
-SingleElementQueue::SingleElementQueue(
-    MonitorLocalPtr const &monitorLocal)
-:  monitorLocal(monitorLocal),
-   pvCopyStructure(monitorLocal->getPVCopy()->createPVStructure()),
-   monitorElement(new MonitorElement(pvCopyStructure)),
-   gotMonitor(false),
-   changedBitSet(new BitSet(pvCopyStructure->getNumberFields())),
-   overrunBitSet(new BitSet(pvCopyStructure->getNumberFields())),
-   dataChangedBitSet(new BitSet(pvCopyStructure->getNumberFields())),
-   dataOverrunBitSet(new BitSet(pvCopyStructure->getNumberFields()))
-{
-}
-
-Status SingleElementQueue::start()
-{
-    gotMonitor = true;
-    changedBitSet->clear();
-    overrunBitSet->clear();
-    dataChangedBitSet->clear();
-    dataOverrunBitSet->clear();
-    MonitorLocalPtr ml = monitorLocal.lock();
-    if(ml==NULL) return wasDestroyedStatus;
-    ml->getPVCopyMonitor()->startMonitoring(
-        changedBitSet,
-        overrunBitSet);
-    return Status::Ok;
-}
-
-Status SingleElementQueue::stop()
-{
-    return Status::Ok;
-}
-
-bool SingleElementQueue::dataChanged(bool firstMonitor)
-{
-    MonitorLocalPtr ml = monitorLocal.lock();
-    if(ml==NULL) return false;
-    if(firstMonitor) changedBitSet->set(0);
-    ml->getPVCopy()->updateCopyFromBitSet(pvCopyStructure,changedBitSet);
-    (*dataChangedBitSet) |= (*changedBitSet);
-    (*dataOverrunBitSet) |= (*overrunBitSet);
-    changedBitSet->clear();
-    overrunBitSet->clear();
-    gotMonitor = true;
-    return true;
-}
-
-MonitorElementPtr SingleElementQueue::poll()
-{
-    MonitorLocalPtr ml = monitorLocal.lock();
-    if(ml==NULL) return NULLMonitorElement;
-    if(!gotMonitor) return NULLMonitorElement;
-    gotMonitor = false;
-    convert->copyStructure(pvCopyStructure,monitorElement->pvStructurePtr);
-    BitSetUtil::compress(dataChangedBitSet,pvCopyStructure);
-    BitSetUtil::compress(dataOverrunBitSet,pvCopyStructure);
-    (*monitorElement->changedBitSet) = (*dataChangedBitSet);
-    (*monitorElement->overrunBitSet) = (*dataOverrunBitSet);
-    dataChangedBitSet->clear();
-    dataOverrunBitSet->clear();
-    return monitorElement;
-}
-
-void SingleElementQueue::release(MonitorElementPtr const &monitorElement)
-{
 }
 
 MultipleElementQueue::MultipleElementQueue(
