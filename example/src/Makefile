@@ -23,6 +23,10 @@ INC+= arrayPerformance.h
 LIBSRCS += arrayPerformance.cpp
 INC+= longArrayMonitor.h
 LIBSRCS += longArrayMonitor.cpp
+INC+= longArrayGet.h
+LIBSRCS += longArrayGet.cpp
+INC+= longArrayPut.h
+LIBSRCS += longArrayPut.cpp
 
 
 include $(TOP)/configure/RULES

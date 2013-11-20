@@ -12,6 +12,16 @@ longArrayMonitorMain_SRCS += longArrayMonitorMain.cpp
 longArrayMonitorMain_LIBS += pvDatabase pvAccess pvData Com
 longArrayMonitorMain_LIBS += pvDatabaseExample
 
+PROD_HOST += longArrayGetMain
+longArrayGetMain_SRCS += longArrayGetMain.cpp
+longArrayGetMain_LIBS += pvDatabase pvAccess pvData Com
+longArrayGetMain_LIBS += pvDatabaseExample
+
+PROD_HOST += longArrayPutMain
+longArrayPutMain_SRCS += longArrayPutMain.cpp
+longArrayPutMain_LIBS += pvDatabase pvAccess pvData Com
+longArrayPutMain_LIBS += pvDatabaseExample
+
 PROD_HOST += vectorPerformanceMain
 vectorPerformanceMain_SRCS += vectorPerformanceMain.cpp
 vectorPerformanceMain_LIBS += pvDatabase pvAccess pvData Com

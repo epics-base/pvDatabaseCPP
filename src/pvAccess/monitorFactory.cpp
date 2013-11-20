@@ -54,7 +54,7 @@ class ElementQueue :
 public:
     POINTER_DEFINITIONS(ElementQueue);
     virtual ~ElementQueue(){}
-    virtual bool dataChanged(bool firstMonitor) = 0;
+    virtual bool dataChanged() = 0;
 protected:
     ElementQueuePtr getPtrSelf()
     {
@@ -79,7 +79,7 @@ public:
     virtual void destroy(){}
     virtual Status start();
     virtual Status stop();
-    virtual bool dataChanged(bool firstMonitor);
+    virtual bool dataChanged();
     virtual MonitorElementPtr poll();
     virtual void release(MonitorElementPtr const &monitorElement);
 private:
@@ -168,15 +168,13 @@ void MonitorLocal::destroy()
 
 Status MonitorLocal::start()
 {
+    Lock xx(mutex);
+    if(pvRecord->getTraceLevel()>0)
     {
-        Lock xx(mutex);
-        if(pvRecord->getTraceLevel()>0)
-        {
-            cout << "MonitorLocal::start() "  << endl;
-        }
-        if(isDestroyed) return wasDestroyedStatus;
-        firstMonitor = true;
+        cout << "MonitorLocal::start() "  << endl;
     }
+    if(isDestroyed) return wasDestroyedStatus;
+    firstMonitor = true;
     return queue->start();
 }
 
@@ -229,7 +227,7 @@ void MonitorLocal::dataChanged()
     {
         Lock xx(mutex);
         if(isDestroyed) return;
-        getMonitorEvent = queue->dataChanged(firstMonitor);
+        getMonitorEvent = queue->dataChanged();
         firstMonitor = false;
     }
     if(getMonitorEvent) monitorRequester->monitorEvent(getPtrSelf());
@@ -401,7 +399,7 @@ Status MultipleElementQueue::stop()
     return Status::Ok;
 }
 
-bool MultipleElementQueue::dataChanged(bool firstMonitor)
+bool MultipleElementQueue::dataChanged()
 {
     MonitorLocalPtr ml = monitorLocal.lock();
     if(ml==NULL) return false;
@@ -423,7 +421,6 @@ bool MultipleElementQueue::dataChanged(bool firstMonitor)
         queueIsFull = true;
         latestMonitorElement = monitorElement;
     }
-    if(firstMonitor) changedBitSet->set(0);
     PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
     ml->getPVCopy()->updateCopyFromBitSet(
         pvStructure,changedBitSet);

@@ -143,15 +143,36 @@ void ArrayPerformanceThread::run()
         if(diff>=1.0) {
             ostringstream out;
             out << "arrayPerformance value " << value;
-            out << " time " << diff;
+            out << " time " << diff ;
             double iterations = nSinceLastReport;
             iterations /= diff;
-            out << " iterations/sec " << iterations;
+            if(iterations>10.0e9) {
+                 iterations /= 1e9;
+                 out << " gigaIterations/sec " << iterations;
+            } else if(iterations>10.0e6) {
+                 iterations /= 1e6;
+                 out << " megaIterations/sec " << iterations;
+            } else if(iterations>10.0e3) {
+                 iterations /= 1e3;
+                 out << " kiloIterations/sec " << iterations;
+            } else  {
+                 out << " Iterations/sec " << iterations;
+            }
             double elementSize = arrayPerformance->size;
             double elementsPerSecond = elementSize*nSinceLastReport;
             elementsPerSecond /= diff;
-            elementsPerSecond /= 1e6;
-            out << " elements/sec " << elementsPerSecond << "million";
+            if(elementsPerSecond>10.0e9) {
+                 elementsPerSecond /= 1e9;
+                 out << " gigaElements/sec " << elementsPerSecond;
+            } else if(elementsPerSecond>10.0e6) {
+                 elementsPerSecond /= 1e6;
+                 out << " megaElements/sec " << elementsPerSecond;
+            } else if(elementsPerSecond>10.0e3) {
+                 elementsPerSecond /= 1e3;
+                 out << " kiloElements/sec " << elementsPerSecond;
+            } else  {
+                 out << " Elements/sec " << elementsPerSecond;
+            }
             cout << out.str() << endl;
             timeStampLast = timeStamp;
             nSinceLastReport = 0;

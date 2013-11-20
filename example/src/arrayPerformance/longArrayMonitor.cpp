@@ -21,6 +21,7 @@ using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::ostringstream;
 
 static String requesterName("longArrayMonitor");
 
@@ -86,7 +87,6 @@ public:
     virtual void monitorEvent(MonitorPtr const & monitor);
     virtual void unlisten(MonitorPtr const & monitor);
 private:
-    void handleMonitor();
     LongArrayMonitorPtr longArrayMonitor;
     double waitTime;
     bool isDestroyed;
@@ -160,6 +160,8 @@ void LAMMonitorRequester::run()
     TimeStamp timeStamp;
     TimeStamp timeStampLast;
     timeStampLast.getCurrent();
+    size_t nElements = 0;
+    int nSinceLastReport = 0;
     while(true) {
         event.wait();
         if(isDestroyed) {
@@ -181,25 +183,45 @@ void LAMMonitorRequester::run()
             pvValue = dynamic_pointer_cast<PVLongArray>(pvStructure->getSubField("value"));
             shared_vector<const int64> data = pvValue->view();
             if(data.size()>0) {
+                nElements += data.size();
                 int64 first = data[0];
                 int64 last = data[data.size()-1];
-                int64 sum = 0;
-                for(size_t i=0; i<data.size(); ++i) sum += data[i];
+                if(first!=last) {
+                    cout << "error first=" << first << " last=" << last << endl;
+                }
                 double diff = TimeStamp::diff(timeStamp,timeStampLast);
-                double elementsPerSecond = data.size();
-                elementsPerSecond = 1e-6*elementsPerSecond/diff;
-                cout << "first " << first << " last " << last << " sum " << sum;
-                cout << " elements/sec " << elementsPerSecond << "million";
-                BitSetPtr changed = monitorElement->changedBitSet;
-                BitSetPtr overrun = monitorElement->overrunBitSet;
-                String buffer;
-                changed->toString(&buffer);
-                cout << " changed " << buffer;
-                buffer.clear();
-                overrun->toString(&buffer);
-                cout << " overrun " << buffer;
-                cout << endl;
-                timeStampLast = timeStamp;
+                if(diff>=1.0) {
+                    ostringstream out;
+                    out << " monitors/sec " << nSinceLastReport << " ";
+                    out << "first " << first << " last " << last ;
+                    BitSetPtr changed = monitorElement->changedBitSet;
+                    BitSetPtr overrun = monitorElement->overrunBitSet;
+                    String buffer;
+                    changed->toString(&buffer);
+                    out << " changed " << buffer;
+                    buffer.clear();
+                    overrun->toString(&buffer);
+                    out << " overrun " << buffer;
+                    double elementsPerSec = nElements;
+                    elementsPerSec /= diff;
+                    if(elementsPerSec>10.0e9) {
+                         elementsPerSec /= 1e9;
+                         out << " gigaElements/sec " << elementsPerSec;
+                    } else if(elementsPerSec>10.0e6) {
+                         elementsPerSec /= 1e6;
+                         out << " megaElements/sec " << elementsPerSec;
+                    } else if(elementsPerSec>10.0e3) {
+                         elementsPerSec /= 1e3;
+                         out << " kiloElements/sec " << elementsPerSec;
+                    } else  {
+                         out << " Elements/sec " << elementsPerSec;
+                    }
+                    cout << out.str() << endl;
+                    timeStampLast = timeStamp;
+                    nSinceLastReport = 0;
+                    nElements = 0;
+                }
+                ++nSinceLastReport;
             } else {
                 cout << "size = 0" << endl;
             }
