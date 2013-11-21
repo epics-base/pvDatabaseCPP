@@ -260,9 +260,11 @@ void LongArrayChannelPut::run()
             if(iterBetweenCreateChannel!=0) {
                 if(numChannelCreate>=iterBetweenCreateChannel) {
                     channel->destroy();
+                    epicsThreadSleep(1.0);
                     ChannelProvider::shared_pointer channelProvider =
                          getChannelAccess()->getProvider(providerName);
-                    channel = channelProvider->createChannel(channelName,getPtrSelf(),0);
+                    channel = channelProvider->createChannel(
+                        channelName,getPtrSelf(),0);
                     event.wait();
                     if(isDestroyed) {
                         runReturned = true;
