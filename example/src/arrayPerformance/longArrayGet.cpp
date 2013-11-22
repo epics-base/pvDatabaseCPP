@@ -27,9 +27,95 @@ static String requesterName("longArrayGet");
 static String request("value,timeStamp,alarm");
 static epics::pvData::Mutex printMutex;
 
-class LongArrayChannelGet :
+class LongArrayChannelRequester;
+typedef std::tr1::shared_ptr<LongArrayChannelRequester> LongArrayChannelRequesterPtr;
+class LongArrayChannelGetRequester;
+typedef std::tr1::shared_ptr<LongArrayChannelGetRequester> LongArrayChannelGetRequesterPtr;
+
+class LongArrayChannelRequester :
     virtual public ChannelRequester,
+    public std::tr1::enable_shared_from_this<LongArrayChannelRequester>
+{
+public:
+    LongArrayChannelRequester(
+        LongArrayChannelGetPtr const & longArrayChannelGet)
+    : longArrayChannelGet(longArrayChannelGet),
+      isDestroyed(false)
+    {}
+    virtual ~LongArrayChannelRequester(){}
+    virtual void destroy()
+        {
+            Lock guard(mutex);
+            if(isDestroyed) return;
+            isDestroyed = true;
+            longArrayChannelGet.reset();
+        }
+    virtual String getRequesterName() { return requesterName;}
+    virtual void message(String const & message, MessageType messageType)
+       {
+            Lock guard(printMutex);
+            cout << requesterName << " message " << message << endl;
+       }
+    virtual void channelCreated(
+        const Status& status,
+        Channel::shared_pointer const & channel);
+    virtual void channelStateChange(
+        Channel::shared_pointer const & channel,
+        Channel::ConnectionState connectionState);
+private:
+    LongArrayChannelRequesterPtr getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    LongArrayChannelGetPtr longArrayChannelGet;
+    bool isDestroyed;
+    Mutex mutex;
+};
+
+
+class LongArrayChannelGetRequester :
     virtual public ChannelGetRequester,
+    public std::tr1::enable_shared_from_this<LongArrayChannelGetRequester>
+{
+public:
+    LongArrayChannelGetRequester(
+        LongArrayChannelGetPtr const & longArrayChannelGet)
+    : longArrayChannelGet(longArrayChannelGet),
+      isDestroyed(false)
+    {}
+    virtual ~LongArrayChannelGetRequester(){}
+    virtual void destroy()
+        {
+            Lock guard(mutex);
+            if(isDestroyed) return;
+            isDestroyed = true;
+            longArrayChannelGet.reset();
+        }
+    virtual String getRequesterName() { return requesterName;}
+    virtual void message(String const & message, MessageType messageType)
+       {
+            Lock guard(printMutex);
+            cout << requesterName << " message " << message << endl;
+       }
+    virtual void channelGetConnect(
+        Status const & status,
+        ChannelGet::shared_pointer const & channelGet,
+        PVStructurePtr const &pvStructure,
+        BitSetPtr const &bitSet);
+    virtual void getDone(Status const & status);
+private:
+    LongArrayChannelGetRequesterPtr getPtrSelf()
+    {
+        return shared_from_this();
+    }
+    LongArrayChannelGetPtr longArrayChannelGet;
+    bool isDestroyed;
+    Mutex mutex;
+};
+
+
+
+class LongArrayChannelGet :
     public std::tr1::enable_shared_from_this<LongArrayChannelGet>,
     public epicsThreadRunable
 {
@@ -53,8 +139,7 @@ public:
     bool init();
     virtual void destroy();
     virtual void run();
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    void message(String const & message, MessageType messageType)
        {
             Lock guard(printMutex);
             cout << requesterName << " message " << message << endl;
@@ -93,52 +178,47 @@ private:
     ChannelGet::shared_pointer channelGet;
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
+    LongArrayChannelRequesterPtr longArrayChannelRequester;
+    LongArrayChannelGetRequesterPtr longArrayChannelGetRequester;
 };
 
-bool LongArrayChannelGet::init()
+void LongArrayChannelRequester::channelCreated(
+    const Status& status,
+    Channel::shared_pointer const & channel)
 {
-    ChannelProvider::shared_pointer channelProvider =
-        getChannelAccess()->getProvider(providerName);
-    if(channelProvider==NULL) {
-        cout << "provider " << providerName << " not found" << endl;
-        return false;
-    }
-    channel = channelProvider->createChannel(channelName,getPtrSelf(),0);
-    event.wait();
-    channelProvider.reset();
-    if(!status.isOK()) return false;
-    CreateRequest::shared_pointer createRequest = CreateRequest::create();
-    PVStructurePtr pvRequest = createRequest->createRequest(request);
-    if(pvRequest==NULL) {
-        cout << "request logic error " << createRequest->getMessage() << endl;
-        return false;
-    }
-    channelGet = channel->createChannelGet(getPtrSelf(),pvRequest);
-    event.wait();
-    if(!status.isOK()) return false;
-     thread = std::auto_ptr<epicsThread>(new epicsThread(
-        *this,
-        threadName.c_str(),
-        epicsThreadGetStackSize(epicsThreadStackSmall),
-        epicsThreadPriorityLow));
-     thread->start();
-     event.signal();
-     return true;
+     Lock guard(mutex);
+     if(isDestroyed) return;
+     longArrayChannelGet->channelCreated(status,channel);
 }
 
-void LongArrayChannelGet::destroy()
+void LongArrayChannelRequester::channelStateChange(
+    Channel::shared_pointer const & channel,
+    Channel::ConnectionState connectionState)
 {
+    String mess(Channel::ConnectionStateNames[connectionState]);
+    message(mess,infoMessage);
+    Lock guard(mutex);
     if(isDestroyed) return;
-    isDestroyed = true;
-    event.signal();
-    while(true) {
-        if(runReturned) break;
-        epicsThreadSleep(.01);
-    }
-    thread->exitWait();
-    channel->destroy();
-    channelGet.reset();
-    channel.reset();
+    longArrayChannelGet->channelStateChange(channel,connectionState);
+}
+
+void LongArrayChannelGetRequester::channelGetConnect(
+    Status const & status,
+    ChannelGet::shared_pointer const & channelGet,
+    PVStructurePtr const &pvStructure,
+    BitSetPtr const &bitSet)
+{
+    Lock guard(mutex);
+    if(isDestroyed) return;
+    longArrayChannelGet->channelGetConnect(
+        status,channelGet,pvStructure,bitSet);
+}
+
+void LongArrayChannelGetRequester::getDone(Status const & status)
+{
+    Lock guard(mutex);
+    if(isDestroyed) return;
+    longArrayChannelGet->getDone(status);
 }
 
 void LongArrayChannelGet::channelCreated(
@@ -159,7 +239,6 @@ void LongArrayChannelGet::channelStateChange(
        (connectionState==Channel::CONNECTED ? infoMessage : errorMessage);
    message("channelStateChange",messageType);
 }
-
 
 void LongArrayChannelGet::channelGetConnect(
         Status const & status,
@@ -185,7 +264,7 @@ void LongArrayChannelGet::channelGetConnect(
     } else {
         FieldConstPtr field = pvField->getField();
         if(field->getType()!=scalarArray) {
-            structureOK = false; 
+            structureOK = false;
         } else {
             ScalarArrayConstPtr scalarArray = dynamic_pointer_cast<const ScalarArray>(field);
             if(scalarArray->getElementType()!=pvLong) structureOK = false;
@@ -198,6 +277,66 @@ void LongArrayChannelGet::channelGetConnect(
     }
     event.signal();
 }
+
+
+bool LongArrayChannelGet::init()
+{
+    ChannelProvider::shared_pointer channelProvider =
+        getChannelAccess()->getProvider(providerName);
+    if(channelProvider==NULL) {
+        cout << "provider " << providerName << " not found" << endl;
+        return false;
+    }
+    longArrayChannelRequester.reset(new LongArrayChannelRequester(getPtrSelf()));
+    channel = channelProvider->createChannel(
+          channelName,
+          longArrayChannelRequester);
+    event.wait();
+    channelProvider.reset();
+    if(!status.isOK()) return false;
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
+    PVStructurePtr pvRequest = createRequest->createRequest(request);
+    if(pvRequest==NULL) {
+        cout << "request logic error " << createRequest->getMessage() << endl;
+        return false;
+    }
+    longArrayChannelGetRequester.reset(new LongArrayChannelGetRequester(getPtrSelf()));
+    channelGet = channel->createChannelGet(
+        longArrayChannelGetRequester,
+        pvRequest);
+    event.wait();
+    if(!status.isOK()) return false;
+     thread = std::auto_ptr<epicsThread>(new epicsThread(
+        *this,
+        threadName.c_str(),
+        epicsThreadGetStackSize(epicsThreadStackSmall),
+        epicsThreadPriorityLow));
+     thread->start();
+     event.signal();
+     return true;
+}
+
+void LongArrayChannelGet::destroy()
+{
+    if(isDestroyed) return;
+    isDestroyed = true;
+    event.signal();
+    while(true) {
+        if(runReturned) break;
+        epicsThreadSleep(.01);
+    }
+    if(longArrayChannelRequester!=NULL) {
+        longArrayChannelRequester->destroy();
+    }
+    if(longArrayChannelGetRequester!=NULL) {
+        longArrayChannelGetRequester->destroy();
+    }
+    thread->exitWait();
+    channel->destroy();
+    channelGet.reset();
+    channel.reset();
+}
+
 
 void LongArrayChannelGet::run()
 {
@@ -254,12 +393,14 @@ void LongArrayChannelGet::run()
             bool createGet = false;
             if(iterBetweenCreateChannel!=0) {
                 if(numChannelCreate>=iterBetweenCreateChannel) {
+                    longArrayChannelRequester->destroy();
                     channel->destroy();
-                    epicsThreadSleep(1.0);
                     ChannelProvider::shared_pointer channelProvider =
                          getChannelAccess()->getProvider(providerName);
+                    longArrayChannelRequester.reset(new LongArrayChannelRequester(getPtrSelf()));
                     channel = channelProvider->createChannel(
-                         channelName,getPtrSelf(),0);
+                         channelName,
+                         longArrayChannelRequester);
                     event.wait();
                     channelProvider.reset();
                     if(!status.isOK()) {
@@ -269,7 +410,6 @@ void LongArrayChannelGet::run()
                     cout<< "createChannel success" << endl;
                     createGet = true;
                     numChannelCreate = 0;
-                    numChannelGet = 0;
                 }
             }
             ++numChannelGet;
@@ -278,14 +418,20 @@ void LongArrayChannelGet::run()
             }
             if(createGet) {
                  numChannelGet = 0;
+                 longArrayChannelGetRequester->destroy();
                  channelGet->destroy();
-                 CreateRequest::shared_pointer createRequest = CreateRequest::create();
-                 PVStructurePtr pvRequest = createRequest->createRequest(request);
+                 CreateRequest::shared_pointer createRequest =
+                     CreateRequest::create();
+                 PVStructurePtr pvRequest =
+                     createRequest->createRequest(request);
                  if(pvRequest==NULL) {
                      cout << "request logic error " << createRequest->getMessage() << endl;
                      return ;
                  }
-                 channelGet = channel->createChannelGet(getPtrSelf(),pvRequest);
+                 longArrayChannelGetRequester.reset(new LongArrayChannelGetRequester(getPtrSelf()));
+                 channelGet = channel->createChannelGet(
+                     longArrayChannelGetRequester,
+                     pvRequest);
                  event.wait();
                  if(!status.isOK()) {
                       message(status.getMessage(),errorMessage);
@@ -296,6 +442,8 @@ void LongArrayChannelGet::run()
         }
     }
 }
+
+
 
 void LongArrayChannelGet::getDone(Status const & status)
 {

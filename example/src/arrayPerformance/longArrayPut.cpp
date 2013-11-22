@@ -277,7 +277,6 @@ void LongArrayChannelPut::run()
                     cout<< "createChannel success" << endl;
                     createPut = true;
                     numChannelCreate = 0;
-                    numChannelPut = 0;
                 }
             }
             ++numChannelPut;
