@@ -12,6 +12,7 @@
 #include <pv/serverContext.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/traceRecord.h>
+#include <pv/syncChannelFind.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -23,35 +24,6 @@ using std::cout;
 using std::endl;
 
 static String providerName("local");
-
-class MockChannelFind : public ChannelFind
-{
-public:
-    typedef std::tr1::shared_ptr<MockChannelFind> shared_pointer;
-
-    MockChannelFind(ChannelProvider::shared_pointer &provider) : m_provider(provider)
-    {
-    }
-
-    virtual ~MockChannelFind() {}
-
-    virtual void destroy()
-    {
-        // one instance for all, do not delete at all
-    }
-    virtual ChannelProvider::shared_pointer getChannelProvider()
-    {
-        return m_provider.lock();
-    };
-
-    virtual void cancelChannelFind()
-    {
-        throw std::runtime_error("not supported");
-    }
-
-private:
-    ChannelProvider::weak_pointer m_provider;
-};
 
 
 class LocalChannelProviderFactory;
@@ -96,7 +68,7 @@ ChannelProviderLocalPtr getChannelProviderLocal()
         channelProviderLocal = ChannelProviderLocalPtr(
             new ChannelProviderLocal());
         ChannelProvider::shared_pointer xxx = dynamic_pointer_cast<ChannelProvider>(channelProviderLocal);
-        channelProviderLocal->channelFinder = MockChannelFind::shared_pointer(new MockChannelFind(xxx));
+        channelProviderLocal->channelFinder = SyncChannelFind::shared_pointer(new SyncChannelFind(xxx));
         LocalChannelProviderFactory::create(channelProviderLocal);
     }
     return channelProviderLocal;
@@ -146,7 +118,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
             channelFinder,
             false);
     }
-    return ChannelFind::shared_pointer();
+    return channelFinder;
 }
 
 Channel::shared_pointer ChannelProviderLocal::createChannel(

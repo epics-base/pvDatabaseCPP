@@ -16,12 +16,15 @@ SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h
 INC += pvCopy.h
 INC += monitorAlgorithm.h
+DBD += registerChannelProviderLocal.dbd
 LIBSRCS += channelProviderLocal.cpp
 LIBSRCS += pvCopy.cpp
 LIBSRCS += monitorFactory.cpp
 LIBSRCS += channelLocal.cpp
+LIBSRCS += registerChannelProviderLocal.cpp
 
 SRC_DIRS += $(DATABASE)/V3IOC
+INC += syncChannelFind.h
 DBD += PVAServerRegister.dbd
 DBD += PVAClientRegister.dbd
 LIBSRCS += PVAServerRegister.cpp

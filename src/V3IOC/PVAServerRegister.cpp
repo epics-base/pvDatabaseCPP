@@ -30,13 +30,11 @@
 
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
-#include <pv/channelProviderLocal.h>
 
 using std::cout;
 using std::endl;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
-using namespace epics::pvDatabase;
 
 class PVAServerCTX;
 typedef std::tr1::shared_ptr<PVAServerCTX> PVAServerCTXPtr;
@@ -74,11 +72,9 @@ void PVAServerCTX::stop()
         cout<< "PVAServer already stopped" << endl;
         return;
    }
-   ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
    ctx->destroy();
    ctx.reset();
    epicsThreadSleep(1.0);
-   channelProvider->destroy();
 }
 
 PVAServerCTXPtr PVAServerCTX::getPVAServerCTX()
@@ -111,17 +107,6 @@ extern "C" void stopPVAServer(const iocshArgBuf *args)
 }
 
 
-static const iocshFuncDef pvdblFuncDef = {
-    "pvdbl", 0, 0
-};
-extern "C" void pvdbl(const iocshArgBuf *args)
-{
-    PVDatabasePtr master = PVDatabase::getMaster();
-    PVStringArrayPtr pvNames = master->getRecordNames();
-    PVStringArray::const_svector xxx = pvNames->view();
-    for(size_t i=0; i<xxx.size(); ++i) cout<< xxx[i] << endl;
-}
-
 static void startPVAServerRegister(void)
 {
     static int firstTime = 1;
@@ -140,16 +125,5 @@ static void stopPVAServerRegister(void)
     }
 }
 
-static void pvdblRegister(void)
-{
-    static int firstTime = 1;
-    if (firstTime) {
-        firstTime = 0;
-        iocshRegister(&pvdblFuncDef, pvdbl);
-        getChannelProviderLocal();
-    }
-}
-
 epicsExportRegistrar(startPVAServerRegister);
 epicsExportRegistrar(stopPVAServerRegister);
-epicsExportRegistrar(pvdblRegister);

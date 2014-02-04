@@ -1,4 +1,4 @@
-/*exampleServer.cpp */
+/*registerChannelProviderLocal.cpp*/
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -6,9 +6,8 @@
  */
 /**
  * @author mrk
- * @date 2013.07.24
+ * @date 2014.07.03
  */
-
 
 /* Author: Marty Kraimer */
 
@@ -18,6 +17,7 @@
 #include <string>
 #include <cstdio>
 #include <memory>
+#include <iostream>
 
 #include <cantProceed.h>
 #include <epicsStdio.h>
@@ -28,33 +28,36 @@
 
 #include <epicsExport.h>
 
-#include <pv/pvIntrospect.h>
-#include <pv/pvData.h>
 #include <pv/pvAccess.h>
-#include <pv/pvDatabase.h>
-#include <pv/exampleServerCreateRecords.h>
+#include <pv/serverContext.h>
+#include <pv/channelProviderLocal.h>
 
+using std::cout;
+using std::endl;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
 
-static const iocshArg testArg0 = { "prefix", iocshArgString };
-static const iocshArg *testArgs[] = {
-    &testArg0};
-
-static const iocshFuncDef exampleServerFuncDef = {
-    "exampleServerCreateRecords", 1, testArgs};
-static void exampleServerCallFunc(const iocshArgBuf *args)
+static const iocshFuncDef pvdblFuncDef = {
+    "pvdbl", 0, 0
+};
+extern "C" void pvdbl(const iocshArgBuf *args)
 {
-    ExampleServerCreateRecords::create();
+    PVDatabasePtr master = PVDatabase::getMaster();
+    PVStringArrayPtr pvNames = master->getRecordNames();
+    PVStringArray::const_svector xxx = pvNames->view();
+    for(size_t i=0; i<xxx.size(); ++i) cout<< xxx[i] << endl;
 }
 
-static void exampleServerRegister(void)
+
+static void registerChannelProviderLocal(void)
 {
     static int firstTime = 1;
     if (firstTime) {
         firstTime = 0;
-        iocshRegister(&exampleServerFuncDef, exampleServerCallFunc);
+        iocshRegister(&pvdblFuncDef, pvdbl);
+        getChannelProviderLocal();
     }
 }
-epicsExportRegistrar(exampleServerRegister);
+
+epicsExportRegistrar(registerChannelProviderLocal);

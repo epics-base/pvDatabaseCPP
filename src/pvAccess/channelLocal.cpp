@@ -104,7 +104,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelProcessRequester::shared_pointer channelProcessRequester,;
+    ChannelProcessRequester::shared_pointer channelProcessRequester;
     PVRecordPtr pvRecord;
     Mutex mutex;
     int nProcess;
@@ -245,7 +245,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelGetRequester::shared_pointer channelGetRequester,;
+    ChannelGetRequester::shared_pointer channelGetRequester;
     PVCopyPtr pvCopy;
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
@@ -399,7 +399,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelPutRequester::shared_pointer channelPutRequester,;
+    ChannelPutRequester::shared_pointer channelPutRequester;
     PVCopyPtr pvCopy;
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
@@ -580,7 +580,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelPutGetRequester::shared_pointer channelPutGetRequester,;
+    ChannelPutGetRequester::shared_pointer channelPutGetRequester;
     PVCopyPtr pvPutCopy;
     PVCopyPtr pvGetCopy;
     PVStructurePtr pvPutStructure;
@@ -805,7 +805,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelArrayRequester::shared_pointer channelArrayRequester,;
+    ChannelArrayRequester::shared_pointer channelArrayRequester;
     PVArrayPtr pvArray;
     PVArrayPtr pvCopy;
     PVRecordPtr pvRecord;
