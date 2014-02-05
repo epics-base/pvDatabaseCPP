@@ -1,4 +1,0 @@
-include "base.dbd"
-include "PVAServerRegister.dbd"
-include "registerChannelProviderLocal.dbd"
-registrar("exampleServerRegister")

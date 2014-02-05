@@ -6,8 +6,6 @@ DIRS += configure
 DIRS += src
 src_DEPEND_DIRS = configure
 
-DIRS += test
-
 include $(TOP)/configure/RULES_TOP
 
 
