@@ -36,7 +36,7 @@ RecordListRecordPtr RecordListRecord::create(
     resFields[1] = fieldCreate->createScalarArray(pvString);
     StringArray topNames(2);
     FieldConstPtrArray topFields(2);
-    topNames[0] = "arguments";
+    topNames[0] = "argument";
     topFields[0] = fieldCreate->createStructure(argNames,argFields);
     topNames[1] = "result";
     topFields[1] = fieldCreate->createStructure(resNames,resFields);
@@ -69,10 +69,10 @@ bool RecordListRecord::init()
 {
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
-    database = pvStructure->getStringField("arguments.database");
+    database = pvStructure->getStringField("argument.database");
     if(database.get()==NULL) return false;
     regularExpression = pvStructure->getStringField(
-        "arguments.regularExpression");
+        "argument.regularExpression");
     if(regularExpression.get()==NULL) return false;
     status = pvStructure->getStringField("result.status");
     if(status.get()==NULL) return false;

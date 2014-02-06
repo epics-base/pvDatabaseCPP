@@ -38,7 +38,7 @@
 <h1>pvDatabaseCPP</h1>
 <!-- Maturity: Working Draft or Request for Comments, or Recommendation, and date. -->
 
-<h2 class="nocount">EPICS v4 Working Group, Working Draft, 21-Nov-2013</h2>
+<h2 class="nocount">EPICS v4 Working Group, Working Draft, 06-Feb-2014</h2>
 <dl>
     <dt>Latest version:</dt>
     <dd><a
@@ -79,18 +79,30 @@ V4 control system programming environment:<br />
 
 <h2 class="nocount">Status of this Document</h2>
 
-<p>This is the 21-Nov-2013 version of of pvDatabaseCPP.</p>
+<p>This is the 06-Feb-2014 version of of pvDatabaseCPP.</p>
 </p>
 
-<p>All channel methods except channelRPC, which is implemented
-by pvAccess, have been implemented.
+<p>
+Since the last version of the documentation:
+<dl>
+   <dt>examples</dt>
+     <dd>The examples have been moved to separate top level build areas.</dd>
+    <dt>test</dt>
+      <dd>The regression tests have been moved to a separate top level build area.
+       It is built from the top but nothing from the tests appears in the top
+        level bin directory.
+    <dt>exampleServer</dt>
+       <dd>This example now also includes pvaSrv, i. e. the pvAccess server for
+       interfacing to iocCore V3 records.
+       </dd>
+</dl>
+<p>
 This project is ready for alpha users.
 </p>
 
-<p>Since the last version the longArrayGet and longArrayPut examples were added.
-More testing for monitor queues and memory leaks was done.
-Everything looks good!!
-But there are still two unresolved problems:
+<p>
+I have not had time to look at 
+two unresolved problems reported in the previous version of this document:
 <dl>
    <dt>memory leak</dt>
      <dd>arrayPerformanceMain shows a slight memory leak at termination.</dd>
@@ -104,11 +116,6 @@ But there are still two unresolved problems:
 </p>
 <p>Future enhancements in priority order:</p>
 <dl>
-   <dt>Separate example that also has pvaSrv</dt>
-     <dd>Create a separate example that combines a V3IOC,
-      a pvDatabase, and pvaSrv.
-      This will not be done until pvDataCPP-md is merged into pvDataCPP.
-     </dd>
    <dt>channelArray</dt>
      <dd>The arguments that have type <b>int</b> should be changed to <b>size_t</b>
       This will not be done until pvDataCPP-md is merged into pvDataCPP.
@@ -116,8 +123,9 @@ But there are still two unresolved problems:
    <dt>Monitor Algorithms</dt>
        <dd>Monitor algorithms have not been implemented.
         Thus all monitors are onPut.</dd>
-   <dt>Create regression tests</dt>
-     <dd>Currently only examples exist and have been used for testing.</dd>
+   <dt>Create more regression tests</dt>
+     <dd>Currently only some simple tests exist.
+        Most of the testing has been via the examples.</dd>
 </dl>
 
 <div id="toc">
@@ -128,6 +136,13 @@ But there are still two unresolved problems:
 
 <h2>Introduction</h2>
 <h3>Overview</h3>
+<p>The main purpose of this project to make it easier to implement services that are accessed via pvAccess.
+What this project supplies is a complete implementation of the server side of pvAccess.
+All that a service has to provide is a top level PVStructure and a process method.
+A service can be run as a main process or can be part of a V3 IOC.
+Thus services can be developed that interact with V3 records, asynDriver,
+areaDetector, etc.
+</p>
 <p>A brief description of a pvDatabase is that it is a set of network accessible, smart,
 memory resident records.
 Each record has data composed of a top level PVStructure.
@@ -158,23 +173,10 @@ A record is smart because code can be attached to a record, which is accessed vi
        This component also includes the monitor and pvCopy components from pvIOCJava</dd>
    <dt>Main and V3IOC</dt>
       <dd>The pvDatabase can be provided via a Main program or can be part
-       of a V3IOC. In tha later case the IOC has both a database of V3 Records
+       of a V3IOC. In the later case the IOC has both a database of V3 Records
       and a pvDatabase.</dd>
-    <dt>exampleCounter</dt>
-      <dd>This is a simple example showing how to create a PVRecord and
-      how to deploy it either as a standalone process or as part of a V3IOC.</dd>
-    <dt>exampleServer</dt>
-       <dd>This example has a set of PVRecords.
-      Again the records can be deployed either as a standalone process or
-     as part of a V3IOC.</dd>
-     <dt>examplePVADoubleArrayGet</dt>
-       <dd>This is an example PVRecord that uses channelGet to get an array of doubles from
-       another PVRecord via pvAccess. The example shows how to get the value either via
-       remote pvAccess or by directly accessing the local channelProvider.
-      Again the records can be deployed either as a standalone process or
-     as part of a V3IOC.</dd>
 </dl>
-<p><b>database</b> provides base classes that make it easy to create record instances.
+<p>Base classes make it easy to create record instances.
 The code attached to each record must create the top
 level PVStructure and the following three methods:</p>
 <dl>
@@ -189,96 +191,100 @@ level PVStructure and the following three methods:</p>
      <dd>This releases and resources used by the implementation.</dd>
 </dl>
 <h3>Getting started</h3>
-<p>Included with this project are three examples that are useful for
-seeing how pvDatabase can be used by clients.
-Each can be deployed either as a standalone process or as part of a V3IOC.
-The examples are:
-<dl>
-   <dt>exampleCounterMain</dt>
-     <dd>This has a database consisting of a single record named exampleCounter:
-     The exampleCounter is discussed in a following section.</dd>
-   <dt>exampleCounter</dt>
-     <dd>This is exampleCounter as part of a V3IOC.</dd>
-   <dt>exampleServerMain</dt>
-     <dd>This has a database with several records.</dd>
-   <dt>exampleServer</dt>
-      <dd>This is exampleServer as part of a V3IOC</dd>
-    <dt>examplePVADoubleArrayGetMain</dt>
-       <dd>This is the example of how to use pvAccess to get data.</dd>
-    <dt>examplePVADoubleArrayGet</dt>
-      <dd>This is examplePVADoubleArrayGet as part of a V3IOC</dd>
-</dt>
-</p>
-<h3>exampleCounter</h3>
-<p>To start exampleCounterMain:
+<p>The first step is to build pvDatabaseCPP as described in the next section.</p>
+<p>One of the examples is exampleServer.
+It can be started either via a main program or as part of a V3 IOC.
+<p>
+<p>To start it as a main program do the following:</p>
 <pre>
 mrk&gt; pwd
-/home/hg/pvDatabaseCPP
-mrk&gt; bin/linux-x86_64/exampleCounterMain
-</pre></p>
-<p>To start exampleCounter as part of a V3IOC:
+/home/hg/pvDatabaseCPP/exampleServer
+mrk&gt; bin/linux-x86_64/exampleServerMain 
+</pre>
+<p>You should see something like the following:</p>
+<pre>
+result of addRecord exampleServer 1
+VERSION : pvAccess Server v3.0.5-SNAPSHOT
+PROVIDER_NAMES : local
+BEACON_ADDR_LIST : 
+AUTO_BEACON_ADDR_LIST : 1
+BEACON_PERIOD : 15
+BROADCAST_PORT : 5076
+SERVER_PORT : 5075
+RCV_BUFFER_SIZE : 16384
+IGNORE_ADDR_LIST: 
+STATE : INITIALIZED
+exampleServer
+Type exit to stop: 
+</pre>
+<p>Then in another window execute a pvput and pvget as follows:</p>
+<pre>
+mrk&gt; pvput -r "field(argument.value)" exampleServer World
+...
+mrk&gt; pvget -r "record{process=true}field(result.value)" exampleServer
+exampleServer
+structure 
+    string value Hello World
+mrk&gt; 
+</pre>
+<p>To run the example as part of a V3 IOC do the following:</p>
 <pre>
 mrk&gt; pwd
-/home/hg/pvDatabaseCPP/iocBoot/exampleCounter
-mrk&gt; ../../../bin/linux-x86_64/exampleCounter st.cmd
-</pre></p>
-<p>You can then issue the commands dbl and pvdbl:
-<pre>
-epics&gt; dbl
-double01
-epics&gt; pvdbl
-exampleCounter
+/home/hg/pvDatabaseCPP/exampleServer/iocBoot/exampleServer
+mrk&gt; ../../bin/linux-x86_64/exampleServer st.cmd 
+&gt; envPaths
+epicsEnvSet("ARCH","linux-x86_64")
+epicsEnvSet("IOC","exampleServer")
+epicsEnvSet("TOP","/home/hg/pvDatabaseCPP/exampleServer")
+epicsEnvSet("EPICS_BASE","/home/install/epics/base")
+epicsEnvSet("EPICSV4HOME","/home/hg")
+cd /home/hg/pvDatabaseCPP/exampleServer
+## Register all support components
+dbLoadDatabase("dbd/exampleServer.dbd")
+exampleServer_registerRecordDeviceDriver(pdbbase)
+## Load record instances
+dbLoadRecords("db/dbScalar.db","name=pvdouble,type=ao")
+dbLoadRecords("db/dbArray.db","name=pvdoubleArray,type=DOUBLE")
+dbLoadRecords("db/dbStringArray.db","name=pvstringArray")
+dbLoadRecords("db/dbEnum.db","name=pvenum")
+dbLoadRecords("db/dbCounter.db","name=pvcounter");
+cd /home/hg/pvDatabaseCPP/exampleServer/iocBoot/exampleServer
+iocInit()
+Starting iocInit
+############################################################################
+## EPICS R3.14.12.3 $Date: Mon 2012-12-17 14:11:47 -0600$
+## EPICS Base built Dec 21 2013
+############################################################################
+iocRun: All initialization complete
+dbl
+pvdouble
+pvcounter
+pvenum
+pvdoubleArray
+pvstringArray
+epicsThreadSleep(1.0)
+exampleServerCreateRecord pvaServer
+startPVAServer
+VERSION : pvAccess Server v3.0.5-SNAPSHOT
+PROVIDER_NAMES : dbPv local
+BEACON_ADDR_LIST : 
+AUTO_BEACON_ADDR_LIST : 1
+BEACON_PERIOD : 15
+BROADCAST_PORT : 5076
+SERVER_PORT : 5075
+RCV_BUFFER_SIZE : 16384
+IGNORE_ADDR_LIST: 
+STATE : INITIALIZED
+pvdbl
+pvaServer
 epics&gt; 
 </pre>
-double01 is a v3Record.
-exampleCounter is a pvRecord.
+<p>Just like previously you can then execute a pvput and pvget and see Hello World.
 </p>
-<p>Starting exampleServer is similar.
-After successfully running exampleCounterMain and exampleCounter then
-try starting exampleServerMain and exampleServer.
-</p>
-<h3>exampleServer</h3>
-<p>This example provides the exampleCounter record in addition to a number of other PVRecords.
-Like exampleCounter it can be started either as a standalone main program or as
-a part of a V3IOC.
-The exampleServer pvDatabase has many records including the following:</p>
-<dl>
-   <dt>exampleCounter</dt>
-     <dd>A record that is an instance of exampleCounter described below.
-      The most useful channel methods are channelGet, channelProcess,
-     and monitor.</dd>
-   <dt>exampleDouble</dt>
-     <dd>A record that is an instance of a record with a process method
-      that does nothing. To test it start a channelPut and a channelGet and/or monitor.</dd>
-   <dt>exampleDoubleArray</dt>
-     <dd>An array record that is an instance of a record with a process method
-      that does nothing. It can be tested like exampleDouble. In addition channelArray can
-     also be used.</dd>
-   <dt>examplePowerSupply</dt>
-     <dd>Can be used by channelGet, channelPut, channelPutGet, and monitor.</dd>
-   <dt>laptoprecordListPGRPC</dt>
-      <dd>Implements the record expected by swtshell channelList.
-      It can also be used via channelPutGet.</dd>
-   <dt>traceRecordPGRPC</dt>
-     <dd>This can be used via channelPutGet to set the trace level of another record.</dd>
-</dl>
-<p>It also has a number of other scalar and array records.</p>
-<h3>swtshell</h3>
-<p>The Java program
-<a
-      href="http://epics-pvdata.sourceforge.net/docbuild/swtshellJava/tip/documentation/swtshellJava.html">
-      swtshell</a>
-can be used to access  pvDatabase.</p>
-<p>In particular read the sections "Getting Started" and "Simple Example".
-They will work on the exampleServer with the following differences:
-<dl>
-   <dt>startExample.zip</dt>
-     <dd>Do NOT use this. Instead run the exampleServer as described above.</dd>
-   <dt>channelList result</dt>
-     <dd>The result of channelList will show the list of records that
-       exampleServer has rather than the records from startExample.zip</dd>
-</dl>
-</p>
+<p>The examples, i. e. exampleServer, exampleLink, examplePowerSupple,
+and exampleDatabase, are described in separate sections below.
+In addition arrayPerformance can be used to measure that performance of big
+arrays. It is also described in a later section.</p>
 
 <h3>Relationship with pvIOCJava.</h3>
 <p>This document descibes a C++ implementation of some of the components in pvIOCJava,
@@ -301,239 +307,6 @@ channelRPC. For channelRPC pvAccess provides (or will provide) a thread pool for
 If, in the future, a scanning facility is provided by pvDatabaseCPP or some other facility,
 then the scanning facility will have to provide some way of handling process requests that block.</p>
 </p>
-<h3>Example PVRecord Extension</h3>
-<p>The example implements a simple counter.
-The example can be run on linux as follows:</p>
-<pre>
-mrk&gt; pwd
-/home/hg/pvDatabaseCPP
-mrk&gt; bin/linux-x86_64/exampleCounter 
-
-</pre>
-<p>The example consists of four components:</p>
-<dl>
-   <dt>ExampleCounter.h</dt>
-     <dd>The source code for the counter.
-      It is located in directory pvDatabaseCPP/example/src/exampleCounter.
-      </dd>
-   <dt>exampleCounterMain.cpp</dt>
-     <dd>A main program that runs the example so that it can be accessed
-       by a pvAccess client.
-      It is located in directory pvDatabaseCPP/example/exampleCounter.
-     </dd>
-   <dt>V3IOC/exampleCounter</dt>
-      <dd>This is a directory that packages exampleCounter to make it
-       part of a V3IOC.</dd>
-   <dt>iocBoot/exampleCounter</dt>
-      <dd>A place to start exampleCounter as part of a V3IOC.
-        It follows the normal iocCore conventions.</dd>
-</dl>
-<h4>ExampleCounter.h</h4>
-<p>The example resides in src/database.
-The complete implementation is in the header file.
-A serious implementation might break the code into a header and an
-implementation file.<p>
-</p>The description consists of</p>
-<pre>
-class ExampleCounter;
-typedef std::tr1::shared_ptr&lt;ExampleCounter&gt; ExampleCounterPtr;
-
-class ExampleCounter :
-    public PVRecord
-{
-public:
-    POINTER_DEFINITIONS(ExampleCounter);
-    static ExampleCounterPtr create(
-        epics::pvData::String const &amp; recordName);
-    virtual ~ExampleCounter();
-    virtual void destroy();
-    virtual bool init();
-    virtual void process();
-private:
-    ExampleCounter(epics::pvData::String const &amp; recordName,
-        epics::pvData::PVStructurePtr const &amp; pvStructure);
-    epics::pvData::PVLongPtr pvValue;
-    epics::pvData::PVTimeStamp pvTimeStamp;
-    epics::pvData::TimeStamp timeStamp;
-};
-</pre>
-<p>where</p>
-<dl>
-  <dt>create<dt>
-    <dd>This is example specific but each support could provide
-     a similar static method.
-    </dd>
-  <dt>~ExampleCounter<dt>
-    <dd>The destructor must be declared virtual.</dd>
-  <dt>destroy</dt>
-     <dd>Called when the record is being destroyed.
-      This must call the base class destroy method.
-  <dt>init<dt>
-    <dd>A method to initialize the support. It returns true
-    if initialization is successful and false if not.
-    NOTE that this is a virtual method of PVRecord itself.</dd>
-  <dt>process<dt>
-    <dd>
-     This again is a virtual method of PVRecord.
-    </dd>
-  <dt>ExampleCounter<dt>
-    <dd>For the example this is private.</dd>
-  <dt>pvValue</dt>
-    <dd>This is the field of the top level structure that process
-    accesses.
-    </dd>
-<dl>
-<p>The implementation of create method is:</p>
-<pre>
-ExampleCounterPtr ExampleCounter::create(
-    epics::pvData::String const &amp; recordName)
-{
-    epics::pvData::PVStructurePtr pvStructure =
-       epics::pvData::getStandardPVField()-&gt;scalar(
-           epics::pvData::pvDouble,"timeStamp,alarm"");
-    ExampleCounterPtr pvRecord(
-        new ExampleCounter(recordName,pvStructure));
-    if(!pvRecord-&gt;init()) pvRecord.reset();
-    return pvRecord;
-}
-</pre>
-This:
-<ul>
-   <li>Creates the top level structure.</li>
-   <li>Creates a ExampleCounterPtr via the constructor.</li>
-   <li>Calls init and if it fails resets the shared pointer.</li>
-   <li>Returns the shared pointer to the newly created record.</li>
-</ul>
-<p>The private constructor method is:</p>
-<pre>
-ExampleCounter::ExampleCounter(
-    epics::pvData::String const &amp; recordName,
-    epics::pvData::PVStructurePtr const &amp; pvStructure)
-: PVRecord(recordName,pvStructure)
-{
-    pvTimeStamp.attach(pvStructure->getSubField("timeStamp"));
-}
-</pre>
-The example is very simple. Note that it calls the base class constructor.
-<p>The destructor and destroy methods are:</p>
-<pre>
-ExampleCounter::~ExampleCounter()
-{
-}
-
-void ExampleCounter::destroy()
-{
-    PVRecord::destroy();
-}
-</pre>
-The destructor has nothing to do.
-The destroy method, which is virtual,  just calls the destroy method of the base class.
-A more complicated example can clean up any resources it used but must call the base
-class destroy method.
-<p>The implementation of init is:</p>
-<pre>
-bool ExampleCounter::init()
-{
-
-    initPVRecord();
-    epics::pvData::PVFieldPtr pvField;
-    pvValue = getPVStructure()-&gt;getLongField("value");
-    if(pvValue==NULL) return false;
-    return true;
-}
-</pre>
-This:
-<ul>
-   <li>Calls initRecord which is implemented by the base class.
-    It MUST be called.</li>
-   <li>Calls getLongField to get the interface to the value field,
-    which must be a scalar with type long.</li>
-   <li>If a long value field was not found it returns false.</li>
-   <li>Returns true</li>
-</ul>
-<p>The implementation of process is:</p>
-<pre>
-void ExampleCounter::process()
-{
-    pvValue-&gt;put(pvValue-&gt;get() + 1.0);
-    timeStamp.getCurrent();
-    pvTimeStamp.set(timeStamp);
-}
-</pre>
-It adds 1.0 to the current value.
-It then sets the timeStamp to the current time.
-<h4>exampleCounterMain.cpp</h4>
-<p><b>NOTE:</b>
-This is a shorter version of the actual code.
-It shows the essential code.
-The actual example shows how create an additional record.
-</p>
-<p>The main program is:</p>
-<pre>
-int main(int argc,char *argv[])
-{
-    PVDatabasePtr master = PVDatabase::getMaster();
-    ChannelProviderLocalPtr channelProvider = ChannelProviderLocal::create();
-    String recordName("exampleCounter");
-    PVRecordPtr pvRecord = ExampleCounter::create(recordName);
-    bool result = master-&gt;addRecord(pvRecord);
-    cout &lt;&lt; "result of addRecord " &lt;&lt; recordName &lt;&lt; " " &lt;&lt; result &lt;&lt; endl;
-    pvRecord.reset();
-    startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
-    cout &lt;&lt; "exampleCounter\n";
-    string str;
-    while(true) {
-        cout &lt;&lt; "Type exit to stop: \n";
-        getline(cin,str);
-        if(str.compare("exit")==0) break;
-
-    }
-    return 0;
-}
-</pre>
-This:
-<ul>
-  <li>Gets a pointer to the master database.</li>
-  <li>Creates the local Channel Provider. This starts the pvAccess server.</li>
-  <li>Creates a ExampleCounter record with the name exampleCounter
-  </li>
-   <li>Prints exampleCounter on standard out.</li>
-  <li>Runs forever until the user types exit on standard in.</li>
-</ul>
-<h4>V3IOC exampleCounter</h4>
-<p>This has two subdirectories:
-<dl>
-   <dt>Db</dt>
-      <dd>This has a template for a single v3Record.</dd>
-    <dt>src</dt>
-       <dd>This has code to allow exampleCounter to reside in a V3IOC.</dd>
-</dl>
-</p>
-<p>The src directory has the following components:</p>
-<dl>
-   <dt>exampleCounterMain.cpp</dt>
-     <dd>This is just a standard Main for a V3IOC.</dd>
-   <dt>exampleCounterInclude.dbd</dt>
-      <dd>This is:
-       <pre>
-include "base.dbd"
-include "PVAServerRegister.dbd"
-registrar("exampleCounterRegister")
-       </pre>
-       This includes the dbd components required from base,
-       the  dbd file for starting pvAccess and the local channelProvider,
-       and the dbd file for the example. The later is for the code from the
-       next file.
-       </dd>
-   <dt>exampleCounter.cpp</dt>
-      <dd>This is the code that registers a command the can be issued
-      via the iocsh, which is the console for a V3IOC.
-       The example supports a single command:
-       <pre>
-exampleCounterCreateRecord recordName
-       </pre>
-       </dd>
-</dl>
 <h3>Phased Development</h3>
 <p>This documentation describes the first phase of a phased implementation of pvDatabaseCPP:</pp>
 <dl>
@@ -581,7 +354,7 @@ The rest of this  document discusses only the first phase.</p>
 <h3>Minumum Features Required for pvRecord</h3>
 <p>The first phase will only implement record processing, i. e.
 the process method has to do everything itself without any generic field support.
-This will be sufficient for starting to implement services.
+This will be sufficient for implementing many services.
 The following are the minimium features required</p>
 <dl>
   <dt>PVDatabase</dt>
@@ -601,6 +374,72 @@ The following are the minimium features required</p>
      </dd>
 </dl>
 <p>The following sections describes the classes required for the first phase.</p>
+<h3>swtshell</h3>
+<p>The Java program
+<a
+href="http://epics-pvdata.sourceforge.net/docbuild/swtshellJava/tip/documentation/swtshellJava.html">
+      swtshell</a>
+can be used to access  pvDatabase.</p>
+<p>In particular read the sections "Getting Started" and "exampleServer".
+They will work on the exampleServer with the following differences:
+<dl>
+   <dt>startExample.zip</dt>
+     <dd>Do NOT use this. Instead run the exampleServer as described above.</dd>
+   <dt>channelList result</dt>
+     <dd>The result of channelList will show the list of records that
+       exampleServer has rather than the records from startExample.zip</dd>
+</dl>
+<p>The exampleService shown below provides an example of using swtshell.</p>
+
+<h2>Building pvDatabaseCPP</h2>
+<p>To build pvDatabaseCPP You must provide a file RELEASE.local
+in directory configure.
+Thus do the following:</p>
+<pre>
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP/configure
+mrk&gt; cp ExampleRELEASE.local RELEASE.local
+</pre>
+<p>Then edit <b>RELEASE.local</b> so that it has the correct location of each
+product pvDatabaseCPP requires.
+Than at the top level just execute <b>make</b>:</p>
+<pre>
+mrk&gt; cd ..
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP
+mrk&gt; make
+</pre>
+<p>This builds pvDatabaseCPP and also the tests.</p>
+<p>Each example and arrayPerformance is build as a completely separate top.
+This is done so that:<p>
+<ol>
+   <li>
+    It is easier to understand each example including how it is built so that
+    it can be run as a main or as part of a V3 IOC.
+   </li>
+   <li>
+     Each example can be copied somewhere else and used as the basis
+     for creating a new service.
+   </li>
+</ol>
+<p>Thus to build each example just follow the same instructions as for
+building pvDatabaseCPP itself.
+For example:</p>
+<pre>
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP/exampleServer/configure
+mrk&gt; cp ExampleRELEASE.local RELEASE.local
+</pre>
+<p>Then edit <b>RELEASE.local</b> so that it has the correct location of each
+product the example requires.
+Than at the top level just execute <b>make</b>:</p>
+<pre>
+mrk&gt; cd ..
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP/exampleServer
+mrk&gt; make
+</pre>
+<p>This builds the example.</p>
 
 <h2>iocshell commands</h2>
 <p>The following iocsh commands are provided for a V3IOC:</p>
@@ -652,20 +491,11 @@ See example/V3IOC/exampleCounter/src/ for a simple example.</p>
 <h3>src/special</h3>
 <p>This directory has the following files:</p>
 <dl>
-   <dt>powerSupplyRecordTest.h</dt>
-     <dd>
-       This provides code that simulates a power supply.
-       It computes the current from the voltage and power.
-       It is used for testing.
-       The complete implementation is provided in the header file.
-       Thus code will be generated only if other code includes the
-        header file and creates a record instance.
-     </dd>
    <dt>recordList.h</dt>
      <dd>This implements a PVRecord that provides a list of the names
       of the records in the PVDatabase.
       It also serves as an example of how to implement a service.
-      The testExampleServer creates an instance via the following code:
+      The exampleDatabase creates an instance via the following code:
       <pre>
 recordName = "laptoprecordListPGRPC";
 pvRecord = RecordListRecord::create(recordName);
@@ -1283,93 +1113,322 @@ pvRecord = RecordListRecord::create(recordName);
 result = master-&gt;addRecord(pvRecord);
 if(!result) cout&lt;&lt; "record " &lt;&lt; recordName &lt;&lt; " not added" &lt;&lt; endl;
 </pre>
-<h3>powerSupplyRecordTest</h3>
-<p>This simulates a simple power supply record.
-It is used for testing.</p>
-<h2>Accessing Other PVRecords</h2>
-<p>This section 1) starts with a discussion of accessing data via pvAccess
-and 2) gives a brief description of an example that gets data for an array of doubles.</p>
-<h3>Discussion</h3>
-<h4>Access Alternatives</h4>
-<p>The process routine of a PVRecord can access other PVRecords in two ways:</p>
-<dl>
-  <dt>Directly accessing local pvDatabase</dt>
-    <dd>
-    If the other PVRecord is accessed via the master PVDatabase then
-    threading issues are up to the implementation.
-    For now this method will not be discussed.</dd>
-  <dt>Access via pvAccess</dt>
-    <dd>
-      If access is via pvAccess then locking is handled by pvAccess.</dd>
-</dl>
-<p>Access via pvAccess can be done either by local or remote channel provider.</p>
-</dl>
-<dl>
-  <dt>Access via channelProviderLocal</dt>
-    <dd>
-    If the local pvAccess server is used the implementation must be careful that it does not
-    caused deadlocks.
-    When the process method is called the pvRecord for the process method is locked.
-    When it makes a pvAccess get, put, etc request the other record is locked.
-    Thus if a set of pvAccess links are implemented the possibility of deadlocks
-    exists. A simple example is two records that have links to each other.
-    More complex sets are easily created.
-    Unless the developer has complete control of the set of records then remote pvAccess should
-    be used.
-    But this results in more context switches.
-    </dd>
-   <dt>Access via remote pvAccess</dt>
-      <dd>If remote pvAccess is used then all lockimg issues are handled by pvAccess.
-      The linked channel can be a pvRecord in the local pvDatabase or can be implemented
-      by a remote pvAccess server.</dd>
-</dl>
-<h4>Data synchronization</h4>
-<p>If pvAccess is used then it handles data synchronization.
-This is done by making a copy of the data that is transfered between the two pvRecords.
-This is true if either remote or local pvAccess is used.
-Each get, put, etc request results in data being copied between the two records.</p>
-<p>
-If the linked channel is a local pvRecord then,
-for scalar and structure arrays,
-raw data is NOT copied for gets.
-This is because pvData uses shared_vector to hold the raw data.
-Instead of copying the raw data the reference count is incremented.</p>
-<p>For puts the linked array will force a new allocation of the raw data in the linked record,
-i. e. copy on write semantics are enforced. This is done automatically
-by pvData and not by pvDatabase.</p>
-<h4>Some details</h4>
-<p>As mentioned before a pvDatabase server can be either a separate process,
-i. e. a main program, or can be part of a V3IOC.</p>
-<p>A main pvDatabase server issues the following calls:</p>
-<pre>
- ClientFactory::start();
- ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
- ...
- ServerContext::shared_pointer serverContext = startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
-</pre>
-<p>The first call is only necessary if some of the pvRecords
-have pvAccess links.
-These must be called before any code that uses links is initialized.
-After these two calls there will be two channel providers: <b>local</b>, and <b>pvAccess</b>.
+</p>
 
-</p>
-<p>A pvDatabase that is part of a V3IOC has the following in the st.cmd file.</p>
+<h2>exampleServer</h2>
+<p>The example implements a simple service that has a top level pvStructure:
 <pre>
-...
-iocInit()
-startPVAClient
-startPVAServer
-## commands to create pvRecords
+structure
+    structure argument
+        string value
+    structure result
+        string value
+        time_t timeStamp
+            long secondsPastEpoch
+            int nanoSeconds
+            int userTag
+</pre>
+<p>It is designed to be accessed via a channelPutGet request.
+The client sets argument.value
+When the record processes it sets result.value to "Hello " 
+concatenated with argument.value.
+Thus if the client sets argument.value equal to "World"
+result.value will be "Hello World".
+In addition the timeStamp is set to the time when process is called.</p>
+<p>
+The example can be run on linux as follows:</p>
+<pre>
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP/exampleService
+mrk&gt; bin/linux-x86_64/exampleService
 </pre>
 <p>
-Once the client and local provider code has started then the following creates a channel access link.
-</p>
-<pre>
-PVDatabasePtr master = PVDatabase::getMaster();
-ChannelAccess::shared_pointer channelAccess = getChannelAccess();
-ChannelProvider::shared_pointer provider = channelAccess-&gt;getProvider(providerName);
-Channel::shared_pointer channel = provider-&gt;createChannel(channelName,channelRequester);
+The directory structure is:
 </pre>
+exampleServer
+    configure
+       ExampleRELEASE.local
+       ...
+    src
+       exampleServer.h
+       exampleServer.cpp
+       exampleServerInclude.dbd
+       exampleServerMain.cpp
+       exampleServerRegister.cpp
+    example
+       Db
+          dbArray.db
+          ...
+       src
+          exampleServerInclude.dbd
+          exampleServerMain.cpp
+   iocBoot
+      exampleServer
+         st.cmd
+         ...
+</pre>
+where
+<dl>
+  <dt>ExampleRELEASE.local</dt>
+     <dd>This is the file that must be copied to RELEASE.local
+     and edited.</dd>
+   <dt>exampleServer.h</dt>
+     <dd>The header file for the service.</dd>
+   <dt>exampleServer.cpp</dt>
+     <dd>The service implementation.</dd>
+   <dt>exampleServerMain.cpp</dt>
+     <dd>A main program that runs the example so that it can be accessed
+       by a pvAccess client.
+     </dd>
+   <dt>exampleServerInclude.dbd</dt>
+     <dd>This has a register command so that the service can be started
+       on a V3 IOC via iocsh.
+      </dd>
+   <dt>exampleServerRegister.cpp</dt>
+      <dd>This has the code to start the service via the following iocsh
+       command.
+<pre>
+exampleServerCreateRecord exampleServer
+</pre>
+       Multiple commands can be issued to create multiple service records.
+       </dd>
+   <dt>example</dt>
+     <dd>This is for building a V3 IOC application.</dd>
+   <dt>example/Db</dt>
+     <dd>This has template files for creating V3 records.</dd>
+   <dt>example/src/exampleServerInclude.dbd</dt>
+     <dd>The commands to build a V3 database</dd>
+   <dt>example/src/exampleServerMain.cpp</dt>
+     <dd>The source file for running a V3 IOC.</dd>
+   <dt>iocBoot/exampleServer</dt>
+      <dd>A place to start exampleServer as part of a V3IOC.
+       It has a st.cmd file that starts the ioc and also starts pvAccess
+      and the example.</dd>
+</dl>
+<h4>exampleServer.h</h4>
+<p>The example resides in src
+The implementation is in exampleServer.cpp.
+A serious implementation might break the code into a header and an
+implementation file.<p>
+</p>The description consists of</p>
+<pre>
+class ExampleServer;
+typedef std::tr1::shared_ptr&lt;ExampleServer&gt; ExampleServerPtr;
+
+class ExampleServer :
+    public PVRecord
+{
+public:
+    POINTER_DEFINITIONS(ExampleServer);
+    static ExampleServerPtr create(
+        epics::pvData::String const &amp; recordName);
+    virtual ~ExampleServer();
+    virtual void destroy();
+    virtual bool init();
+    virtual void process();
+private:
+    ExampleServer(epics::pvData::String const &amp; recordName,
+        epics::pvData::PVStructurePtr const &amp; pvStructure);
+
+    epics::pvData::PVStringPtr pvArgumentValue;
+    epics::pvData::PVStringPtr pvResultValue;
+    epics::pvData::PVTimeStamp pvTimeStamp;
+    epics::pvData::TimeStamp timeStamp;
+};
+</pre>
+<p>where</p>
+<dl>
+  <dt>create<dt>
+    <dd>This is example specific but each support could provide
+     a similar static method.
+    </dd>
+  <dt>~ExampleServer<dt>
+    <dd>The destructor must be declared virtual.</dd>
+  <dt>destroy</dt>
+     <dd>Called when the record is being destroyed.
+      This must call the base class destroy method.
+  <dt>init<dt>
+    <dd>A method to initialize the support. It returns true
+    if initialization is successful and false if not.
+    NOTE that this is a virtual method of PVRecord itself.</dd>
+  <dt>process<dt>
+    <dd>
+     This again is a virtual method of PVRecord.
+    </dd>
+  <dt>ExampleServer<dt>
+    <dd>For the example this is private.</dd>
+  <dt>pvValue</dt>
+    <dd>This is the field of the top level structure that process
+    accesses.
+    </dd>
+<dl>
+<p>The implementation of create method is:</p>
+<pre>
+ExampleServerPtr ExampleServer::create(
+    epics::pvData::String const &amp; recordName)
+{
+    StandardPVFieldPtr standardPVField = getStandardPVField();
+    PVDataCreatePtr pvDataCreate = getPVDataCreate();
+    PVStructurePtr pvArgument = standardPVField-&gt;scalar(pvString,"");
+    PVStructurePtr pvResult = standardPVField-&gt;scalar(pvString,"timeStamp");
+    StringArray names;
+    names.reserve(2);
+    PVFieldPtrArray fields;
+    fields.reserve(2);
+    names.push_back("argument");
+    fields.push_back(pvArgument);
+    names.push_back("result");
+    fields.push_back(pvResult);
+    PVStructurePtr pvStructure = pvDataCreate-&gt;createPVStructure(names,fields);
+    ExampleServerPtr pvRecord(
+        new ExampleServer(recordName,pvStructure));
+    if(!pvRecord-&gt;init()) pvRecord.reset();
+    return pvRecord;
+}
+</pre>
+This:
+<ul>
+   <li>Creates the top level structure.</li>
+   <li>Creates a ExampleServerPtr via the constructor.</li>
+   <li>Calls init and if it fails resets the shared pointer.</li>
+   <li>Returns the shared pointer to the newly created record.</li>
+</ul>
+<p>The private constructor method is:</p>
+<pre>
+ExampleServer::ExampleServer(
+    epics::pvData::String const &amp; recordName,
+    epics::pvData::PVStructurePtr const &amp; pvStructure)
+: PVRecord(recordName,pvStructure)
+{
+}
+</pre>
+The example is very simple. Note that it calls the base class constructor.
+<p>The destructor and destroy methods are:</p>
+<pre>
+ExampleServer::~ExampleServer()
+{
+}
+
+void ExampleServer::destroy()
+{
+    PVRecord::destroy();
+}
+</pre>
+The destructor has nothing to do.
+The destroy method, which is virtual,  just calls the destroy method of the base class.
+A more complicated example can clean up any resources it used but must call the base
+class destroy method.
+<p>The implementation of init is:</p>
+<pre>
+bool ExampleServer::init()
+{
+    initPVRecord();
+    PVFieldPtr pvField;
+    pvArgumentValue = getPVStructure()-&gt;getStringField("argument.value");
+    if(pvArgumentValue.get()==NULL) return false;
+    pvResultValue = getPVStructure()-&gt;getStringField("result.value");
+    if(pvResultValue.get()==NULL) return false;
+    pvTimeStamp.attach(getPVStructure()-&gt;getSubField("result.timeStamp"));
+    return true;
+}
+</pre>
+<p>The implementation of process is:</p>
+<pre>
+void ExampleServer::process()
+{
+    pvResultValue-&gt;put(String("Hello ") + pvArgumentValue-&gt;get());
+    timeStamp.getCurrent();
+    pvTimeStamp.set(timeStamp);
+}
+</pre>
+It gives a value to result.value and
+then sets the timeStamp to the current time.
+<h4>exampleServerMain.cpp</h4>
+<p><b>NOTE:</b>
+This is a shorter version of the actual code.
+It shows the essential code.
+The actual example shows how create an additional record.
+</p>
+<p>The main program is:</p>
+<pre>
+int main(int argc,char *argv[])
+{
+    PVDatabasePtr master = PVDatabase::getMaster();
+    ChannelProviderLocalPtr channelProvider = ChannelProviderLocal::create();
+    String recordName("exampleServer");
+    PVRecordPtr pvRecord = ExampleServer::create(recordName);
+    bool result = master-&gt;addRecord(pvRecord);
+    cout &lt;&lt; "result of addRecord " &lt;&lt; recordName &lt;&lt; " " &lt;&lt; result &lt;&lt; endl;
+    pvRecord.reset();
+    startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
+    cout &lt;&lt; "exampleServer\n";
+    string str;
+    while(true) {
+        cout &lt;&lt; "Type exit to stop: \n";
+        getline(cin,str);
+        if(str.compare("exit")==0) break;
+
+    }
+    return 0;
+}
+</pre>
+This:
+<ul>
+  <li>Gets a pointer to the master database.</li>
+  <li>Creates the local Channel Provider. This starts the pvAccess server.</li>
+  <li>Creates a ExampleServer record with the name exampleServer
+  </li>
+   <li>Prints exampleServer on standard out.</li>
+  <li>Runs forever until the user types exit on standard in.</li>
+</ul>
+<h4>V3IOC exampleServer</h4>
+<p>To start exampleServer as part of a V3IOC:
+<pre>
+mrk&gt; pwd
+/home/hg/pvDatabaseCPP/exampleServer/iocBoot/exampleServer
+mrk&gt; ../../../bin/linux-x86_64/exampleServer st.cmd
+</pre></p>
+<p>You can then issue the commands dbl and pvdbl:
+<pre>
+epics&gt; dbl
+double01
+epics&gt; pvdbl
+exampleServer
+epics&gt; 
+</pre>
+double01 is a v3Record.
+exampleServer is a pvRecord.
+</p>
+
+<h2>exampleDatabase</h2>
+<h3>exampleDatabase</h3>
+<p>This example provides the exampleCounter record in addition to a number of other PVRecords.
+Like exampleCounter it can be started either as a standalone main program or as
+a part of a V3IOC.
+The exampleServer pvDatabase has many records including the following:</p>
+<dl>
+   <dt>exampleCounter</dt>
+     <dd>A record that is an instance of exampleCounter described below.
+      The most useful channel methods are channelGet, channelProcess,
+     and monitor.</dd>
+   <dt>exampleDouble</dt>
+     <dd>A record that is an instance of a record with a process method
+      that does nothing. To test it start a channelPut and a channelGet and/or monitor.</dd>
+   <dt>exampleDoubleArray</dt>
+     <dd>An array record that is an instance of a record with a process method
+      that does nothing. It can be tested like exampleDouble. In addition channelArray can
+     also be used.</dd>
+   <dt>laptoprecordListPGRPC</dt>
+      <dd>Implements the record expected by swtshell channelList.
+      It can also be used via channelPutGet.</dd>
+   <dt>traceRecordPGRPC</dt>
+     <dd>This can be used via channelPutGet to set the trace level of another record.</dd>
+</dl>
+<p>It also has a number of other scalar and array records.</p>
+<h2>exampleLink</h2>
+<p>This example show how a service can access other PVRecords.
+This section 1) starts with a discussion of accessing data via pvAccess
+and 2) gives a brief description of an example that gets data for an array of doubles.</p>
 <h3>examplePVADoubleArrayGet</h3>
 examplePVADoubleArrayGet shows how to use pvAccess to get data.</p>
 <p>The code resides in three directories:</p>
@@ -1383,7 +1442,7 @@ examplePVADoubleArrayGet shows how to use pvAccess to get data.</p>
    <dt>iocBoot/examplePVADoubleArrayGet</dt>
       <dd>This has the st.cmd files to start the example.</dd>
 </dl>
-<h4>examplePVADoubleArrayGet Implementation</h4>
+<h3>examplePVADoubleArrayGet Implementation</h3>
 <p>examplePVADoubleArrayGet.h contains the following:</p>
 <pre>
 ...
@@ -1593,7 +1652,102 @@ where
    <dt>st.remote</dt>
      <dd>This creates the example using the remote channel provider.</dd>
 </dl>
+<h3>Discussion</h3>
+<h4>Access Alternatives</h4>
+<p>The process routine of a PVRecord can access other PVRecords in two ways:</p>
+<dl>
+  <dt>Directly accessing local pvDatabase</dt>
+    <dd>
+    If the other PVRecord is accessed via the master PVDatabase then
+    threading issues are up to the implementation.
+    For now this method will not be discussed.</dd>
+  <dt>Access via pvAccess</dt>
+    <dd>
+      If access is via pvAccess then locking is handled by pvAccess.</dd>
+</dl>
+<p>Access via pvAccess can be done either by local or remote channel provider.</p>
+</dl>
+<dl>
+  <dt>Access via channelProviderLocal</dt>
+    <dd>
+    If the local pvAccess server is used the implementation must be careful that it does not
+    caused deadlocks.
+    When the process method is called the pvRecord for the process method is locked.
+    When it makes a pvAccess get, put, etc request the other record is locked.
+    Thus if a set of pvAccess links are implemented the possibility of deadlocks
+    exists. A simple example is two records that have links to each other.
+    More complex sets are easily created.
+    Unless the developer has complete control of the set of records then remote pvAccess should
+    be used.
+    But this results in more context switches.
+    </dd>
+   <dt>Access via remote pvAccess</dt>
+      <dd>If remote pvAccess is used then all lockimg issues are handled by pvAccess.
+      The linked channel can be a pvRecord in the local pvDatabase or can be implemented
+      by a remote pvAccess server.</dd>
+</dl>
+<h4>Data synchronization</h4>
+<p>If pvAccess is used then it handles data synchronization.
+This is done by making a copy of the data that is transfered between the two pvRecords.
+This is true if either remote or local pvAccess is used.
+Each get, put, etc request results in data being copied between the two records.</p>
+<p>
+If the linked channel is a local pvRecord then,
+for scalar and structure arrays,
+raw data is NOT copied for gets.
+This is because pvData uses shared_vector to hold the raw data.
+Instead of copying the raw data the reference count is incremented.</p>
+<p>For puts the linked array will force a new allocation of the raw data in the linked record,
+i. e. copy on write semantics are enforced. This is done automatically
+by pvData and not by pvDatabase.</p>
+<h4>Some details</h4>
+<p>As mentioned before a pvDatabase server can be either a separate process,
+i. e. a main program, or can be part of a V3IOC.</p>
+<p>A main pvDatabase server issues the following calls:</p>
+<pre>
+ ClientFactory::start();
+ ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
+ ...
+ ServerContext::shared_pointer serverContext = startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
+</pre>
+<p>The first call is only necessary if some of the pvRecords
+have pvAccess links.
+These must be called before any code that uses links is initialized.
+After these two calls there will be two channel providers: <b>local</b>, and <b>pvAccess</b>.
 
+</p>
+<p>A pvDatabase that is part of a V3IOC has the following in the st.cmd file.</p>
+<pre>
+...
+iocInit()
+startPVAClient
+startPVAServer
+## commands to create pvRecords
+</pre>
+<p>
+Once the client and local provider code has started then the following creates a channel access link.
+</p>
+<pre>
+PVDatabasePtr master = PVDatabase::getMaster();
+ChannelAccess::shared_pointer channelAccess = getChannelAccess();
+ChannelProvider::shared_pointer provider = channelAccess-&gt;getProvider(providerName);
+Channel::shared_pointer channel = provider-&gt;createChannel(channelName,channelRequester);
+</pre>
+<h2>examplePowerSupply</h2>
+<dl>
+   <dt>powerSupplyRecordTest.h</dt>
+     <dd>
+       This provides code that simulates a power supply.
+       It computes the current from the voltage and power.
+       It is used for testing.
+       The complete implementation is provided in the header file.
+       Thus code will be generated only if other code includes the
+        header file and creates a record instance.
+     </dd>
+</dl>
+<h3>powerSupplyRecordTest</h3>
+<p>This simulates a simple power supply record.
+It is used for testing.</p>
 <h2>Array Performance and Memory Example</h2>
 <p>This section describes main programs that demonstrate performance
 of large arrays and can also be used to check for memory leaks.

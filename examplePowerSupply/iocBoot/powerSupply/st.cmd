@@ -3,8 +3,8 @@
 cd ${TOP}
 
 ## Register all support components
-dbLoadDatabase("dbd/exampleServer.dbd")
-exampleServer_registerRecordDeviceDriver(pdbbase)
+dbLoadDatabase("dbd/powerSupply.dbd")
+powerSupply_registerRecordDeviceDriver(pdbbase)
 
 ## Load record instances
 dbLoadRecords("db/dbScalar.db","name=pvdouble,type=ao")
@@ -17,7 +17,7 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit()
 dbl
 epicsThreadSleep(1.0)
-exampleServerCreateRecord exampleServer
+powerSupplyCreateRecord powerSupply
 startPVAServer
 pvdbl
 

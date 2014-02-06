@@ -29,7 +29,7 @@
 #include <pv/standardPVField.h>
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
-#include <pv/powerSupplyRecordTest.h>
+#include "powerSupply.h"
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -38,30 +38,6 @@ using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
 
 
-static PVStructurePtr createPowerSupply()
-{
-    FieldCreatePtr fieldCreate = getFieldCreate();
-    StandardFieldPtr standardField = getStandardField();
-    PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    size_t nfields = 5;
-    StringArray names;
-    names.reserve(nfields);
-    FieldConstPtrArray powerSupply;
-    powerSupply.reserve(nfields);
-    names.push_back("alarm");
-    powerSupply.push_back(standardField->alarm());
-    names.push_back("timeStamp");
-    powerSupply.push_back(standardField->timeStamp());
-    String properties("alarm,display");
-    names.push_back("voltage");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("power");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("current");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    return pvDataCreate->createPVStructure(
-            fieldCreate->createStructure(names,powerSupply));
-}
 
 
 void test()
@@ -86,9 +62,9 @@ void test()
     pvRecord.reset();
     recordName = "powerSupplyExample";
     pvStructure.reset();
+    PowerSupplyPtr psr;
     pvStructure = createPowerSupply();
-    PowerSupplyRecordTestPtr psr =
-        PowerSupplyRecordTest::create(recordName,pvStructure);
+    psr = PowerSupply::create("powerSupply",pvStructure);
     if(psr.get()==NULL) {
         cout << "PowerSupplyRecordTest::create failed" << endl;
         return;

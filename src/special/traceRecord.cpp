@@ -25,7 +25,7 @@ TraceRecordPtr TraceRecord::create(
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
     StringArray topNames(2);
     FieldConstPtrArray topFields(2);
-    topNames[0] = "arguments";
+    topNames[0] = "argument";
     topNames[1] = "result";
     StringArray argNames(2);
     FieldConstPtrArray argFields(2);
@@ -70,9 +70,9 @@ bool TraceRecord::init()
 {
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
-    pvRecordName = pvStructure->getStringField("arguments.recordName");
+    pvRecordName = pvStructure->getStringField("argument.recordName");
     if(pvRecordName==NULL) return false;
-    pvLevel = pvStructure->getIntField("arguments.level");
+    pvLevel = pvStructure->getIntField("argument.level");
     if(pvLevel==NULL) return false;
     pvResult = pvStructure->getStringField("result.status");
     if(pvResult==NULL) return false;

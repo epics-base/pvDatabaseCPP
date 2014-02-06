@@ -9,28 +9,28 @@ include $(TOP)/configure/CONFIG
 # Build an IOC support library
 #
 
-DBD += exampleServer.dbd
+DBD += exampleDatabase.dbd
 
 #=============================
 # build an ioc application
 
-PROD_IOC += exampleServer
+PROD_IOC += exampleDatabase
 
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
-exampleServer_SRCS += exampleServer_registerRecordDeviceDriver.cpp
-exampleServer_SRCS_DEFAULT += exampleServerMain.cpp
-exampleServer_SRCS_vxWorks += -nil-
+exampleDatabase_SRCS += exampleDatabase_registerRecordDeviceDriver.cpp
+exampleDatabase_SRCS_DEFAULT += exampleDatabaseMain.cpp
+exampleDatabase_SRCS_vxWorks += -nil-
 
 
 # The following adds support from base/src/vxWorks
-exampleServer_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
+exampleDatabase_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 
-exampleServer_LIBS += pvData pvAccess
-exampleServer_LIBS += pvDatabase
-exampleServer_LIBS += pvaSrv
-exampleServer_LIBS += exampleServer
-exampleServer_LIBS += $(EPICS_BASE_IOC_LIBS)
+exampleDatabase_LIBS += pvData pvAccess
+exampleDatabase_LIBS += pvDatabase
+exampleDatabase_LIBS += pvaSrv
+exampleDatabase_LIBS += exampleDatabase
+exampleDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 

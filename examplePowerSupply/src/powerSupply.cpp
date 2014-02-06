@@ -1,4 +1,4 @@
-/* powerSupplyRecordTest.h */
+/* powerSupply.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -8,80 +8,72 @@
  * @author mrk
  * @date 2013.04.02
  */
-#ifndef POWERSUPPLYRECORDTEST_H
-#define POWERSUPPLYRECORDTEST_H
 
-#include <pv/pvDatabase.h>
-#include <pv/timeStamp.h>
-#include <pv/alarm.h>
-#include <pv/pvTimeStamp.h>
-#include <pv/pvAlarm.h>
+#include <pv/standardField.h>
+#include <pv/standardPVField.h>
+#include <pv/powerSupply.h>
 
 namespace epics { namespace pvDatabase { 
 
+using namespace epics::pvData;
 
-class PowerSupplyRecordTest;
-typedef std::tr1::shared_ptr<PowerSupplyRecordTest> PowerSupplyRecordTestPtr;
-
-class PowerSupplyRecordTest :
-    public PVRecord
+PVStructurePtr createPowerSupply()
 {
-public:
-    POINTER_DEFINITIONS(PowerSupplyRecordTest);
-    static PowerSupplyRecordTestPtr create(
-        epics::pvData::String const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
-    virtual ~PowerSupplyRecordTest();
-    virtual void destroy();
-    virtual bool init();
-    virtual void process();
-    void put(double power,double voltage);
-    double getPower();
-    double getVoltage();
-    double getCurrent();
-private:
-    PowerSupplyRecordTest(epics::pvData::String const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::PVDoublePtr pvCurrent;
-    epics::pvData::PVDoublePtr pvPower;
-    epics::pvData::PVDoublePtr pvVoltage;
-    epics::pvData::PVAlarm pvAlarm;
-    epics::pvData::PVTimeStamp pvTimeStamp;
-    epics::pvData::Alarm alarm;
-    epics::pvData::TimeStamp timeStamp;
-};
+    FieldCreatePtr fieldCreate = getFieldCreate();
+    StandardFieldPtr standardField = getStandardField();
+    PVDataCreatePtr pvDataCreate = getPVDataCreate();
 
-PowerSupplyRecordTestPtr PowerSupplyRecordTest::create(
-    epics::pvData::String const & recordName,
-    epics::pvData::PVStructurePtr const & pvStructure)
+    size_t nfields = 5;
+    StringArray names;
+    names.reserve(nfields);
+    FieldConstPtrArray powerSupply;
+    powerSupply.reserve(nfields);
+    names.push_back("alarm");
+    powerSupply.push_back(standardField->alarm());
+    names.push_back("timeStamp");
+    powerSupply.push_back(standardField->timeStamp());
+    String properties("alarm,display");
+    names.push_back("voltage");
+    powerSupply.push_back(standardField->scalar(pvDouble,properties));
+    names.push_back("power");
+    powerSupply.push_back(standardField->scalar(pvDouble,properties));
+    names.push_back("current");
+    powerSupply.push_back(standardField->scalar(pvDouble,properties));
+    return pvDataCreate->createPVStructure(
+            fieldCreate->createStructure(names,powerSupply));
+}
+
+PowerSupplyPtr PowerSupply::create(
+    String const & recordName,
+    PVStructurePtr const & pvStructure)
 {
-    PowerSupplyRecordTestPtr pvRecord(
-        new PowerSupplyRecordTest(recordName,pvStructure));
+    PowerSupplyPtr pvRecord(
+        new PowerSupply(recordName,pvStructure));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
-PowerSupplyRecordTest::PowerSupplyRecordTest(
-    epics::pvData::String const & recordName,
-    epics::pvData::PVStructurePtr const & pvStructure)
+PowerSupply::PowerSupply(
+    String const & recordName,
+    PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure)
 {
 }
 
-PowerSupplyRecordTest::~PowerSupplyRecordTest()
+PowerSupply::~PowerSupply()
 {
 }
 
-void PowerSupplyRecordTest::destroy()
+void PowerSupply::destroy()
 {
     PVRecord::destroy();
 }
 
-bool PowerSupplyRecordTest::init()
+bool PowerSupply::init()
 {
     initPVRecord();
-    epics::pvData::PVStructurePtr pvStructure = getPVStructure();
-    epics::pvData::PVFieldPtr pvField;
+    PVStructurePtr pvStructure = getPVStructure();
+    PVFieldPtr pvField;
     bool result;
     pvField = pvStructure->getSubField("timeStamp");
     if(pvField.get()==NULL) {
@@ -103,7 +95,7 @@ bool PowerSupplyRecordTest::init()
         std::cerr << "no alarm" << std::endl;
         return false;
     }
-    epics::pvData::String name;
+    String name;
     name = "current.value";
     pvField = pvStructure->getSubField(name);
     if(pvField.get()==NULL) {
@@ -143,7 +135,7 @@ bool PowerSupplyRecordTest::init()
     return true;
 }
 
-void PowerSupplyRecordTest::process()
+void PowerSupply::process()
 {
     timeStamp.getCurrent();
     pvTimeStamp.set(timeStamp);
@@ -151,39 +143,37 @@ void PowerSupplyRecordTest::process()
     double power = pvPower->get();
     if(voltage<1e-3 && voltage>-1e-3) {
         alarm.setMessage("bad voltage");
-        alarm.setSeverity(epics::pvData::majorAlarm);
+        alarm.setSeverity(majorAlarm);
         pvAlarm.set(alarm);
         return;
     }
     double current = power/voltage;
     pvCurrent->put(current);
     alarm.setMessage("");
-    alarm.setSeverity(epics::pvData::noAlarm);
+    alarm.setSeverity(noAlarm);
     pvAlarm.set(alarm);
 }
 
-void PowerSupplyRecordTest::put(double power,double voltage)
+void PowerSupply::put(double power,double voltage)
 {
     pvPower->put(power);
     pvVoltage->put(voltage);
 }
 
-double PowerSupplyRecordTest::getPower()
+double PowerSupply::getPower()
 {
     return pvPower->get();
 }
 
-double PowerSupplyRecordTest::getVoltage()
+double PowerSupply::getVoltage()
 {
     return pvVoltage->get();
 }
 
-double PowerSupplyRecordTest::getCurrent()
+double PowerSupply::getCurrent()
 {
     return pvCurrent->get();
 }
 
 
 }}
-
-#endif  /* POWERSUPPLYRECORDTEST_H */

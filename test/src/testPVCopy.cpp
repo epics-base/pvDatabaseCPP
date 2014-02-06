@@ -26,7 +26,7 @@
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
 #include <pv/channelProviderLocal.h>
-#include <pv/powerSupplyRecordTest.h>
+#include "powerSupply.h"
 
 
 using namespace std;
@@ -71,32 +71,6 @@ static PVRecordPtr createScalarArray(
 {
     PVStructurePtr pvStructure = getStandardPVField()->scalarArray(scalarType,properties);
     return PVRecord::create(recordName,pvStructure);
-}
-
-static PowerSupplyRecordTestPtr createPowerSupply(String const & recordName)
-{
-    FieldCreatePtr fieldCreate = getFieldCreate();
-    StandardFieldPtr standardField = getStandardField();
-    PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    size_t nfields = 5;
-    StringArray names;
-    names.reserve(nfields);
-    FieldConstPtrArray powerSupply;
-    powerSupply.reserve(nfields);
-    names.push_back("alarm");
-    powerSupply.push_back(standardField->alarm());
-    names.push_back("timeStamp");
-    powerSupply.push_back(standardField->timeStamp());
-    String properties("alarm,display");
-    names.push_back("voltage");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("power");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("current");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    return PowerSupplyRecordTest::create(recordName,
-        pvDataCreate->createPVStructure(
-            fieldCreate->createStructure(names,powerSupply)));
 }
 
 static void testPVScalar(
@@ -370,7 +344,7 @@ static void powerSupplyTest()
 {
     cout << endl << endl << "****powerSupplyTest****" << endl;
     RequesterPtr requester(new MyRequester("exampleTest"));
-    PowerSupplyRecordTestPtr pvRecord;
+    PowerSupplyPtr pvRecord;
     String request;
     PVStructurePtr pvRequest;
     PVRecordFieldPtr pvRecordField;
@@ -380,7 +354,8 @@ static void powerSupplyTest()
     String valueNameCopy;
 
     CreateRequest::shared_pointer createRequest = CreateRequest::create();
-    pvRecord = createPowerSupply("powerSupply");
+    PVStructurePtr pv = createPowerSupply();
+    pvRecord = PowerSupply::create("powerSupply",pv);
     valueNameRecord = request = "power.value";
     pvRequest = createRequest->createRequest(request);
     builder.clear(); pvRequest->toString(&builder);

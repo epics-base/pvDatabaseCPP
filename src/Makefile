@@ -33,7 +33,6 @@ LIBSRCS += PVAClientRegister.cpp
 SRC_DIRS += $(DATABASE)/special
 INC += recordList.h
 INC += traceRecord.h
-INC += powerSupplyRecordTest.h
 LIBSRCS += recordList.cpp
 LIBSRCS += traceRecord.cpp
 

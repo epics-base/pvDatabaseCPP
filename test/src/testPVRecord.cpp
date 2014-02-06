@@ -26,15 +26,13 @@
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
 #include <pv/pvData.h>
-#include <pv/pvAccess.h>
 #include <pv/pvCopy.h>
-#include <pv/powerSupplyRecordTest.h>
+#include "powerSupply.h"
 
 
 using namespace std;
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
-using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
 
 static PVRecordPtr createScalar(
@@ -57,32 +55,6 @@ static PVRecordPtr createScalarArray(
     return PVRecord::create(recordName,pvStructure);
 }
 
-static PowerSupplyRecordTestPtr createPowerSupply(String const & recordName)
-{
-    FieldCreatePtr fieldCreate = getFieldCreate();
-    StandardFieldPtr standardField = getStandardField();
-    PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    size_t nfields = 5;
-    StringArray names;
-    names.reserve(nfields);
-    FieldConstPtrArray powerSupply;
-    powerSupply.reserve(nfields);
-    names.push_back("alarm");
-    powerSupply.push_back(standardField->alarm());
-    names.push_back("timeStamp");
-    powerSupply.push_back(standardField->timeStamp());
-    String properties("alarm,display");
-    names.push_back("voltage");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("power");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("current");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    return PowerSupplyRecordTest::create(recordName,
-        pvDataCreate->createPVStructure(
-            fieldCreate->createStructure(names,powerSupply)));
-}
-
 static void scalarTest()
 {
     cout << endl << endl << "****scalarTest****" << endl;
@@ -102,8 +74,9 @@ static void arrayTest()
 static void powerSupplyTest()
 {
     cout << endl << endl << "****powerSupplyTest****" << endl;
-    PowerSupplyRecordTestPtr pvRecord;
-    pvRecord = createPowerSupply("powerSupply");
+    PVRecordPtr pvRecord;
+    PVStructurePtr pv = createPowerSupply();
+    pvRecord = PowerSupply::create("powerSupply",pv);
     pvRecord->destroy();
 }
 

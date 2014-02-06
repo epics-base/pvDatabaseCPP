@@ -7,5 +7,5 @@ db/
 dbd/
 documentation/html
 envPaths
-configure/.*\.local
+RELEASE.local
 /O\..*
