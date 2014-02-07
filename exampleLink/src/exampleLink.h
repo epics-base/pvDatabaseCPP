@@ -1,4 +1,4 @@
-/* examplePVADoubleArrayGet.h */
+/* exampleLink.h */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -24,22 +24,22 @@
 namespace epics { namespace pvDatabase { 
 
 
-class ExamplePVADoubleArrayGet;
-typedef std::tr1::shared_ptr<ExamplePVADoubleArrayGet> ExamplePVADoubleArrayGetPtr;
+class ExampleLink;
+typedef std::tr1::shared_ptr<ExampleLink> ExampleLinkPtr;
 
-class ExamplePVADoubleArrayGet :
+class ExampleLink :
     public PVRecord,
     public epics::pvAccess::ChannelRequester,
     public epics::pvAccess::ChannelGetRequester
 {
 public:
-    POINTER_DEFINITIONS(ExamplePVADoubleArrayGet);
-    static ExamplePVADoubleArrayGetPtr create(
+    POINTER_DEFINITIONS(ExampleLink);
+    static ExampleLinkPtr create(
         epics::pvData::String const & recordName,
         epics::pvData::String const & providerName,
         epics::pvData::String const & channelName
         );
-    virtual ~ExamplePVADoubleArrayGet() {}
+    virtual ~ExampleLink() {}
     virtual void destroy();
     virtual bool init();
     virtual void process();
@@ -60,10 +60,10 @@ public:
         epics::pvData::String const & message,
         epics::pvData::MessageType messageType)
         {
-           std::cout << "Why is ExamplePVADoubleArrayGet::message called\n";
+           std::cout << "Why is ExampleLink::message called\n";
         }
 private:
-    ExamplePVADoubleArrayGet(epics::pvData::String const & recordName,
+    ExampleLink(epics::pvData::String const & recordName,
         epics::pvData::String providerName,
         epics::pvData::String channelName,
         epics::pvData::PVStructurePtr const & pvStructure);

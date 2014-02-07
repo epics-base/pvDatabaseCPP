@@ -1,4 +1,4 @@
-/* examplePVADoubleArrayGet.cpp */
+/* exampleLink.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -9,7 +9,7 @@
  * @date 2013.08.02
  */
 
-#include <pv/examplePVADoubleArrayGet.h>
+#include <pv/exampleLink.h>
 #include <pv/standardPVField.h>
 #include <pv/convert.h>
 
@@ -21,21 +21,21 @@ using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
 
-ExamplePVADoubleArrayGetPtr ExamplePVADoubleArrayGet::create(
+ExampleLinkPtr ExampleLink::create(
     String const & recordName,
     String const & providerName,
     String const & channelName)
 {
     PVStructurePtr pvStructure = getStandardPVField()->scalarArray(
         pvDouble,"alarm.timeStamp");
-    ExamplePVADoubleArrayGetPtr pvRecord(
-        new ExamplePVADoubleArrayGet(
+    ExampleLinkPtr pvRecord(
+        new ExampleLink(
            recordName,providerName,channelName,pvStructure));    
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
-ExamplePVADoubleArrayGet::ExamplePVADoubleArrayGet(
+ExampleLink::ExampleLink(
     String const & recordName,
     String providerName,
     String channelName,
@@ -47,12 +47,12 @@ ExamplePVADoubleArrayGet::ExamplePVADoubleArrayGet(
 {
 }
 
-void ExamplePVADoubleArrayGet::destroy()
+void ExampleLink::destroy()
 {
     PVRecord::destroy();
 }
 
-bool ExamplePVADoubleArrayGet::init()
+bool ExampleLink::init()
 {
     initPVRecord();
 
@@ -101,7 +101,7 @@ bool ExamplePVADoubleArrayGet::init()
     return true;
 }
 
-void ExamplePVADoubleArrayGet::process()
+void ExampleLink::process()
 {
     status = Status::Ok;
     channelGet->get(false);
@@ -124,7 +124,7 @@ void ExamplePVADoubleArrayGet::process()
     pvAlarm.set(alarm);
 }
 
-void ExamplePVADoubleArrayGet::channelCreated(
+void ExampleLink::channelCreated(
         const Status& status,
         Channel::shared_pointer const & channel)
 {
@@ -133,13 +133,13 @@ void ExamplePVADoubleArrayGet::channelCreated(
     event.signal();
 }
 
-void ExamplePVADoubleArrayGet::channelStateChange(
+void ExampleLink::channelStateChange(
         Channel::shared_pointer const & channel,
         Channel::ConnectionState connectionState)
 {
 }
 
-void ExamplePVADoubleArrayGet::channelGetConnect(
+void ExampleLink::channelGetConnect(
         const Status& status,
         ChannelGet::shared_pointer const & channelGet,
         PVStructure::shared_pointer const & pvStructure,
@@ -152,7 +152,7 @@ void ExamplePVADoubleArrayGet::channelGetConnect(
     event.signal();
 }
 
-void ExamplePVADoubleArrayGet::getDone(const Status& status)
+void ExampleLink::getDone(const Status& status)
 {
     this->status = status;
     event.signal();

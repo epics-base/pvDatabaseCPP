@@ -9,17 +9,17 @@ include $(TOP)/configure/CONFIG
 # Build an IOC support library
 #
 
-DBD += examplePVADoubleArrayGet.dbd
+DBD += exampleLink.dbd
 
-INC += examplePVADoubleArrayGet.h
+INC += exampleLink.h
 
-LIBRARY_IOC += examplePVADoubleArrayGetSupport
-examplePVADoubleArrayGetSupport_SRCS += examplePVADoubleArrayGet.cpp
-examplePVADoubleArrayGetSupport_SRCS += examplePVADoubleArrayGetRegister.cpp
-examplePVADoubleArrayGetSupport_LIBS += pvData
-examplePVADoubleArrayGetSupport_LIBS += pvAccess
-examplePVADoubleArrayGetSupport_LIBS += pvDatabase
-examplePVADoubleArrayGetSupport_LIBS += $(EPICS_BASE_IOC_LIBS)
+LIBRARY_IOC += exampleLinkSupport
+exampleLinkSupport_SRCS += exampleLink.cpp
+exampleLinkSupport_SRCS += exampleLinkRegister.cpp
+exampleLinkSupport_LIBS += pvData
+exampleLinkSupport_LIBS += pvAccess
+exampleLinkSupport_LIBS += pvDatabase
+exampleLinkSupport_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 

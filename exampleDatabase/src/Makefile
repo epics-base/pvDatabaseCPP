@@ -17,6 +17,7 @@ exampleDatabaseMain_LIBS += pvData
 exampleDatabaseMain_LIBS += pvAccess
 exampleDatabaseMain_LIBS += pvDatabase
 exampleDatabaseMain_LIBS += exampleDatabase
+exampleDatabaseMain_LIBS += powerSupply
 
 DBD += exampleDatabase.dbd
 

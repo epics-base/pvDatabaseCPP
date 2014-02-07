@@ -42,9 +42,6 @@ int main(int argc,char *argv[])
     String buffer;
     pvNames->toString(&buffer);
     cout << "recordNames" << endl << buffer << endl;
-    PVRecordPtr pvRecord = master->findRecord("laptoprecordListPGRPC");
-    PVStructurePtr pvStructure = pvRecord->getPVRecordStructure()->getPVStructure();
-    cout << "PVStructure" << endl << pvStructure->dumpValue(cout) << endl;
     string str;
     while(true) {
         cout << "Type exit to stop: \n";

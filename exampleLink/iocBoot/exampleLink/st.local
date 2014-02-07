@@ -3,8 +3,8 @@
 cd ${TOP}
 
 ## Register all support components
-dbLoadDatabase("dbd/examplePVADoubleArrayGet.dbd")
-examplePVADoubleArrayGet_registerRecordDeviceDriver(pdbbase)
+dbLoadDatabase("dbd/exampleLink.dbd")
+exampleLink_registerRecordDeviceDriver(pdbbase)
 
 ## Load record instances
 dbLoadRecords("db/dbArray.db","name=double01,type=DOUBLE")
@@ -13,4 +13,4 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit()
 startPVAClient
 startPVAServer
-examplePVADoubleArrayGetCreateRecord examplePVADoubleArrayGet pvAccess arrayDouble
+exampleLinkCreateRecord exampleLink local doubleArray

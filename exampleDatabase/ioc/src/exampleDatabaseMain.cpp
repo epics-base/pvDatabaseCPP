@@ -1,4 +1,4 @@
-/* examplePVADoubleArrayGetMain.cpp */
+/*exampleDatabaseMain.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -6,8 +6,9 @@
  */
 /**
  * @author mrk
- * @date 2013.07.24
  */
+
+/* Author: Marty Kraimer */
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -21,7 +22,7 @@
 
 int main(int argc,char *argv[])
 {
-    if(argc>=2) {    
+    if(argc>=2) {
         iocsh(argv[1]);
         epicsThreadSleep(.2);
     }
@@ -29,3 +30,4 @@ int main(int argc,char *argv[])
     epicsExit(0);
     return(0);
 }
+

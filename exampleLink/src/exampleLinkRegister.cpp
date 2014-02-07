@@ -1,4 +1,4 @@
-/*examplePVADoubleArrayGet.cpp */
+/*exampleLink.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -35,7 +35,7 @@
 #include <pv/standardPVField.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
-#include <pv/examplePVADoubleArrayGet.h>
+#include <pv/exampleLink.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
@@ -51,9 +51,9 @@ static const iocshArg testArg2 = { "channelName", iocshArgString };
 static const iocshArg *testArgs[] = {
     &testArg0,&testArg1,&testArg2};
 
-static const iocshFuncDef examplePVADoubleArrayGetFuncDef = {
-    "examplePVADoubleArrayGetCreateRecord", 3, testArgs};
-static void examplePVADoubleArrayGetCallFunc(const iocshArgBuf *args)
+static const iocshFuncDef exampleLinkFuncDef = {
+    "exampleLinkCreateRecord", 3, testArgs};
+static void exampleLinkCallFunc(const iocshArgBuf *args)
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     PVRecordPtr pvRecord;
@@ -68,18 +68,18 @@ static void examplePVADoubleArrayGetCallFunc(const iocshArgBuf *args)
     recordName = args[0].sval;
     char *providerName = args[1].sval;
     char *channelName = args[2].sval;
-    ExamplePVADoubleArrayGetPtr record = ExamplePVADoubleArrayGet::create(recordName,providerName,channelName);
+    ExampleLinkPtr record = ExampleLink::create(recordName,providerName,channelName);
     if(record!=NULL) 
     result = master->addRecord(record);
     if(!result) cout << "recordname" << " not added" << endl;
 }
 
-static void examplePVADoubleArrayGetRegister(void)
+static void exampleLinkRegister(void)
 {
     static int firstTime = 1;
     if (firstTime) {
         firstTime = 0;
-        iocshRegister(&examplePVADoubleArrayGetFuncDef, examplePVADoubleArrayGetCallFunc);
+        iocshRegister(&exampleLinkFuncDef, exampleLinkCallFunc);
     }
 }
-epicsExportRegistrar(examplePVADoubleArrayGetRegister);
+epicsExportRegistrar(exampleLinkRegister);

@@ -12,23 +12,12 @@ include $(TOP)/configure/CONFIG
 
 PROD_HOST += powerSupplyMain
 powerSupplyMain_SRCS += powerSupplyMain.cpp
+
 powerSupplyMain_LIBS += Com
 powerSupplyMain_LIBS += pvData
 powerSupplyMain_LIBS += pvAccess
 powerSupplyMain_LIBS += pvDatabase
 powerSupplyMain_LIBS += powerSupply
-
-DBD += powerSupply.dbd
-
-INC += powerSupply.h
-
-LIBRARY_IOC += powerSupply
-powerSupply_SRCS += powerSupply.cpp
-powerSupply_SRCS += powerSupplyRegister.cpp
-powerSupply_LIBS += pvData
-powerSupply_LIBS += pvAccess
-powerSupply_LIBS += pvDatabase
-powerSupply_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 

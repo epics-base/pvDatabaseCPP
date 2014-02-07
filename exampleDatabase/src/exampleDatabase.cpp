@@ -22,7 +22,7 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
-#include <pv/powerSupplyRecordTest.h>
+#include <pv/powerSupply.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/recordList.h>
 #include <pv/traceRecord.h>
@@ -38,28 +38,6 @@ static FieldCreatePtr fieldCreate = getFieldCreate();
 static StandardFieldPtr standardField = getStandardField();
 static PVDataCreatePtr pvDataCreate = getPVDataCreate();
 static StandardPVFieldPtr standardPVField = getStandardPVField();
-
-static PVStructurePtr createPowerSupply()
-{
-    size_t nfields = 5;
-    StringArray names;
-    names.reserve(nfields);
-    FieldConstPtrArray powerSupply;
-    powerSupply.reserve(nfields);
-    names.push_back("alarm");
-    powerSupply.push_back(standardField->alarm());
-    names.push_back("timeStamp");
-    powerSupply.push_back(standardField->timeStamp());
-    String properties("alarm,display");
-    names.push_back("voltage");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("power");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("current");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    return pvDataCreate->createPVStructure(
-            fieldCreate->createStructure(names,powerSupply));
-}
 
 static void createStructureArrayRecord(
     PVDatabasePtr const &master,
@@ -122,10 +100,10 @@ void ExampleDatabase::create()
     createStructureArrayRecord(master,pvDouble,"exampleStructureArray");
     recordName = "examplePowerSupply";
     PVStructurePtr pvStructure = createPowerSupply();
-    PowerSupplyRecordTestPtr psr =
-        PowerSupplyRecordTest::create(recordName,pvStructure);
+    PowerSupplyPtr psr =
+        PowerSupply::create(recordName,pvStructure);
     if(psr.get()==NULL) {
-        cout << "PowerSupplyRecordTest::create failed" << endl;
+        cout << "PowerSupply::create failed" << endl;
         return;
     }
     result = master->addRecord(psr);

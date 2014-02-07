@@ -2,6 +2,19 @@ TOP=..
 
 include $(TOP)/configure/CONFIG
 
+DBD += powerSupplyRegister.dbd
+
+INC += powerSupply.h
+
+LIBRARY_IOC += powerSupply
+powerSupply_SRCS += powerSupply.cpp
+powerSupply_SRCS += powerSupplyRegister.cpp
+powerSupply_LIBS += pvData
+powerSupply_LIBS += pvAccess
+powerSupply_LIBS += pvDatabase
+powerSupply_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+
 PROD_HOST += testPVCopy
 testPVCopy_SRCS += powerSupply.cpp
 testPVCopy_SRCS += testPVCopy.cpp

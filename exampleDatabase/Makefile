@@ -6,7 +6,7 @@ DIRS += configure
 DIRS += src
 src_DEPEND_DIRS = configure
 
-DIRS += example
+DIRS += ioc
 test_DEPEND_DIRS = src
 
 DIRS += iocBoot
