@@ -23,13 +23,6 @@ LIBSRCS += monitorFactory.cpp
 LIBSRCS += channelLocal.cpp
 LIBSRCS += registerChannelProviderLocal.cpp
 
-SRC_DIRS += $(DATABASE)/V3IOC
-INC += syncChannelFind.h
-DBD += PVAServerRegister.dbd
-DBD += PVAClientRegister.dbd
-LIBSRCS += PVAServerRegister.cpp
-LIBSRCS += PVAClientRegister.cpp
-
 SRC_DIRS += $(DATABASE)/special
 INC += recordList.h
 INC += traceRecord.h
