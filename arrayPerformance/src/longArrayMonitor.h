@@ -11,6 +11,8 @@
 #ifndef LONGARRAYMONITOR_H
 #define LONGARRAYMONITOR_H
 
+#include <shareLib.h>
+
 #include <pv/event.h>
 #include <pv/lock.h>
 #include <pv/standardPVField.h>
@@ -30,7 +32,7 @@ typedef std::tr1::shared_ptr<LAMChannelRequester> LAMChannelRequesterPtr;
 class LAMMonitorRequester;
 typedef std::tr1::shared_ptr<LAMMonitorRequester> LAMMonitorRequesterPtr;
 
-class LongArrayMonitor :
+class epicsShareClass  LongArrayMonitor :
     public std::tr1::enable_shared_from_this<LongArrayMonitor>
 {
 public:

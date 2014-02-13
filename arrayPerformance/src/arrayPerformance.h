@@ -11,6 +11,8 @@
 #ifndef ARRAYPERFORMANCE_H
 #define ARRAYPERFORMANCE_H
 
+#include <shareLib.h>
+
 #include <epicsThread.h>
 #include <pv/standardPVField.h>
 #include <pv/timeStamp.h>
@@ -25,7 +27,7 @@ typedef std::tr1::shared_ptr<ArrayPerformance> ArrayPerformancePtr;
 class ArrayPerformanceThread;
 typedef std::tr1::shared_ptr<ArrayPerformanceThread> ArrayPerformanceThreadPtr;
 
-class ArrayPerformance :
+class epicsShareClass  ArrayPerformance :
     public PVRecord
 {
 public:
@@ -54,7 +56,7 @@ private:
     friend class ArrayPerformanceThread;
 };
 
-class ArrayPerformanceThread :
+class epicsShareClass  ArrayPerformanceThread :
    public epicsThreadRunable
 {
 public:

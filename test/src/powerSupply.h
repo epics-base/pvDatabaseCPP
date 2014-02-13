@@ -11,6 +11,8 @@
 #ifndef POWERSUPPLY_H
 #define POWERSUPPLY_H
 
+#include <shareLib.h>
+
 #include <pv/pvDatabase.h>
 #include <pv/timeStamp.h>
 #include <pv/alarm.h>
@@ -19,7 +21,7 @@
 
 namespace epics { namespace pvDatabase { 
 
-extern epics::pvData::PVStructurePtr createPowerSupply();
+epicsShareExtern epics::pvData::PVStructurePtr createPowerSupply();
 
 class PowerSupply;
 typedef std::tr1::shared_ptr<PowerSupply> PowerSupplyPtr;

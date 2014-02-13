@@ -11,12 +11,13 @@
 #ifndef EXAMPLEDATABASE_H
 #define EXAMPLEDATABASE_H
 
+#include <shareLib.h>
 
 #include <pv/pvDatabase.h>
 
 namespace epics { namespace pvDatabase { 
 
-class ExampleDatabase{
+class epicsShareClass  ExampleDatabase{
 public:
     static void create();
 };

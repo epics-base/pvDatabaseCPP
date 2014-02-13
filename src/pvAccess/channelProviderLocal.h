@@ -16,6 +16,8 @@
 #include <memory>
 #include <set>
 
+#include <shareLib.h>
+
 #include <pv/lock.h>
 #include <pv/pvType.h>
 #include <pv/pvData.h>
@@ -40,9 +42,9 @@ typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
 class ChannelLocal;
 typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
 
-extern MonitorFactoryPtr getMonitorFactory();
+epicsShareExtern MonitorFactoryPtr getMonitorFactory();
 
-class MonitorFactory 
+class epicsShareClass MonitorFactory 
 {
 public:
     POINTER_DEFINITIONS(MonitorFactory);
@@ -66,9 +68,9 @@ private:
 };
 
 
-extern ChannelProviderLocalPtr getChannelProviderLocal();
+epicsShareExtern ChannelProviderLocalPtr getChannelProviderLocal();
 
-class ChannelProviderLocal :
+class epicsShareClass ChannelProviderLocal :
     public epics::pvAccess::ChannelProvider,
     public std::tr1::enable_shared_from_this<ChannelProviderLocal>
 {
@@ -103,7 +105,7 @@ private:
     friend class ChannelProviderLocalRun;
 };
 
-class ChannelLocal :
+class epicsShareClass ChannelLocal :
   public epics::pvAccess::Channel,
   public PVRecordClient,
   public std::tr1::enable_shared_from_this<ChannelLocal>

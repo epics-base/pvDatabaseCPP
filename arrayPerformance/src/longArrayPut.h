@@ -11,6 +11,8 @@
 #ifndef LONGARRAYPUT_H
 #define LONGARRAYPUT_H
 
+#include <shareLib.h>
+
 #include <pv/event.h>
 #include <pv/lock.h>
 #include <pv/standardPVField.h>
@@ -28,7 +30,7 @@ typedef std::tr1::shared_ptr<LongArrayPut> LongArrayPutPtr;
 class LongArrayChannelPut;
 typedef std::tr1::shared_ptr<LongArrayChannelPut> LongArrayChannelPutPtr;
 
-class LongArrayPut :
+class epicsShareClass  LongArrayPut :
     public std::tr1::enable_shared_from_this<LongArrayPut>
 {
 public:

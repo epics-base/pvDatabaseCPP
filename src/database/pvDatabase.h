@@ -15,6 +15,8 @@
 #include <map>
 #include <deque>
 
+#include <shareLib.h>
+
 #include <pv/pvData.h>
 #include <pv/convert.h>
 
@@ -45,7 +47,7 @@ typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
  * Base interface for a record.
  * @author mrk
  */
-class PVRecord :
+class epicsShareClass PVRecord :
      public std::tr1::enable_shared_from_this<PVRecord>
 {
 public:
@@ -234,7 +236,7 @@ private:
  * One exists for each field of the top level PVStructure.
  * @author mrk
  */
-class PVRecordField :
+class epicsShareClass PVRecordField :
      public virtual epics::pvData::PostHandler,
      public std::tr1::enable_shared_from_this<PVRecordField>
 {
@@ -329,7 +331,7 @@ private:
  * One exists for each structure field of the top level PVStructure.
  * @author mrk
  */
-class PVRecordStructure : public PVRecordField {
+class epicsShareClass PVRecordStructure : public PVRecordField {
 public:
     POINTER_DEFINITIONS(PVRecordStructure);
     /**
@@ -384,7 +386,7 @@ private:
  * An interface that must be implemented by any code that accesses the record.
  * @author mrk
  */
-class PVRecordClient {
+class epicsShareClass PVRecordClient {
 public:
     POINTER_DEFINITIONS(PVRecordClient);
     /**
@@ -402,7 +404,7 @@ public:
  * An interface that is implemented by code that traps calls to PVRecord::message.
  * @author mrk
  */
-class PVListener :
+class epicsShareClass PVListener :
     virtual public PVRecordClient
 {
 public:
@@ -446,7 +448,7 @@ public:
  * The interface to a database of PVRecords.
  * @author mrk
  */
-class PVDatabase {
+class epicsShareClass PVDatabase {
 public:
     POINTER_DEFINITIONS(PVDatabase);
     /**

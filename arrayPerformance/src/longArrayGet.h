@@ -11,6 +11,8 @@
 #ifndef LONGARRAYGET_H
 #define LONGARRAYGET_H
 
+#include <shareLib.h>
+
 #include <pv/event.h>
 #include <pv/lock.h>
 #include <pv/standardPVField.h>
@@ -28,7 +30,7 @@ typedef std::tr1::shared_ptr<LongArrayGet> LongArrayGetPtr;
 class LongArrayChannelGet;
 typedef std::tr1::shared_ptr<LongArrayChannelGet> LongArrayChannelGetPtr;
 
-class LongArrayGet :
+class epicsShareClass  LongArrayGet :
     public std::tr1::enable_shared_from_this<LongArrayGet>
 {
 public:

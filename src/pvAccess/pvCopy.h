@@ -14,6 +14,8 @@
 #include <stdexcept>
 #include <memory>
 
+#include <shareLib.h>
+
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 
@@ -34,7 +36,7 @@ struct CopyStructureNode;
 typedef std::tr1::shared_ptr<CopyStructureNode> CopyStructureNodePtr;
 
 
-class PVCopy : 
+class epicsShareClass PVCopy : 
     public std::tr1::enable_shared_from_this<PVCopy>
 {
 public:
@@ -146,7 +148,7 @@ private:
     
 };
 
-class PVCopyMonitor :
+class epicsShareClass PVCopyMonitor :
     public PVListener,
     public std::tr1::enable_shared_from_this<PVCopyMonitor>
 {
@@ -197,7 +199,7 @@ private:
     epics::pvData::Mutex mutex;
 };
 
-class PVCopyMonitorRequester
+class epicsShareClass PVCopyMonitorRequester
 {
 public:
     POINTER_DEFINITIONS(PVCopyMonitorRequester);

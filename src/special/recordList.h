@@ -11,15 +11,16 @@
 #ifndef RECORDLIST_H
 #define RECORDLIST_H
 
+#include <shareLib.h>
+
 #include <pv/pvDatabase.h>
 
 namespace epics { namespace pvDatabase { 
 
-
 class RecordListRecord;
 typedef std::tr1::shared_ptr<RecordListRecord> RecordListRecordPtr;
 
-class RecordListRecord :
+class epicsShareClass RecordListRecord :
     public PVRecord
 {
 public:

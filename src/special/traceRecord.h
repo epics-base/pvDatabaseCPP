@@ -11,6 +11,8 @@
 #ifndef TRACERECORD_H
 #define TRACERECORD_H
 
+#include <shareLib.h>
+
 #include <pv/channelProviderLocal.h>
 
 namespace epics { namespace pvDatabase { 
@@ -19,7 +21,7 @@ namespace epics { namespace pvDatabase {
 class TraceRecord;
 typedef std::tr1::shared_ptr<TraceRecord> TraceRecordPtr;
 
-class TraceRecord :
+class epicsShareClass TraceRecord :
     public PVRecord
 {
 public:

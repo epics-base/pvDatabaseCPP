@@ -11,6 +11,7 @@
 #ifndef EXAMPLEPVADOUBLEARRAYGET_H
 #define EXAMPLEPVADOUBLEARRAYGET_H
 
+#include <shareLib.h>
 
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
@@ -27,7 +28,7 @@ namespace epics { namespace pvDatabase {
 class ExampleLink;
 typedef std::tr1::shared_ptr<ExampleLink> ExampleLinkPtr;
 
-class ExampleLink :
+class epicsShareClass ExampleLink :
     public PVRecord,
     public epics::pvAccess::ChannelRequester,
     public epics::pvAccess::ChannelGetRequester

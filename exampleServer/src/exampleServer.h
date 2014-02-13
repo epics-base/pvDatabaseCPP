@@ -11,6 +11,7 @@
 #ifndef EXAMPLECOUNTER_H
 #define EXAMPLECOUNTER_H
 
+#include <shareLib.h>
 
 #include <pv/pvDatabase.h>
 #include <pv/timeStamp.h>
@@ -22,7 +23,7 @@ namespace epics { namespace exampleServer {
 class ExampleServer;
 typedef std::tr1::shared_ptr<ExampleServer> ExampleServerPtr;
 
-class ExampleServer :
+class epicsShareClass ExampleServer :
     public epics::pvDatabase::PVRecord
 {
 public:

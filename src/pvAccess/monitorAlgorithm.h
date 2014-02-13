@@ -11,6 +11,8 @@
 #ifndef MONITORALGORITHM_H
 #define MONITORALGORITHM_H
 
+#include <shareLib.h>
+
 #include <pv/pvCopy.h>
 
 namespace epics { namespace pvDatabase { 
@@ -20,7 +22,7 @@ typedef std::tr1::shared_ptr<MonitorAlgorithm> MonitorAlgorithmPtr;
 class MonitorAlgorithmCreate;
 typedef std::tr1::shared_ptr<MonitorAlgorithmCreate> MonitorAlgorithmCreatePtr;
 
-class MonitorAlgorithm 
+class epicsShareClass MonitorAlgorithm 
 {
 public:
     POINTER_DEFINITIONS(MonitorAlgorithm);
@@ -35,7 +37,7 @@ protected:
     epics::pvData::String algorithmName;
 };
 
-class MonitorAlgorithmCreate 
+class epicsShareClass MonitorAlgorithmCreate 
 {
 public:
     POINTER_DEFINITIONS(MonitorAlgorithmCreate);
