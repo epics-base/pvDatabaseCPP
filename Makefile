@@ -19,4 +19,7 @@ define EMB_template
 endef
 $(foreach dir, $(EMBEDDED_TOPS),$(eval $(call EMB_template,$(dir))))
 
+exampleDatabase_DEPEND_DIRS += test
+examplePowerSupply_DEPEND_DIRS += test
+
 include $(TOP)/configure/RULES_TOP

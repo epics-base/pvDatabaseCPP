@@ -27,12 +27,14 @@
 # use the following definitions:
 
 PVDATABASE = $(TOP)/..
+PVDATABASETEST = $(TOP)/../test
 -include $(TOP)/../../RELEASE.local
 -include $(TOP)/../configure/RELEASE.local
 
 # If you copied this example from pvDatabaseCPP to be built as a
 # standalone TOP, define
 #   PVDATABASE = /path/to/epics/pvDatabaseCPP
+#   PVDATABASETEST = /path/to/epics/pvDatabaseCPP/test
 # in the appropriate RELEASE[.local],
 # and use the following definitions instead:
 
