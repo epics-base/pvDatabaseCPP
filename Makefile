@@ -3,6 +3,8 @@ TOP = .
 include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) $(filter-out $(DIRS), configure)
 DIRS := $(DIRS) $(filter-out $(DIRS), src)
+DIRS := $(DIRS) $(filter-out $(DIRS), test)
+DIRS := $(DIRS) $(filter-out $(DIRS), arrayPerformance)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard example*))
 
 EMBEDDED_TOPS := $(EMBEDDED_TOPS) $(filter-out $(EMBEDDED_TOPS), test)
