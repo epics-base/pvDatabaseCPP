@@ -9,9 +9,10 @@ INC += powerSupply.h
 LIBRARY_IOC += powerSupply
 powerSupply_SRCS += powerSupply.cpp
 powerSupply_SRCS += powerSupplyRegister.cpp
-powerSupply_LIBS += pvData
-powerSupply_LIBS += pvAccess
 powerSupply_LIBS += pvDatabase
+powerSupply_LIBS += pvAccess
+powerSupply_LIBS += pvData
+powerSupply_LIBS += Com
 powerSupply_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 

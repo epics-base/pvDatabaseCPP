@@ -2,8 +2,8 @@ TOP = ..
 include $(TOP)/configure/CONFIG
 
 LIBRARY_IOC += pvDatabaseExample
+pvDatabaseExample_LIBS += pvDatabase pvAccess pvData Com
 pvDatabaseExample_LIBS += $(EPICS_BASE_IOC_LIBS)
-pvDatabaseExample_LIBS += Com pvData pvAccess pvDatabase
 
 
 INC+= arrayPerformance.h

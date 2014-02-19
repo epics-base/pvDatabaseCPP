@@ -26,10 +26,11 @@ exampleServer_SRCS_vxWorks += -nil-
 # The following adds support from base/src/vxWorks
 exampleServer_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 
-exampleServer_LIBS += pvData pvAccess
+exampleServer_LIBS += exampleServer
 exampleServer_LIBS += pvDatabase
 exampleServer_LIBS += pvaSrv
-exampleServer_LIBS += exampleServer
+exampleServer_LIBS += pvAccess
+exampleServer_LIBS += pvData
 exampleServer_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================

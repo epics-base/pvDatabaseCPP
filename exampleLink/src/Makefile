@@ -16,9 +16,10 @@ INC += exampleLink.h
 LIBRARY_IOC += exampleLink
 exampleLink_SRCS += exampleLink.cpp
 exampleLink_SRCS += exampleLinkRegister.cpp
-exampleLink_LIBS += pvData
-exampleLink_LIBS += pvAccess
 exampleLink_LIBS += pvDatabase
+exampleLink_LIBS += pvAccess
+exampleLink_LIBS += pvData
+exampleLink_LIBS += Com
 exampleLink_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================

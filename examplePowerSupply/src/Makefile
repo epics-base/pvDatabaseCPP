@@ -13,10 +13,10 @@ include $(TOP)/configure/CONFIG
 PROD_HOST += powerSupplyMain
 powerSupplyMain_SRCS += powerSupplyMain.cpp
 
-powerSupplyMain_LIBS += Com
-powerSupplyMain_LIBS += pvData
-powerSupplyMain_LIBS += pvAccess
 powerSupplyMain_LIBS += pvDatabase
+powerSupplyMain_LIBS += pvAccess
+powerSupplyMain_LIBS += pvData
+powerSupplyMain_LIBS += Com
 powerSupplyMain_LIBS += powerSupply
 
 #===========================

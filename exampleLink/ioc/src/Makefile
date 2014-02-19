@@ -27,9 +27,12 @@ exampleLink_SRCS_vxWorks += -nil-
 # The following adds support from base/src/vxWorks
 exampleLink_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 
-exampleLink_LIBS += pvData pvAccess
-exampleLink_LIBS += pvDatabase
 exampleLink_LIBS += exampleLink
+exampleLink_LIBS += pvDatabase
+exampleLink_LIBS += pvaSrv
+exampleLink_LIBS += pvAccess
+exampleLink_LIBS += pvData
+exampleLink_LIBS += Com
 exampleLink_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
