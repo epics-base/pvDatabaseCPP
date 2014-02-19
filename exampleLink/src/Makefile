@@ -13,13 +13,13 @@ DBD += exampleLink.dbd
 
 INC += exampleLink.h
 
-LIBRARY_IOC += exampleLinkSupport
-exampleLinkSupport_SRCS += exampleLink.cpp
-exampleLinkSupport_SRCS += exampleLinkRegister.cpp
-exampleLinkSupport_LIBS += pvData
-exampleLinkSupport_LIBS += pvAccess
-exampleLinkSupport_LIBS += pvDatabase
-exampleLinkSupport_LIBS += $(EPICS_BASE_IOC_LIBS)
+LIBRARY_IOC += exampleLink
+exampleLink_SRCS += exampleLink.cpp
+exampleLink_SRCS += exampleLinkRegister.cpp
+exampleLink_LIBS += pvData
+exampleLink_LIBS += pvAccess
+exampleLink_LIBS += pvDatabase
+exampleLink_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 
