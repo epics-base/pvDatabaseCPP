@@ -94,31 +94,13 @@ private:
         epics::pvData::String const &value,
         CopyNodePtr const &node,
         int indentLevel);
-    epics::pvData::String getFullName(
-        epics::pvData::PVStructurePtr const &pvFromRequest,
-        epics::pvData::String  const &nameFromRecord);
-    epics::pvData::PVStructurePtr getSubStructure(
-        epics::pvData::PVStructurePtr const &pvFromRequest,
-        epics::pvData::String  const &nameFromRecord);
-    epics::pvData::PVStructurePtr getOptions(
-        epics::pvData::PVStructurePtr const &pvFromRequest,
-        epics::pvData::String  const &nameFromRecord);
     epics::pvData::StructureConstPtr createStructure(
-        epics::pvData::PVStructurePtr const &pvRecord,
-        epics::pvData::PVStructurePtr const &pvFromRequest);
-    epics::pvData::FieldConstPtr createField(
         epics::pvData::PVStructurePtr const &pvRecord,
         epics::pvData::PVStructurePtr const &pvFromRequest);
     CopyNodePtr createStructureNodes(
         PVRecordStructurePtr const &pvRecordStructure,
         epics::pvData::PVStructurePtr const &pvFromRequest,
-        epics::pvData::PVFieldPtr const &pvFromField);
-    void referenceImmutable(
-        epics::pvData::PVFieldPtr const &pvField,
-        CopyNodePtr const & node);
-    void referenceImmutable(
-        epics::pvData::PVFieldPtr const &copyPVField,
-        PVRecordFieldPtr const &recordPVField);
+        epics::pvData::PVStructurePtr const &pvFromField);
     void updateStructureNodeSetBitSet(
         epics::pvData::PVStructurePtr const &pvCopy,
         CopyStructureNodePtr const &structureNode,

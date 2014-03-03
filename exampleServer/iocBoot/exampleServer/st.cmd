@@ -19,5 +19,6 @@ dbl
 epicsThreadSleep(1.0)
 exampleServerCreateRecord exampleServer
 startPVAServer
+pvaSrvStart
 pvdbl
 

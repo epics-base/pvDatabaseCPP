@@ -18,4 +18,5 @@ dbl
 epicsThreadSleep(2.0)
 exampleDatabase
 startPVAServer
+pvaSrvStart
 pvdbl

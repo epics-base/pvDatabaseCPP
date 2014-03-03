@@ -362,7 +362,7 @@ static void powerSupplyTest()
     cout << "request " << request << endl;
     cout << "pvRequest" << endl << builder;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
-    valueNameCopy = "value";
+    valueNameCopy = "power.value";
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "";
     valueNameRecord = "power.value";
@@ -378,7 +378,7 @@ static void powerSupplyTest()
     builder.clear(); pvRequest->toString(&builder);
     cout << "request " << request << endl << "pvRequest" << endl << builder << endl;
     pvCopy = PVCopy::create(pvRecord,pvRequest,"");
-    valueNameCopy = "power";
+    valueNameCopy = "power.value";
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,voltage{value,alarm},power{value,alarm,display},current.value";
     valueNameRecord = "power.value";

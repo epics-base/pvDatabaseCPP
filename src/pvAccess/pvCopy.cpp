@@ -115,6 +115,35 @@ PVStructurePtr PVCopy::createPVStructure()
     return pvStructure;
 }
 
+PVStructurePtr PVCopy::getOptions(
+    PVStructurePtr const &copyPVStructure,std::size_t fieldOffset)
+{
+    CopyNodePtr node = headNode;
+    while(true) {
+        if(!node->isStructure) {
+            if(node->structureOffset==fieldOffset) return node->options;
+            return NULLPVStructure;
+        }
+        CopyStructureNodePtr structNode = static_pointer_cast<CopyStructureNode>(node);
+        CopyNodePtrArrayPtr nodes = structNode->nodes;
+        boolean okToContinue = false;
+        for(size_t i=0; i< nodes->size(); i++) {
+            node = (*nodes)[i];
+            size_t soff = node->structureOffset;
+            if(fieldOffset>=soff && fieldOffset<soff+node->nfields) {
+                if(fieldOffset==soff) return node->options;
+                if(!node->isStructure) {
+                    return NULLPVStructure;
+                }
+                okToContinue = true;
+                break;
+            }
+        }
+        if(okToContinue) continue;
+        throw std::invalid_argument("fieldOffset not valid");
+    }
+}
+
 size_t PVCopy::getCopyOffset(PVRecordFieldPtr const &recordPVField)
 {
     if(!headNode->isStructure) {
@@ -336,6 +365,7 @@ bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
     size_t len = pvRequest->getPVFields().size();
     bool entireRecord = false;
     if(len==String::npos) entireRecord = true;
+    if(len==0) entireRecord = true;
     PVStructurePtr pvOptions;
     if(len==1 && pvRequest->getSubField("_options")!=NULL) {
         pvOptions = pvRequest->getStructureField("_options");
@@ -348,6 +378,7 @@ bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
         recordNode->isStructure = false;
         recordNode->structureOffset = 0;
         recordNode->recordPVField = pvRecordStructure;
+        recordNode->nfields = pvRecordStructure->getPVStructure()->getNumberFields();
         return true;
     }
     structure = createStructure(pvRecordStructure->getPVStructure(),pvRequest);
@@ -368,102 +399,6 @@ epics::pvData::String PVCopy::dump(
     throw std::logic_error(String("Not Implemented"));
 }
 
-String PVCopy::getFullName(
-    PVStructurePtr const &pvFromRequest,
-    String  const &nameFromRecord)
-{
-    PVFieldPtrArray const & pvFields = pvFromRequest->getPVFields();
-    String fullName = nameFromRecord;
-    size_t len = pvFields.size();
-    if(len==1) {
-        String name = pvFields[0]->getFieldName();
-        if(name.compare("_options")==0) return nameFromRecord;
-        PVStructurePtr pvRequest = static_pointer_cast<PVStructure>(pvFields[0]);
-        if(fullName.size()!=0) fullName += ".";
-        fullName += pvRequest->getFieldName();
-        return getFullName(pvRequest,fullName);
-    }
-    if(len==2) {
-        PVFieldPtr subField;
-        if((pvFields[0]->getFieldName().compare("_options"))==0) {
-            subField = pvFields[1];
-        } else if((pvFields[1]->getFieldName().compare("_options"))==0) {
-            subField = pvFields[1];
-        }
-        if(subField.get()!=NULL) {
-            PVStructurePtr pvRequest = static_pointer_cast<PVStructure>(subField);
-            if(fullName.size()!=0) fullName += ".";
-            fullName += subField->getFieldName();
-            return getFullName(pvRequest,fullName);
-        }
-    }
-    return nameFromRecord;
-}
-
-PVStructurePtr PVCopy::getSubStructure(
-    PVStructurePtr const &xxx,
-    String  const &yyy)
-{
-    PVStructurePtr pvFromRequest = xxx;
-    String nameFromRecord = yyy;
-    PVFieldPtrArray const & pvFields = pvFromRequest->getPVFields();
-    size_t len = pvFields.size();
-    if(len==1) {
-        pvFromRequest = static_pointer_cast<PVStructure>(pvFields[0]);
-        if(pvFromRequest->getFieldName().compare("_options")==0) {
-            return pvFromRequest;
-        }
-        if(nameFromRecord.size()!=0) nameFromRecord += ".";
-        nameFromRecord += pvFromRequest->getFieldName();
-        return getSubStructure(pvFromRequest,nameFromRecord);
-    }
-    if(len==2) {
-        PVFieldPtr subField;
-        if(pvFields[0]->getFieldName().compare("_options")==0) {
-            subField = pvFields[1];
-        } else if(pvFields[1]->getFieldName().compare("_options")==0) {
-            subField = pvFields[1];
-        }
-        if(subField.get()!=NULL) {
-            if(nameFromRecord.size()!=0) nameFromRecord += ".";
-            nameFromRecord += subField->getFieldName();
-            pvFromRequest = static_pointer_cast<PVStructure>(subField);
-            return getSubStructure(pvFromRequest,nameFromRecord);
-        }
-    }
-    return pvFromRequest;
-}
-
-PVStructurePtr PVCopy::getOptions(
-    PVStructurePtr const &xxx,
-    String  const &yyy)
-{
-    PVStructurePtr pvFromRequest = xxx;
-    String nameFromRecord = yyy;
-    PVFieldPtrArray const & pvFields = pvFromRequest->getPVFields();
-    size_t len = pvFields.size();
-    if(len==1) {
-        pvFromRequest = static_pointer_cast<PVStructure>(pvFields[0]);
-        if(pvFromRequest->getFieldName().compare("_options")==0) {
-            return pvFromRequest;
-        }
-        if(nameFromRecord.size()!=0) nameFromRecord += ".";
-        nameFromRecord += pvFromRequest->getFieldName();
-        return getSubStructure(pvFromRequest,nameFromRecord);
-    }
-
-    if(len==2) {
-        if(pvFields[0]->getFieldName().compare("_options")==0) {
-            pvFromRequest = static_pointer_cast<PVStructure>(pvFields[0]);
-            return pvFromRequest;
-        } else if(pvFields[1]->getFieldName().compare("_options")==0) {
-            pvFromRequest = static_pointer_cast<PVStructure>(pvFields[1]);
-            return pvFromRequest;
-        }
-        
-    }
-    return NULLPVStructure;
-}
 
 StructureConstPtr PVCopy::createStructure(
     PVStructurePtr const &pvRecord,
@@ -472,232 +407,91 @@ StructureConstPtr PVCopy::createStructure(
     if(pvFromRequest->getStructure()->getNumberFields()==0) {
         return pvRecord->getStructure();
     }
-    FieldConstPtr field = createField(pvRecord,pvFromRequest);
-    if(field.get()==NULL) return NULLStructure;
-    if(field->getType()==epics::pvData::structure) {
-        StructureConstPtr structure =
-            static_pointer_cast<const Structure>(field);
-        return structure;
-    }
-    StringArray fieldNames(1);
-    FieldConstPtrArray fields(1);
-    String name = getFullName(pvFromRequest,"");
-    size_t ind = name.find_last_of('.');
-    if(ind!=String::npos) name = String(name,ind+1);
-    fieldNames[0] = name;
-    fields[0] = field;
-    return getFieldCreate()->createStructure(fieldNames, fields);
-}
-
-FieldConstPtr PVCopy::createField(
-    PVStructurePtr const &xxx,
-    PVStructurePtr const &yyy)
-{
-    PVStructurePtr pvRecord = xxx;
-    PVStructurePtr pvFromRequest = yyy;
-    PVFieldPtrArray const & pvFromRequestFields
-         = pvFromRequest->getPVFields();
-    StringArray const & fromRequestFieldNames
-        = pvFromRequest->getStructure()->getFieldNames();
+    PVFieldPtrArray const &pvFromRequestFields = pvFromRequest->getPVFields();
+    StringArray const &fromRequestFieldNames = pvFromRequest->getStructure()->getFieldNames();
     size_t length = pvFromRequestFields.size();
-    size_t number = 0;
-    size_t indopt = -1;
-    for(size_t i=0; i<length; i++) {
-        if(fromRequestFieldNames[i].compare("_options")!=0) {
-            number++;
-        } else {
-            indopt = i;
-        }
-    }
-    if(number==0) return pvRecord->getStructure();
-    if(number==1) {
-        String nameFromRecord = "";
-        nameFromRecord = getFullName(pvFromRequest,nameFromRecord);
-        PVFieldPtr pvRecordField = pvRecord->getSubField(nameFromRecord);
-        if(pvRecordField.get()==NULL) return NULLField;
-        Type recordFieldType = pvRecordField->getField()->getType();
-        if(recordFieldType!=epics::pvData::structure) {
-            return pvRecordField->getField();
-        }
-        PVStructurePtr pvSubFrom = static_pointer_cast<PVStructure>(
-             pvFromRequest->getSubField(nameFromRecord));
-        PVFieldPtrArray const & pvs = pvSubFrom->getPVFields();
-        length = pvs.size();
-        number = 0;
-        for(size_t i=0; i<length; i++) {
-            if(!pvs[i]->getFieldName().compare("_options")==0) {
-                number++;
-            }
-        }
-        FieldConstPtrArray fields(1);
-        StringArray fieldNames(1);
-        fieldNames[0] = pvRecordField->getFieldName();
-        if(number==0) {
-            fields[0] = pvRecordField->getField();
-        } else {
-            PVStructurePtr zzz =
-                static_pointer_cast<PVStructure>(pvRecordField);
-            fields[0] = createField(zzz,pvSubFrom);
-        }
-        return getFieldCreate()->createStructure(fieldNames, fields);
-    }
-    FieldConstPtrArray fields; fields.reserve(number);
-    StringArray fieldNames; fields.reserve(number);
-    for(size_t i=0; i<length; i++) {
-        if(i==indopt) continue;
-        PVStructurePtr arg = static_pointer_cast<PVStructure>(
-            pvFromRequestFields[i]);
-        PVStructurePtr yyy = static_pointer_cast<PVStructure>(
-            pvFromRequestFields[i]);
-        String zzz = getFullName(yyy,"");
-        String full = fromRequestFieldNames[i];
-        if(zzz.size()>0) {
-            full += "." + zzz;
-            arg = getSubStructure(yyy,zzz);
-        }
-        PVFieldPtr pvRecordField = pvRecord->getSubField(full);
-        if(pvRecordField.get()==NULL) continue;
+    if(length==0) return NULLStructure;
+    FieldConstPtrArray fields; fields.reserve(length);
+    StringArray fieldNames; fields.reserve(length);
+    for(size_t i=0; i<length; ++i) {
+        String const &fieldName = fromRequestFieldNames[i];
+        PVFieldPtr pvRecordField = pvRecord->getSubField(fieldName);
+        if(pvRecordField==NULL) continue;
         FieldConstPtr field = pvRecordField->getField();
-        if(field->getType()!=epics::pvData::structure) {
-            fieldNames.push_back(full);
-            fields.push_back(field);
-            continue;
-        }
-        FieldConstPtr xxx = createField(
-            static_pointer_cast<PVStructure>(pvRecordField),arg);
-        if(xxx.get()!=NULL) {
-            fieldNames.push_back(fromRequestFieldNames[i]);
-            fields.push_back(xxx);
-        }
-    }
-    boolean makeValue = true;
-    size_t indValue = String::npos;
-    for(size_t i=0;i<fieldNames.size(); i++) {
-        if(fieldNames[i].compare("value")==0) {
-            if(indValue==String::npos) {
-                indValue = i;
-            } else {
-                makeValue = false;
+        if(field->getType()==epics::pvData::structure) {
+            PVStructurePtr pvRequestStructure = static_pointer_cast<PVStructure>(
+                pvFromRequestFields[i]);
+            if(pvRequestStructure->getNumberFields()>0) {
+                 StringArray const &names = pvRequestStructure->getStructure()->
+                     getFieldNames();
+                 size_t num = names.size();
+                 if(num>0 && names[0].compare("_options")==0) --num;
+                 if(num>0) {
+                     if(pvRecordField->getField()->getType()!=epics::pvData::structure) continue;
+                     fieldNames.push_back(fieldName);
+                     fields.push_back(createStructure(
+                         static_pointer_cast<PVStructure>(pvRecordField),
+                         pvRequestStructure));
+                     continue;
+                 }
             }
         }
+        fieldNames.push_back(fieldName);
+        fields.push_back(field);
     }
-    for(size_t i=0;i<fieldNames.size(); i++) {
-        if(makeValue==true&&indValue==i) {
-            fieldNames[i] = "value";
-        } else {
-            String xxx = fieldNames[i];
-            size_t ind = xxx.find_first_of('.');
-            if(ind!=String::npos) fieldNames[i] = String(xxx,0, ind);
-        }
-    }
+    size_t numsubfields = fields.size();
+    if(numsubfields==0) return NULLStructure;
     return getFieldCreate()->createStructure(fieldNames, fields);
 }
 
 CopyNodePtr PVCopy::createStructureNodes(
-    PVRecordStructurePtr const &xxx,
-    PVStructurePtr const &yyy,
-    PVFieldPtr const &zzz)
+    PVRecordStructurePtr const &pvRecordStructure,
+    PVStructurePtr const &pvFromRequest,
+    PVStructurePtr const &pvFromCopy)
 {
-    PVRecordStructurePtr pvRecordStructure = xxx;
-    PVStructurePtr pvFromRequest = yyy;
-    PVFieldPtr pvFromField = zzz;
-
-    PVFieldPtrArray const &  pvFromRequestFields = pvFromRequest->getPVFields();
-    StringArray const & fromRequestFieldNames =
-        pvFromRequest->getStructure()->getFieldNames();
-    size_t length = pvFromRequestFields.size();
-    size_t number = 0;
-    size_t indopt = -1;
+    PVFieldPtrArray const & copyPVFields = pvFromCopy->getPVFields();
     PVStructurePtr pvOptions;
-    for(size_t i=0; i<length; i++) {
-        if(fromRequestFieldNames[i].compare("_options")!=0) {
-            number++;
-        } else {
-            indopt = i;
-            pvOptions = static_pointer_cast<PVStructure>(pvFromRequestFields[i]);
+    PVFieldPtr pvField = pvFromRequest->getSubField("_options");
+    if(pvField!=NULL) pvOptions = static_pointer_cast<PVStructure>(pvField);
+    size_t number = copyPVFields.size();
+    CopyNodePtrArrayPtr nodes(new CopyNodePtrArray());
+    nodes->reserve(number);
+    for(size_t i=0; i<number; i++) {
+        PVFieldPtr copyPVField = copyPVFields[i];
+        String fieldName = copyPVField->getFieldName();
+        
+        PVStructurePtr requestPVStructure = static_pointer_cast<PVStructure>(
+              pvFromRequest->getSubField(fieldName));
+        PVRecordFieldPtr pvRecordField;
+        PVRecordFieldPtrArrayPtr pvRecordFields = pvRecordStructure->getPVRecordFields();
+        for(size_t j=0; i<pvRecordFields->size(); j++ ) {
+            if((*pvRecordFields)[j]->getPVField()->getFieldName().compare(fieldName)==0) {
+                pvRecordField = (*pvRecordFields)[j];
+                break;
+            }
         }
-    }
-    if(number==0) {
+        size_t numberRequest = requestPVStructure->getPVFields().size();
+        if(requestPVStructure->getSubField("_options")!=NULL) numberRequest--;
+        if(numberRequest>0) {
+            nodes->push_back(createStructureNodes(
+                static_pointer_cast<PVRecordStructure>(pvRecordField),
+                requestPVStructure,
+                static_pointer_cast<PVStructure>(copyPVField)));
+            continue;
+        }
         CopyRecordNodePtr recordNode(new CopyRecordNode());
         recordNode->options = pvOptions;
         recordNode->isStructure = false;
-        recordNode->recordPVField = pvRecordStructure;
-        recordNode->nfields = pvFromField->getNumberFields();
-        recordNode->structureOffset = pvFromField->getFieldOffset();
-        return recordNode;
-    }
-    if(number==1) {
-        String nameFromRecord = "";
-        nameFromRecord = getFullName(pvFromRequest,nameFromRecord);
-        PVFieldPtr pvField = pvRecordStructure->
-            getPVStructure()->getSubField(nameFromRecord);
-        if(pvField.get()==NULL) return NULLCopyNode;
-        PVRecordFieldPtr pvRecordField = pvRecordStructure->
-            getPVRecord()->findPVRecordField(pvField);
-        size_t structureOffset = pvFromField->getFieldOffset();
-        PVStructure *pvParent = pvFromField->getParent();
-        if(pvParent==NULL) {
-            structureOffset++;
-        }
-        CopyRecordNodePtr recordNode(new CopyRecordNode());
-        recordNode->options = getOptions(pvFromRequest,nameFromRecord);
-        recordNode->isStructure = false;
         recordNode->recordPVField = pvRecordField;
-        recordNode->nfields = pvFromField->getNumberFields();
-        recordNode->structureOffset = structureOffset;
-        return recordNode;
+        recordNode->nfields = copyPVField->getNumberFields();
+        recordNode->structureOffset = copyPVField->getFieldOffset();
+        nodes->push_back(recordNode);
     }
-    CopyNodePtrArrayPtr nodes(new CopyNodePtrArray());
-    nodes->reserve(number);
-    PVStructurePtr pvFromStructure =
-        static_pointer_cast<PVStructure>(pvFromField);
-    PVFieldPtrArray const &  pvFromStructureFields =
-         pvFromStructure->getPVFields();
-    length = pvFromStructureFields.size();
-    size_t indFromStructure = 0;
-    for(size_t i= 0; i <pvFromRequestFields.size();i++) {
-        if(i==indopt) continue;
-        PVStructurePtr arg = static_pointer_cast<PVStructure>
-            (pvFromRequestFields[i]);
-        PVStructurePtr yyy = static_pointer_cast<PVStructure>
-            (pvFromRequestFields[i]);
-        String zzz = getFullName(yyy,"");
-        String full = fromRequestFieldNames[i];
-        if(zzz.size()>0) {
-            full += "." + zzz;
-            arg = getSubStructure(yyy,zzz);
-        }
-        PVFieldPtr pvField = pvRecordStructure->
-            getPVStructure()->getSubField(full);
-        if(pvField.get()==NULL) continue;
-        PVRecordFieldPtr pvRecordField =
-             pvRecordStructure->getPVRecord()->findPVRecordField(pvField);
-        CopyNodePtr node;
-        if(pvRecordField->getPVField()->getField()==
-        pvFromStructureFields[indFromStructure]->getField()) {
-            pvField = pvFromStructureFields[indFromStructure];
-            CopyRecordNodePtr recordNode(new CopyRecordNode());
-            recordNode->options = getOptions(yyy,zzz);
-            recordNode->isStructure = false;
-            recordNode->recordPVField = pvRecordField;
-            recordNode->nfields = pvField->getNumberFields();
-            recordNode->structureOffset = pvField->getFieldOffset();
-            node = recordNode;
-        } else {
-            node = createStructureNodes(static_pointer_cast<PVRecordStructure>
-                (pvRecordField),arg,pvFromStructureFields[indFromStructure]);
-        }
-        if(node.get()==NULL) continue;
-        nodes->push_back(node);
-        ++indFromStructure;
-    }
-    size_t len = nodes->size();
-    if(len==String::npos) return NULLCopyNode;
     CopyStructureNodePtr structureNode(new CopyStructureNode());
     structureNode->isStructure = true;
     structureNode->nodes = nodes;
-    structureNode->structureOffset = pvFromStructure->getFieldOffset();
-    structureNode->nfields = pvFromStructure->getNumberFields();
+    structureNode->structureOffset = pvFromCopy->getFieldOffset();
+    structureNode->nfields = pvFromCopy->getNumberFields();
     structureNode->options = pvOptions;
     return structureNode;
 }
