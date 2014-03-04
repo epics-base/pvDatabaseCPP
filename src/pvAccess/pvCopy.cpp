@@ -462,6 +462,9 @@ CopyNodePtr PVCopy::createStructureNodes(
         
         PVStructurePtr requestPVStructure = static_pointer_cast<PVStructure>(
               pvFromRequest->getSubField(fieldName));
+        PVStructurePtr pvSubFieldOptions;
+        PVFieldPtr pvField = requestPVStructure->getSubField("_options");
+        if(pvField!=NULL) pvSubFieldOptions = static_pointer_cast<PVStructure>(pvField);
         PVRecordFieldPtr pvRecordField;
         PVRecordFieldPtrArrayPtr pvRecordFields = pvRecordStructure->getPVRecordFields();
         for(size_t j=0; i<pvRecordFields->size(); j++ ) {
@@ -471,7 +474,7 @@ CopyNodePtr PVCopy::createStructureNodes(
             }
         }
         size_t numberRequest = requestPVStructure->getPVFields().size();
-        if(requestPVStructure->getSubField("_options")!=NULL) numberRequest--;
+        if(pvSubFieldOptions!=NULL) numberRequest--;
         if(numberRequest>0) {
             nodes->push_back(createStructureNodes(
                 static_pointer_cast<PVRecordStructure>(pvRecordField),
@@ -480,7 +483,7 @@ CopyNodePtr PVCopy::createStructureNodes(
             continue;
         }
         CopyRecordNodePtr recordNode(new CopyRecordNode());
-        recordNode->options = pvOptions;
+        recordNode->options = pvSubFieldOptions;
         recordNode->isStructure = false;
         recordNode->recordPVField = pvRecordField;
         recordNode->nfields = copyPVField->getNumberFields();
