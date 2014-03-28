@@ -1,33 +1,17 @@
+# Makefile for the pvDatabase library
+
 TOP = ..
 include $(TOP)/configure/CONFIG
 
-DATABASE = $(TOP)/src/
+PVDATABASE_SRC = $(TOP)/src
 
 LIBRARY_IOC += pvDatabase
+
+include $(PVDATABASE_SRC)/database/Makefile
+include $(PVDATABASE_SRC)/pvAccess/Makefile
+include $(PVDATABASE_SRC)/special/Makefile
+
 pvDatabase_LIBS += pvAccess pvData Com
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-SRC_DIRS += $(DATABASE)/database
-INC += pvDatabase.h
-LIBSRCS += pvRecord.cpp
-LIBSRCS += pvDatabase.cpp
-
-SRC_DIRS += $(DATABASE)/pvAccess
-INC += channelProviderLocal.h
-INC += pvCopy.h
-INC += monitorAlgorithm.h
-DBD += registerChannelProviderLocal.dbd
-LIBSRCS += channelProviderLocal.cpp
-LIBSRCS += pvCopy.cpp
-LIBSRCS += monitorFactory.cpp
-LIBSRCS += channelLocal.cpp
-LIBSRCS += registerChannelProviderLocal.cpp
-
-SRC_DIRS += $(DATABASE)/special
-INC += recordList.h
-INC += traceRecord.h
-LIBSRCS += recordList.cpp
-LIBSRCS += traceRecord.cpp
-
 include $(TOP)/configure/RULES
-
