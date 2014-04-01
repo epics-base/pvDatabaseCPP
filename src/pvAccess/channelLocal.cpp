@@ -46,7 +46,7 @@ typedef std::tr1::shared_ptr<ChannelArrayLocal> ChannelArrayLocalPtr;
 static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
 {
     PVFieldPtr pvField = pvRequest->getSubField("record._options.process");
-    if(pvField.get()==NULL || pvField->getField()->getType()!=scalar) {
+    if(pvField==NULL || pvField->getField()->getType()!=scalar) {
         return processDefault;
     }
     ScalarConstPtr scalar = static_pointer_cast<const Scalar>(
@@ -102,7 +102,6 @@ private:
     {
     }
     bool isDestroyed;
-    bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelProcessRequester::shared_pointer channelProcessRequester;
     PVRecordPtr pvRecord;
@@ -260,10 +259,10 @@ ChannelGetLocalPtr ChannelGetLocal::create(
     PVRecordPtr const &pvRecord)
 {
     PVCopyPtr pvCopy = PVCopy::create(
-        pvRecord,
+        pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "");
-    if(pvCopy.get()==NULL) {
+    if(pvCopy==NULL) {
         Status status(
             Status::Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -414,10 +413,10 @@ ChannelPutLocalPtr ChannelPutLocal::create(
     PVRecordPtr const &pvRecord)
 {
     PVCopyPtr pvCopy = PVCopy::create(
-        pvRecord,
+        pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "");
-    if(pvCopy.get()==NULL) {
+    if(pvCopy==NULL) {
         Status status(
             Status::Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -504,7 +503,7 @@ void ChannelPutLocal::put(bool lastRequest)
     pvRecord->lock();
     try {
         pvRecord->beginGroupPut();
-        pvCopy->updateRecord(pvStructure, bitSet);
+        pvCopy->updateMaster(pvStructure, bitSet);
         if(callProcess) {
              pvRecord->process();
         }
@@ -598,14 +597,14 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
     PVRecordPtr const &pvRecord)
 {
     PVCopyPtr pvPutCopy = PVCopy::create(
-        pvRecord,
+        pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "putField");
     PVCopyPtr pvGetCopy = PVCopy::create(
-        pvRecord,
+        pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "getField");
-    if(pvPutCopy.get()==NULL || pvGetCopy.get()==NULL) {
+    if(pvPutCopy==NULL || pvGetCopy==NULL) {
         Status status(
             Status::Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -684,7 +683,7 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
     pvRecord->lock();
     try {
         pvRecord->beginGroupPut();
-        pvPutCopy->updateRecord(pvPutStructure, putBitSet);
+        pvPutCopy->updateMaster(pvPutStructure, putBitSet);
         if(callProcess) pvRecord->process();
         pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
         pvRecord->endGroupPut();
@@ -794,7 +793,6 @@ private:
         PVRecordPtr const &pvRecord)
     : 
       isDestroyed(false),
-      callProcess(callProcess),
       channelLocal(channelLocal),
       channelArrayRequester(channelArrayRequester),
       pvArray(pvArray),
@@ -803,7 +801,6 @@ private:
     {
     }
     bool isDestroyed;
-    bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelArrayRequester::shared_pointer channelArrayRequester;
     PVArrayPtr pvArray;

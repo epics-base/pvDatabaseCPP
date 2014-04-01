@@ -17,6 +17,7 @@
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
 #include <pv/timeStamp.h>
+#include <pv/pvCopyMonitor.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
@@ -265,7 +266,9 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
 
     pvField = pvRequest->getSubField("field");
     if(pvField.get()==NULL) {
-        pvCopy = PVCopy::create(pvRecord,pvRequest,"");
+        pvCopy = PVCopy::create(
+            pvRecord->getPVRecordStructure()->getPVStructure(),
+            pvRequest,"");
         if(pvCopy.get()==NULL) {
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
@@ -275,13 +278,16 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
         }
-        pvCopy = PVCopy::create(pvRecord,pvRequest,"field");
+        pvCopy = PVCopy::create(
+            pvRecord->getPVRecordStructure()->getPVStructure(),
+            pvRequest,"field");
         if(pvCopy.get()==NULL) {
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
         }
     }
-    pvCopyMonitor = pvCopy->createPVCopyMonitor(getPtrSelf());
+    pvCopyMonitor = PVCopyMonitor::create(
+          getPtrSelf(),pvRecord,pvCopy);
     // MARTY MUST IMPLEMENT periodic
     if(queueSize<2) queueSize = 2;
     std::vector<MonitorElementPtr> monitorElementArray;
