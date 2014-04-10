@@ -18,11 +18,11 @@
 #
 # Create a file RELEASE.local pointing to your PVASRV, PVACCESS,
 # PVDATA, PVCOMMON and EPICS_BASE build directories, e.g.
-#   PVASRV   = /home/install/epicsV4/pvaSrvCPP
-#   PVACCESS = /home/install/epicsV4/pvAccessCPP
-#   PVCOMMON = /home/install/epicsV4/pvCommonCPP
-#   PVDATA   = /home/install/epicsV4/pvDataCPP
-#   EPICS_BASE = /home/install/epics/base
+#   PVASRV   = /path/to/epics/pvaSrvCPP
+#   PVACCESS = /path/to/epics/pvAccessCPP
+#   PVDATA   = /path/to/epics/pvDataCPP
+#   PVCOMMON = /path/to/epics/pvCommonCPP
+#   EPICS_BASE = /path/to/epics/base
 
 -include $(TOP)/configure/RELEASE.local
 -include $(TOP)/../RELEASE.local
