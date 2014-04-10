@@ -9,9 +9,10 @@
  * @date 2013.08.02
  */
 
-#include <pv/exampleLink.h>
 #include <pv/standardPVField.h>
 #include <pv/convert.h>
+
+#include <exampleLink.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;

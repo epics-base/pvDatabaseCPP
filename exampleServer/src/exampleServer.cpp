@@ -10,7 +10,8 @@
  */
 
 #include <pv/standardPVField.h>
-#include <pv/exampleServer.h>
+
+#include <exampleServer.h>
 
 namespace epics { namespace exampleServer { 
 using namespace epics::pvData;

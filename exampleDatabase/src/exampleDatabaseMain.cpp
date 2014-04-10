@@ -20,8 +20,9 @@
 #include <iostream>
 
 #include <pv/channelProviderLocal.h>
-#include <pv/exampleDatabase.h>
 #include <pv/serverContext.h>
+
+#include <exampleDatabase.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;

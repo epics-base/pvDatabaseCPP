@@ -22,12 +22,13 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
-#include <pv/arrayPerformance.h>
-#include <pv/longArrayPut.h>
 #include <pv/traceRecord.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/serverContext.h>
 #include <pv/clientFactory.h>
+
+#include <arrayPerformance.h>
+#include <longArrayPut.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;

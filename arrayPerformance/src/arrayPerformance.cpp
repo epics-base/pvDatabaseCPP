@@ -10,7 +10,8 @@
  */
 
 #include <pv/lock.h>
-#include <pv/arrayPerformance.h>
+
+#include <arrayPerformance.h>
 
 namespace epics { namespace pvDatabase { 
 

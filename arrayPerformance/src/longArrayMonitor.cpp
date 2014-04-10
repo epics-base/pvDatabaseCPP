@@ -10,8 +10,9 @@
  */
 
 #include <epicsThread.h>
-#include <pv/longArrayMonitor.h>
 #include <pv/caProvider.h>
+
+#include <longArrayMonitor.h>
 
 namespace epics { namespace pvDatabase { 
 

@@ -23,7 +23,7 @@ DBD += exampleDatabase.dbd
 
 INC += exampleDatabase.h
 
-LIBRARY_IOC += exampleDatabase
+LIBRARY += exampleDatabase
 exampleDatabase_SRCS += exampleDatabase.cpp
 exampleDatabase_SRCS += exampleDatabaseRegister.cpp
 exampleDatabase_LIBS += pvDatabase
