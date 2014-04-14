@@ -11,6 +11,12 @@
 #ifndef LONGARRAYGET_H
 #define LONGARRAYGET_H
 
+
+#ifdef epicsExportSharedSymbols
+#   define longarraygetEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
+
 #include <shareLib.h>
 
 #include <pv/event.h>
@@ -19,6 +25,13 @@
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/pvAccess.h>
+
+
+#ifdef longarraygetEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef longarraygetEpicsExportSharedSymbols
+#   include <shareLib.h>
+#endif
 
 namespace epics { namespace pvDatabase { 
 

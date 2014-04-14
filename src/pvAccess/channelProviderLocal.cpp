@@ -8,6 +8,7 @@
  * @author Marty Kraimer
  * @date 2013.04
  */
+#define epicsExportSharedSymbols
 
 #include <pv/serverContext.h>
 #include <pv/channelProviderLocal.h>

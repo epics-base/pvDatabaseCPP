@@ -8,6 +8,7 @@
  * @author mrk
  * @date 2012.11.21
  */
+#define epicsExportSharedSymbols
 
 #include <pv/pvDatabase.h>
 

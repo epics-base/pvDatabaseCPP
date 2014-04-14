@@ -8,9 +8,12 @@
  * @author mrk
  * @date 2012.11.21
  */
+#include <epicsThread.h>
+
+#define epicsExportSharedSymbols
 
 #include <pv/pvDatabase.h>
-#include <epicsThread.h>
+
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;

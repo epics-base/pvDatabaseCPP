@@ -14,9 +14,12 @@
 #include <epicsThread.h>
 
 #include <pv/timeStamp.h>
-#include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
+
+#define epicsExportSharedSymbols
+
+#include <pv/channelProviderLocal.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
@@ -168,7 +171,7 @@ void ChannelProcessLocal::process(bool lastRequest)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelProcessRequester->processDone(status);
          return;
@@ -265,7 +268,7 @@ ChannelGetLocalPtr ChannelGetLocal::create(
         "");
     if(pvCopy.get()==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelGet::shared_pointer channelGet;
         PVStructurePtr pvStructure;
@@ -317,7 +320,7 @@ void ChannelGetLocal::get(bool lastRequest)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelGetRequester->getDone(status);
          return;
@@ -419,7 +422,7 @@ ChannelPutLocalPtr ChannelPutLocal::create(
         "");
     if(pvCopy.get()==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelPut::shared_pointer channelPut;
         PVStructurePtr pvStructure;
@@ -470,7 +473,7 @@ void ChannelPutLocal::get()
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutRequester->getDone(status);
          return;
@@ -496,7 +499,7 @@ void ChannelPutLocal::put(bool lastRequest)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutRequester->getDone(status);
          return;
@@ -607,7 +610,7 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
         "getField");
     if(pvPutCopy.get()==NULL || pvGetCopy.get()==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelPutGet::shared_pointer channelPutGet;
         PVStructurePtr pvStructure;
@@ -674,7 +677,7 @@ void ChannelPutGetLocal::putGet(bool lastRequest)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->putGetDone(status);
          return;
@@ -707,7 +710,7 @@ void ChannelPutGetLocal::getPut()
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->getPutDone(status);
          return;
@@ -733,7 +736,7 @@ void ChannelPutGetLocal::getGet()
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelPutGetRequester->getGetDone(status);
          return;
@@ -822,7 +825,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     PVFieldPtrArray const & pvFields = pvRequest->getPVFields();
     if(pvFields.size()!=1) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,"invalid pvRequest");
+            Status::STATUSTYPE_ERROR,"invalid pvRequest");
         ChannelArrayLocalPtr channelArray;
         PVScalarArrayPtr pvArray;
         channelArrayRequester->channelArrayConnect(status,channelArray,pvArray);
@@ -842,7 +845,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     pvField = pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(fieldName);
     if(pvField==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,fieldName +" not found");
+            Status::STATUSTYPE_ERROR,fieldName +" not found");
         ChannelArrayLocalPtr channelArray;
         PVScalarArrayPtr pvArray;
         channelArrayRequester->channelArrayConnect(status,channelArray,pvArray);
@@ -851,7 +854,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     if(pvField->getField()->getType()!=scalarArray && pvField->getField()->getType()!=structureArray)
     {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,fieldName +" not array");
+            Status::STATUSTYPE_ERROR,fieldName +" not array");
         ChannelArrayLocalPtr channelArray;
         PVArrayPtr pvArray;
         channelArrayRequester->channelArrayConnect(status,channelArray,pvArray);
@@ -905,7 +908,7 @@ void ChannelArrayLocal::getArray(bool lastRequest,int offset, int count)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelArrayRequester->getArrayDone(status);
          return;
@@ -936,7 +939,7 @@ void ChannelArrayLocal::putArray(bool lastRequest,int offset, int count)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelArrayRequester->putArrayDone(status);
          return;
@@ -964,7 +967,7 @@ void ChannelArrayLocal::setLength(bool lastRequest,int length, int capacity)
 {
     if(isDestroyed) {
          Status status(
-             Status::Status::STATUSTYPE_ERROR,
+             Status::STATUSTYPE_ERROR,
             "was destroyed");
          channelArrayRequester->setLengthDone(status);
          return;
@@ -977,7 +980,7 @@ void ChannelArrayLocal::setLength(bool lastRequest,int length, int capacity)
     try {
         if(capacity>=0 && !pvArray->isCapacityMutable()) {
              Status status(
-                 Status::Status::STATUSTYPE_ERROR,
+                 Status::STATUSTYPE_ERROR,
                 "capacityImnutable");
              channelArrayRequester->setLengthDone(status);
              pvRecord->unlock();

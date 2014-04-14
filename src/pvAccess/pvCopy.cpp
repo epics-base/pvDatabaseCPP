@@ -15,6 +15,8 @@
 
 #include <pv/thread.h>
 
+#define epicsExportSharedSymbols
+
 #include <pv/channelProviderLocal.h>
 #include <pv/pvCopy.h>
 

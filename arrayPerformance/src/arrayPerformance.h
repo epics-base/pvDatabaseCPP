@@ -11,13 +11,24 @@
 #ifndef ARRAYPERFORMANCE_H
 #define ARRAYPERFORMANCE_H
 
-#include <shareLib.h>
 
+#ifdef epicsExportSharedSymbols
+#   define arrayperformanceEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
+
+#include <shareLib.h>
 #include <epicsThread.h>
 #include <pv/standardPVField.h>
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/pvDatabase.h>
+
+#ifdef arrayperformanceEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef arrayperformanceEpicsExportSharedSymbols
+#   include <shareLib.h>
+#endif
 
 namespace epics { namespace pvDatabase { 
 

@@ -8,6 +8,7 @@
  * @author mrk
  * @date 2013.04.18
  */
+#define epicsExportSharedSymbols
 
 #include <pv/traceRecord.h>
 
