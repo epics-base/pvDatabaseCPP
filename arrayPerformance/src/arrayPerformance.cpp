@@ -11,7 +11,10 @@
 
 #include <pv/lock.h>
 
+#define epicsExportSharedSymbols
 #include <arrayPerformance.h>
+
+
 
 namespace epics { namespace pvDatabase { 
 

@@ -12,11 +12,13 @@
 #include <sstream>
 
 #include <pv/thread.h>
-#include <pv/channelProviderLocal.h>
-#include <pv/channelProviderLocal.h>
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
 #include <pv/timeStamp.h>
+
+#define epicsExportSharedSymbols
+
+#include <pv/channelProviderLocal.h>
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
@@ -28,7 +30,7 @@ using std::endl;
 static MonitorAlgorithmCreatePtr nullMonitorAlgorithmCreate;
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
-static Status wasDestroyedStatus(Status::Status::STATUSTYPE_ERROR,"was destroyed");
+static Status wasDestroyedStatus(Status::STATUSTYPE_ERROR,"was destroyed");
 
 static ConvertPtr convert = getConvert();
 

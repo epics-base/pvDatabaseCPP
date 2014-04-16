@@ -12,7 +12,9 @@
 #include <pv/standardPVField.h>
 #include <pv/convert.h>
 
+#define epicsExportSharedSymbols 
 #include <exampleLink.h>
+
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;

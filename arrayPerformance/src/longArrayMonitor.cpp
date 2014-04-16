@@ -9,10 +9,13 @@
  * @date 2013.08.09
  */
 
+ 
 #include <epicsThread.h>
 #include <pv/caProvider.h>
 
+#define epicsExportSharedSymbols
 #include <longArrayMonitor.h>
+
 
 namespace epics { namespace pvDatabase { 
 

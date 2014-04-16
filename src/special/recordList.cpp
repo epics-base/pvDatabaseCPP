@@ -9,6 +9,8 @@
  * @date 2013.04.18
  */
 
+#define epicsExportSharedSymbols
+
 #include <pv/recordList.h>
 
 using std::tr1::static_pointer_cast;

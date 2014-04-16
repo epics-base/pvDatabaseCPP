@@ -26,6 +26,7 @@ INC += exampleDatabase.h
 LIBRARY += exampleDatabase
 exampleDatabase_SRCS += exampleDatabase.cpp
 exampleDatabase_SRCS += exampleDatabaseRegister.cpp
+exampleDatabase_LIBS += powerSupply
 exampleDatabase_LIBS += pvDatabase
 exampleDatabase_LIBS += pvAccess
 exampleDatabase_LIBS += pvData

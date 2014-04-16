@@ -11,14 +11,25 @@
 #ifndef PVDATABASE_H
 #define PVDATABASE_H
 
+#ifdef epicsExportSharedSymbols
+#   define pvdatabaseEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
+
 #include <list>
 #include <map>
 #include <deque>
 
-#include <shareLib.h>
-
 #include <pv/pvData.h>
+
 #include <pv/convert.h>
+
+#ifdef pvdatabaseEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef pvdatabaseEpicsExportSharedSymbols
+#   include <shareLib.h>
+#endif
+
 
 namespace epics { namespace pvDatabase { 
 

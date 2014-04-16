@@ -11,9 +11,19 @@
 #ifndef EXAMPLEDATABASE_H
 #define EXAMPLEDATABASE_H
 
-#include <shareLib.h>
+#ifdef epicsExportSharedSymbols
+#   define exampledatabaseEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
 
+#include <shareLib.h>
 #include <pv/pvDatabase.h>
+
+#ifdef exampledatabaseEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef exampledatabaseEpicsExportSharedSymbols
+#   include <shareLib.h>
+#endif
 
 namespace epics { namespace pvDatabase { 
 
