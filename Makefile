@@ -8,7 +8,7 @@ DIRS := configure
 DIRS += src
 src_DEPEND_DIRS = configure
 
-EMBEDDED_TOPS := test
+EMBEDDED_TOPS := testTop
 EMBEDDED_TOPS += arrayPerformance
 EMBEDDED_TOPS += $(wildcard example*)
 
@@ -20,7 +20,7 @@ endef
 
 $(foreach dir, $(EMBEDDED_TOPS), $(eval $(call dir_DEP,$(dir))))
 
-exampleDatabase_DEPEND_DIRS += test
-examplePowerSupply_DEPEND_DIRS += test
+exampleDatabase_DEPEND_DIRS += testTop
+examplePowerSupply_DEPEND_DIRS += testTop
 
 include $(TOP)/configure/RULES_TOP

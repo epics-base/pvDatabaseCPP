@@ -27,7 +27,7 @@
 # If this example is built in a directory under pvDatabaseCPP,
 # use the following definitions:
 
-PVDATABASETEST = $(TOP)/../test
+PVDATABASETEST = $(TOP)/../testTop
 PVDATABASE = $(TOP)/..
 
 -include $(TOP)/../configure/RELEASE.local
@@ -36,7 +36,7 @@ PVDATABASE = $(TOP)/..
 # If you copied this example from pvDatabaseCPP to be built as a
 # standalone TOP, adjust and use the following definitions:
 
-#PVDATABASETEST = /path/to/epics/pvDatabaseCPP/test
+#PVDATABASETEST = /path/to/epics/pvDatabaseCPP/testTop
 #PVDATABASE = /path/to/epics/pvDatabaseCPP
 
 #-include $(TOP)/../RELEASE.local
