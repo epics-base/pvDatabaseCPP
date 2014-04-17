@@ -8,8 +8,7 @@ DIRS := configure
 DIRS += src
 src_DEPEND_DIRS = configure
 
-EMBEDDED_TOPS := testTop
-EMBEDDED_TOPS += arrayPerformance
+EMBEDDED_TOPS := $(wildcard *Top)
 EMBEDDED_TOPS += $(wildcard example*)
 
 DIRS += $(EMBEDDED_TOPS)

@@ -1,4 +1,4 @@
-# pvDatabaseCPP/arrayPerformance RELEASE - Location of external support modules
+# pvDatabaseCPP/arrayPerfTop RELEASE - Location of external support modules
 #
 # IF YOU CHANGE this file or any file it includes you must
 # subsequently do a "gnumake rebuild" in the application's
