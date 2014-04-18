@@ -69,4 +69,7 @@ static void powerSupplyRegister(void)
         iocshRegister(&powerSupplyFuncDef, powerSupplyCallFunc);
     }
 }
-epicsExportRegistrar(powerSupplyRegister);
+
+extern "C" {
+    epicsExportRegistrar(powerSupplyRegister);
+}

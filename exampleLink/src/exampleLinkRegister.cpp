@@ -84,4 +84,7 @@ static void exampleLinkRegister(void)
         iocshRegister(&exampleLinkFuncDef, exampleLinkCallFunc);
     }
 }
-epicsExportRegistrar(exampleLinkRegister);
+
+extern "C" {
+    epicsExportRegistrar(exampleLinkRegister);
+}

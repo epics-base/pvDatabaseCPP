@@ -66,4 +66,7 @@ static void exampleServerRegister(void)
         iocshRegister(&exampleServerFuncDef, exampleServerCallFunc);
     }
 }
-epicsExportRegistrar(exampleServerRegister);
+
+extern "C" {
+    epicsExportRegistrar(exampleServerRegister);
+}
