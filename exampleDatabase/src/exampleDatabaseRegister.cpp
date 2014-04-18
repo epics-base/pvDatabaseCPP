@@ -58,4 +58,7 @@ static void exampleDatabaseRegister(void)
         iocshRegister(&exampleDatabaseFuncDef, exampleDatabaseCallFunc);
     }
 }
-epicsExportRegistrar(exampleDatabaseRegister);
+
+extern "C" {
+    epicsExportRegistrar(exampleDatabaseRegister);
+}

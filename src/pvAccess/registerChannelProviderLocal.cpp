@@ -61,4 +61,6 @@ static void registerChannelProviderLocal(void)
     }
 }
 
-epicsExportRegistrar(registerChannelProviderLocal);
+extern "C" {
+    epicsExportRegistrar(registerChannelProviderLocal);
+}
