@@ -3,25 +3,22 @@ TOP=../..
 include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
-#=============================
-
-#==================================================
-# Build an IOC support library
-#
 
 DBD += exampleDatabase.dbd
 
-#=============================
-# build an ioc application
+exampleDatabase_DBD += base.dbd
+exampleDatabase_DBD += PVAServerRegister.dbd
+exampleDatabase_DBD += registerChannelProviderLocal.dbd
+exampleDatabase_DBD += dbPv.dbd
+exampleDatabase_DBD += powerSupplyRegister.dbd
+exampleDatabase_DBD += exampleDatabaseRegister.dbd
 
 PROD_IOC += exampleDatabase
-
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 exampleDatabase_SRCS += exampleDatabase_registerRecordDeviceDriver.cpp
 exampleDatabase_SRCS_DEFAULT += exampleDatabaseMain.cpp
 exampleDatabase_SRCS_vxWorks += -nil-
-
 
 # The following adds support from base/src/vxWorks
 exampleDatabase_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
