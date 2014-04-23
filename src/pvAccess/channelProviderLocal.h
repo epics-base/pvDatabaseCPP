@@ -21,10 +21,11 @@
 #include <pv/lock.h>
 #include <pv/pvType.h>
 #include <pv/pvData.h>
+#include <pv/monitorPlugin.h>
+#include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 #include <pv/status.h>
-#include <pv/monitorAlgorithm.h>
 
 
 namespace epics { namespace pvDatabase { 
@@ -54,15 +55,10 @@ public:
         PVRecordPtr const & pvRecord,
         epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
         epics::pvData::PVStructurePtr const & pvRequest);
-    void registerMonitorAlgorithmCreate(
-        MonitorAlgorithmCreatePtr const &monitorAlgorithmCreate);
-    MonitorAlgorithmCreatePtr getMonitorAlgorithmCreate(
-        epics::pvData::String algorithmName);
 private:
     MonitorFactory();
     friend class MonitorLocal;
     friend MonitorFactoryPtr getMonitorFactory();
-    std::multiset<MonitorAlgorithmCreatePtr> monitorAlgorithmCreateList;
     bool isDestroyed;
     epics::pvData::Mutex mutex;
 };

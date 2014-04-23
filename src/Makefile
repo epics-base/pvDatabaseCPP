@@ -14,7 +14,6 @@ LIBSRCS += pvDatabase.cpp
 
 SRC_DIRS += $(DATABASE)/pvAccess
 INC += channelProviderLocal.h
-INC += monitorAlgorithm.h
 INC += pvCopyMonitor.h
 DBD += registerChannelProviderLocal.dbd
 LIBSRCS += channelProviderLocal.cpp

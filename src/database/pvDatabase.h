@@ -66,7 +66,7 @@ public:
      */
     virtual void start() {}
     /**
-     *  Must be implemented by derived classes.
+     *  Optional method.
      *  It is the method that makes a record smart.
      *  If it encounters errors it should raise alarms and/or
      *  call the <b>message</b> method provided by the base class.

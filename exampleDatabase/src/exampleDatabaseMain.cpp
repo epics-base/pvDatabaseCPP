@@ -21,6 +21,7 @@
 
 #include <pv/channelProviderLocal.h>
 #include <pv/exampleDatabase.h>
+#include <pv/exampleMonitorPlugin.h>
 #include <pv/serverContext.h>
 
 using namespace std;
@@ -35,6 +36,7 @@ int main(int argc,char *argv[])
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     ExampleDatabase::create();
+    ExampleMonitorPlugin::create();
     ServerContext::shared_pointer ctx =
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleDatabase\n";

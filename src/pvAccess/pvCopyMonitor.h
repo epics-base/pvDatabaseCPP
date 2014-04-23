@@ -13,6 +13,7 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
+#include <list>
 
 #include <shareLib.h>
 
@@ -27,6 +28,10 @@ typedef std::tr1::shared_ptr<PVCopyMonitor> PVCopyMonitorPtr;
 class PVCopyMonitorRequester;
 typedef std::tr1::shared_ptr<PVCopyMonitorRequester> PVCopyMonitorRequesterPtr;
 
+class PVCopyMonitorFieldNode;
+typedef std::tr1::shared_ptr<PVCopyMonitorFieldNode> PVCopyMonitorFieldNodePtr;
+
+
 class epicsShareClass PVCopyMonitor :
     public PVListener,
     public epics::pvData::PVCopyTraverseMasterCallback,
@@ -40,13 +45,10 @@ public:
         epics::pvData::PVCopyPtr const & pvCopy);
     virtual ~PVCopyMonitor();
     virtual void destroy();
-    void startMonitoring(
-        epics::pvData::BitSetPtr const &changeBitSet,
-        epics::pvData::BitSetPtr const &overrunBitSet);
+    void startMonitoring();
     void stopMonitoring();
-    void switchBitSets(
-        epics::pvData::BitSetPtr const &newChangeBitSet,
-        epics::pvData::BitSetPtr const &newOverrunBitSet);
+    void setMonitorElement(epics::pvData::MonitorElementPtr const &monitorElement);
+    void monitorDone(epics::pvData::MonitorElementPtr const &monitorElement);
     // following are PVListener methods
     virtual void detach(PVRecordPtr const & pvRecord);
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField);
@@ -67,15 +69,17 @@ private:
         PVRecordPtr const &pvRecord,
         epics::pvData::PVCopyPtr const &pvCopy,
         PVCopyMonitorRequesterPtr const &pvCopyMonitorRequester);
+    void init(epics::pvData::PVFieldPtr const &pvField);
+    epics::pvData::MonitorPluginPtr getMonitorPlugin(size_t offset);
     PVRecordPtr pvRecord;
     epics::pvData::PVCopyPtr pvCopy;
     PVCopyMonitorRequesterPtr pvCopyMonitorRequester;
-    epics::pvData::BitSetPtr changeBitSet;
-    epics::pvData::BitSetPtr overrunBitSet;
+    epics::pvData::MonitorElementPtr monitorElement;
     bool isGroupPut;
     bool dataChanged;
     bool isMonitoring;
     epics::pvData::Mutex mutex;
+    std::list<PVCopyMonitorFieldNodePtr> monitorFieldNodeList;
 };
 
 class epicsShareClass PVCopyMonitorRequester

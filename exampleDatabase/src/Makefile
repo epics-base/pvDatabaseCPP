@@ -22,10 +22,13 @@ exampleDatabaseMain_LIBS += Com
 DBD += exampleDatabase.dbd
 
 INC += exampleDatabase.h
+INC += exampleMonitorPlugin.h
 
 LIBRARY_IOC += exampleDatabase
 exampleDatabase_SRCS += exampleDatabase.cpp
+exampleDatabase_SRCS += exampleMonitorPlugin.cpp
 exampleDatabase_SRCS += exampleDatabaseRegister.cpp
+exampleDatabase_SRCS += exampleMonitorPluginRegister.cpp
 exampleDatabase_LIBS += pvDatabase
 exampleDatabase_LIBS += pvAccess
 exampleDatabase_LIBS += pvData
