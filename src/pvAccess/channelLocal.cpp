@@ -81,6 +81,7 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void process(bool lastRequest);
     virtual void destroy();
+    virtual void cancel();
     virtual void lock() {mutex.lock();}
     virtual void unlock() {mutex.unlock();}
 private:
@@ -95,6 +96,7 @@ private:
         int nProcess)
     : 
       isDestroyed(false),
+      isCanceled(false),
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
@@ -102,6 +104,7 @@ private:
     {
     }
     bool isDestroyed;
+    bool isCanceled;
     ChannelLocalPtr channelLocal;
     ChannelProcessRequester::shared_pointer channelProcessRequester;
     PVRecordPtr pvRecord;
@@ -163,6 +166,19 @@ void ChannelProcessLocal::destroy()
     channelLocal.reset();
 }
 
+void ChannelProcessLocal::cancel()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelProcessLocal::cancel";
+    }
+    {
+        Lock xx(mutex);
+        if(isCanceled) return;
+        isCanceled = true;
+    }
+}
+
 void ChannelProcessLocal::process(bool lastRequest)
 {
     if(isDestroyed) {
@@ -213,6 +229,7 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void get(bool lastRequest);
     virtual void destroy();
+    virtual void cancel();
     virtual void lock() {mutex.lock();}
     virtual void unlock() {mutex.unlock();}
 private:
@@ -231,6 +248,7 @@ private:
     : 
       firstTime(true),
       isDestroyed(false),
+      isCanceled(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelGetRequester(channelGetRequester),
@@ -242,6 +260,7 @@ private:
     }
     bool firstTime;
     bool isDestroyed;
+    bool isCanceled;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelGetRequester::shared_pointer channelGetRequester;
@@ -312,6 +331,19 @@ void ChannelGetLocal::destroy()
     channelLocal.reset();
 }
 
+void ChannelGetLocal::cancel()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelGetLocal::cancel";
+    }
+    {
+        Lock xx(mutex);
+        if(isCanceled) return;
+        isCanceled = true;
+    }
+}
+
 void ChannelGetLocal::get(bool lastRequest)
 {
     if(isDestroyed) {
@@ -369,6 +401,7 @@ public:
     virtual void put(bool lastRequest);
     virtual void get();
     virtual void destroy();
+    virtual void cancel();
     virtual void lock() {mutex.lock();}
     virtual void unlock() {mutex.unlock();}
 private:
@@ -386,6 +419,7 @@ private:
         PVRecordPtr const &pvRecord)
     :
       isDestroyed(false),
+      isCanceled(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelPutRequester(channelPutRequester),
@@ -396,6 +430,7 @@ private:
     {
     }
     bool isDestroyed;
+    bool isCanceled;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelPutRequester::shared_pointer channelPutRequester;
@@ -463,6 +498,19 @@ void ChannelPutLocal::destroy()
         isDestroyed = true;
     }
     channelLocal.reset();
+}
+
+void ChannelPutLocal::cancel()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelPutLocal::cancel";
+    }
+    {
+        Lock xx(mutex);
+        if(isCanceled) return;
+        isCanceled = true;
+    }
 }
 
 void ChannelPutLocal::get()
@@ -544,6 +592,7 @@ public:
     virtual void getPut();
     virtual void getGet();
     virtual void destroy();
+    virtual void cancel();
     virtual void lock() {mutex.lock();}
     virtual void unlock() {mutex.unlock();}
 private:
@@ -564,6 +613,7 @@ private:
         PVRecordPtr const &pvRecord)
     : 
       isDestroyed(false),
+      isCanceled(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelPutGetRequester(channelPutGetRequester),
@@ -577,6 +627,7 @@ private:
     {
     }
     bool isDestroyed;
+    bool isCanceled;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelPutGetRequester::shared_pointer channelPutGetRequester;
@@ -667,6 +718,19 @@ void ChannelPutGetLocal::destroy()
         isDestroyed = true;
     }
     channelLocal.reset();
+}
+
+void ChannelPutGetLocal::cancel()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelPutGetLocal::cancel";
+    }
+    {
+        Lock xx(mutex);
+        if(isCanceled) return;
+        isCanceled = true;
+    }
 }
 
 void ChannelPutGetLocal::putGet(bool lastRequest)
@@ -774,10 +838,11 @@ public:
         ChannelArrayRequester::shared_pointer const & channelArrayRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
-    virtual void getArray(bool lastRequest,int offset, int count);
-    virtual void putArray(bool lastRequest,int offset, int count);
-    virtual void setLength(bool lastRequest,int length, int capacity);
+    virtual void getArray(bool lastRequest,size_t offset, size_t count);
+    virtual void putArray(bool lastRequest,size_t offset, size_t count);
+    virtual void setLength(bool lastRequest,size_t length, size_t capacity);
     virtual void destroy();
+    virtual void cancel();
     virtual void lock() {mutex.lock();}
     virtual void unlock() {mutex.unlock();}
 private:
@@ -793,6 +858,7 @@ private:
         PVRecordPtr const &pvRecord)
     : 
       isDestroyed(false),
+      isCanceled(false),
       channelLocal(channelLocal),
       channelArrayRequester(channelArrayRequester),
       pvArray(pvArray),
@@ -801,6 +867,7 @@ private:
     {
     }
     bool isDestroyed;
+    bool isCanceled;
     ChannelLocalPtr channelLocal;
     ChannelArrayRequester::shared_pointer channelArrayRequester;
     PVArrayPtr pvArray;
@@ -898,7 +965,20 @@ void ChannelArrayLocal::destroy()
     channelLocal.reset();
 }
 
-void ChannelArrayLocal::getArray(bool lastRequest,int offset, int count)
+void ChannelArrayLocal::cancel()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelArrayLocal::cancel";
+    }
+    {
+        Lock xx(mutex);
+        if(isCanceled) return;
+        isCanceled = true;
+    }
+}
+
+void ChannelArrayLocal::getArray(bool lastRequest,size_t offset, size_t count)
 {
     if(isDestroyed) {
          Status status(
@@ -929,7 +1009,7 @@ void ChannelArrayLocal::getArray(bool lastRequest,int offset, int count)
     if(lastRequest) destroy();
 }
 
-void ChannelArrayLocal::putArray(bool lastRequest,int offset, int count)
+void ChannelArrayLocal::putArray(bool lastRequest,size_t offset, size_t count)
 {
     if(isDestroyed) {
          Status status(
@@ -957,7 +1037,7 @@ void ChannelArrayLocal::putArray(bool lastRequest,int offset, int count)
     if(lastRequest) destroy();
 }
 
-void ChannelArrayLocal::setLength(bool lastRequest,int length, int capacity)
+void ChannelArrayLocal::setLength(bool lastRequest,size_t length, size_t capacity)
 {
     if(isDestroyed) {
          Status status(
