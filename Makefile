@@ -1,27 +1,25 @@
-#Makefile at top of application tree
+# Makefile for the EPICS V4 pvDatabase module
+
 TOP = .
 include $(TOP)/configure/CONFIG
-DIRS := $(DIRS) $(filter-out $(DIRS), configure)
-DIRS := $(DIRS) $(filter-out $(DIRS), src)
-DIRS := $(DIRS) $(filter-out $(DIRS), test)
-DIRS := $(DIRS) $(filter-out $(DIRS), arrayPerformance)
-DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard example*))
 
-EMBEDDED_TOPS := $(EMBEDDED_TOPS) $(filter-out $(EMBEDDED_TOPS), test)
-EMBEDDED_TOPS := $(EMBEDDED_TOPS) $(filter-out $(EMBEDDED_TOPS), arrayPerformance)
-EMBEDDED_TOPS := $(EMBEDDED_TOPS) $(filter-out $(EMBEDDED_TOPS), $(wildcard example*))
+DIRS := configure
 
-define DIR_template
- $(1)_DEPEND_DIRS = configure
-endef
-$(foreach dir, $(filter-out configure,$(DIRS)),$(eval $(call DIR_template,$(dir))))
+DIRS += src
+src_DEPEND_DIRS = configure
 
-define EMB_template
+EMBEDDED_TOPS := $(wildcard *Top)
+EMBEDDED_TOPS += $(wildcard example*)
+
+DIRS += $(EMBEDDED_TOPS)
+
+define dir_DEP
  $(1)_DEPEND_DIRS = src
 endef
-$(foreach dir, $(EMBEDDED_TOPS),$(eval $(call EMB_template,$(dir))))
 
-#exampleDatabase_DEPEND_DIRS += test
-#examplePowerSupply_DEPEND_DIRS += test
+$(foreach dir, $(EMBEDDED_TOPS), $(eval $(call dir_DEP,$(dir))))
+
+exampleDatabase_DEPEND_DIRS += testTop
+examplePowerSupply_DEPEND_DIRS += testTop
 
 include $(TOP)/configure/RULES_TOP

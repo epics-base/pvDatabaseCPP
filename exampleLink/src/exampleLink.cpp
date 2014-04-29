@@ -13,7 +13,7 @@
 #include <pv/convert.h>
 
 #define epicsExportSharedSymbols 
-#include <pv/exampleLink.h>
+#include <exampleLink.h>
 
 
 namespace epics { namespace pvDatabase { 

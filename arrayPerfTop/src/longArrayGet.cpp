@@ -13,7 +13,7 @@
 #include <pv/caProvider.h>
 
 #define epicsExportSharedSymbols
-#include <pv/longArrayGet.h>
+#include <longArrayGet.h>
 
 namespace epics { namespace pvDatabase { 
 

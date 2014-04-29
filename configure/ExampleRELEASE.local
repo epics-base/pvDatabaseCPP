@@ -1,8 +1,11 @@
+# Sample RELEASE.local file
 
-TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+V4 = /home/install/epics/v4
 
-EPICS_BASE=/home/install/epics/base
-PVCOMMON=/home/hg/pvCommonCPP
-PVDATA=/home/hg/pvDataCPP
-PVACCESS=/home/hg/pvAccessCPP
-PVASRV=/home/hg/pvaSrv
+PVASRV   = $(V4)/pvaSrv
+PVACCESS = $(V4)/pvAccessCPP
+PVDATA   = $(V4)/pvDataCPP
+PVCOMMON = $(V4)/pvCommonCPP
+
+EPICS_BASE = /home/install/epics/base-3.14.12.3
+

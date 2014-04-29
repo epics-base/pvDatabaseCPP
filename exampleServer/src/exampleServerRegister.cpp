@@ -27,15 +27,14 @@
 #include <epicsThread.h>
 #include <iocsh.h>
 
-
 #include <pv/pvIntrospect.h>
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 
-#define epicsExportSharedSymbols
 #include <epicsExport.h>
-#include <pv/exampleServer.h>
+
+#include <exampleServer.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

@@ -12,7 +12,8 @@
 #include <pv/standardPVField.h>
 
 #define epicsExportSharedSymbols
-#include <pv/exampleServer.h>
+
+#include <exampleServer.h>
 
 namespace epics { namespace exampleServer { 
 using namespace epics::pvData;

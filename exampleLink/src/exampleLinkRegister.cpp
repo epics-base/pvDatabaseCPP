@@ -27,7 +27,6 @@
 #include <epicsThread.h>
 #include <iocsh.h>
 
-
 #include <pv/pvIntrospect.h>
 #include <pv/pvData.h>
 #include <pv/standardField.h>
@@ -35,9 +34,9 @@
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 
-#define epicsExportSharedSymbols 
 #include <epicsExport.h>
-#include <pv/exampleLink.h>
+
+#include <exampleLink.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

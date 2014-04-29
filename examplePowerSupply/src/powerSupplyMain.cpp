@@ -20,10 +20,11 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
-#include <pv/powerSupply.h>
 #include <pv/traceRecord.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/serverContext.h>
+
+#include <powerSupply.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;

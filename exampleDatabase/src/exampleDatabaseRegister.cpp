@@ -31,9 +31,9 @@
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 
-#define epicsExportSharedSymbols
 #include <epicsExport.h>
-#include <pv/exampleDatabase.h>
+
+#include <exampleDatabase.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

@@ -3,13 +3,8 @@ TOP=..
 include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
-#=============================
 
-#==================================================
-# Build an IOC support library
-#
-
-DBD += exampleLink.dbd
+DBD += exampleLinkRegister.dbd
 
 INC += exampleLink.h
 

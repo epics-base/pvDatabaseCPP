@@ -1,6 +1,8 @@
-#Makefile at top of application tree
+# Makefile at top of application tree
+
 TOP = .
 include $(TOP)/configure/CONFIG
+
 DIRS += configure
 
 DIRS += src

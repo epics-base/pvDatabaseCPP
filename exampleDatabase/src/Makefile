@@ -3,12 +3,19 @@ TOP=..
 include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
-#=============================
 
-#==================================================
-# Build an IOC support library
-#
+DBD += exampleDatabaseRegister.dbd
 
+INC += exampleDatabase.h
+
+LIBRARY += exampleDatabase
+exampleDatabase_SRCS += exampleDatabase.cpp
+exampleDatabase_SRCS += exampleDatabaseRegister.cpp
+exampleDatabase_LIBS += powerSupply
+exampleDatabase_LIBS += pvDatabase
+exampleDatabase_LIBS += pvAccess
+exampleDatabase_LIBS += pvData
+exampleDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 PROD_HOST += exampleDatabaseMain
 exampleDatabaseMain_SRCS += exampleDatabaseMain.cpp
@@ -18,20 +25,6 @@ exampleDatabaseMain_LIBS += pvDatabase
 exampleDatabaseMain_LIBS += pvAccess
 exampleDatabaseMain_LIBS += pvData
 exampleDatabaseMain_LIBS += Com
-
-DBD += exampleDatabase.dbd
-
-INC += exampleDatabase.h
-
-LIBRARY_IOC += exampleDatabase
-exampleDatabase_SRCS += exampleDatabase.cpp
-exampleDatabase_SRCS += exampleDatabaseRegister.cpp
-exampleDatabase_LIBS += powerSupply
-exampleDatabase_LIBS += pvDatabase
-exampleDatabase_LIBS += pvAccess
-exampleDatabase_LIBS += pvData
-exampleDatabase_LIBS += Com
-exampleDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #===========================
 
