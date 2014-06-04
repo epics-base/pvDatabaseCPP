@@ -404,7 +404,11 @@ MonitorElementPtr MultipleElementQueue::poll()
 void MultipleElementQueue::release(MonitorElementPtr const &element)
 {
     queue->releaseUsed(element);
+    if(!queueIsFull) return;
     queueIsFull = false;
+    if(!activeElement->changedBitSet->isEmpty()) {
+        dataChanged();
+    }
 }
 
 MonitorFactoryPtr getMonitorFactory()

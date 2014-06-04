@@ -70,10 +70,15 @@ public:
     virtual void channelPutConnect(
         Status const & status,
         ChannelPut::shared_pointer const & channelPut,
+        StructureConstPtr const &structure);
+    virtual void putDone(
+        Status const & status,
+        ChannelPut::shared_pointer const & channelPut);
+    virtual void getDone(
+        Status const & status,
+        ChannelPut::shared_pointer const & channelPut,
         PVStructurePtr const &pvStructure,
-        BitSetPtr const &bitSet);
-    virtual void putDone(Status const & status);
-    virtual void getDone(Status const & status){}
+        BitSetPtr const & bitSet){}
 private:
     LongArrayChannelPutPtr getPtrSelf()
     {
@@ -101,7 +106,7 @@ private:
 
 bool LongArrayChannelPut::init()
 {
-    ChannelProvider::shared_pointer channelProvider = getChannelAccess()->getProvider(providerName);
+    ChannelProvider::shared_pointer channelProvider = getChannelProviderRegistry()->getProvider(providerName);
     if(channelProvider==NULL) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
@@ -166,8 +171,7 @@ void LongArrayChannelPut::channelStateChange(
 void LongArrayChannelPut::channelPutConnect(
         Status const & status,
         ChannelPut::shared_pointer const & channelPut,
-        PVStructurePtr const &pvStructure,
-        BitSetPtr const &bitSet)
+        StructureConstPtr const &structure)
 {
     this->status = status;
     if(!status.isOK())  {
@@ -176,8 +180,8 @@ void LongArrayChannelPut::channelPutConnect(
         return;
     }
     this->channelPut = channelPut;
-    this->pvStructure = pvStructure;
-    this->bitSet = bitSet;
+    pvStructure = getPVDataCreate()->createPVStructure(structure);
+    bitSet = BitSetPtr(new BitSet(pvStructure->getNumberFields()));
     bool structureOK(true);
     PVFieldPtr pvField = pvStructure->getSubField("value");
     if(pvField==NULL) {
@@ -220,7 +224,7 @@ void LongArrayChannelPut::run()
             shared_vector<const int64> data(freeze(xxx));
             pvLongArray->replace(data);
             bitSet->set(pvLongArray->getFieldOffset());
-            channelPut->put(false);
+            channelPut->put(pvStructure,bitSet);
             event.wait();
             if(isDestroyed) {
                 runReturned = true;
@@ -262,7 +266,7 @@ void LongArrayChannelPut::run()
                     channel->destroy();
                     epicsThreadSleep(1.0);
                     ChannelProvider::shared_pointer channelProvider =
-                         getChannelAccess()->getProvider(providerName);
+                         getChannelProviderRegistry()->getProvider(providerName);
                     channel = channelProvider->createChannel(
                         channelName,getPtrSelf(),0);
                     event.wait();
@@ -308,7 +312,9 @@ void LongArrayChannelPut::run()
     }
 }
 
-void LongArrayChannelPut::putDone(Status const & status)
+void LongArrayChannelPut::putDone(
+        Status const & status,
+        ChannelPut::shared_pointer const & channelPut)
 {
     event.signal();
 }
