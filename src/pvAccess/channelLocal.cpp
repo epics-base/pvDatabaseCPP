@@ -30,10 +30,6 @@ static ConvertPtr convert = getConvert();
 static StructureConstPtr nullStructure;
 static PVStructurePtr nullPVStructure;
 static BitSetPtr nullBitSet;
-static Status strideNotSupportedStatus(
-    Status::Status::STATUSTYPE_ERROR,
-   "stride not supported"
-);
 static Status channelDestroyedStatus(
     Status::Status::STATUSTYPE_ERROR,
     "was destroyed"
@@ -905,24 +901,24 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
     {
        cout << "ChannelArrayLocal::getArray" << endl;
     }
+    const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
-        if(count<0) count = pvArray->getLength() - offset;
+        if(count<=0) count = pvArray->getLength() - offset;
         size_t capacity = pvArray->getCapacity();
         if(capacity!=0) {
-            pvCopy->setCapacity(capacity);
             pvCopy->setLength(count);
-            copy(*pvArray.get(),offset,*pvCopy.get(),0,count);
+            copy(pvArray,offset,stride,pvCopy,0,1,count);
         }
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
+    } catch(std::exception e) {
+        exceptionMessage = e.what();
     }
     pvRecord->unlock();
     Status status = Status::Ok;
-    if(stride!=1) status = strideNotSupportedStatus;
-    channelArrayRequester->getArrayDone(
-       status,getPtrSelf(),pvCopy);
+    if(exceptionMessage!=NULL) {
+      status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+    }
+    channelArrayRequester->getArrayDone(status,getPtrSelf(),pvCopy);
 }
 
 void ChannelArrayLocal::putArray(
@@ -936,19 +932,21 @@ void ChannelArrayLocal::putArray(
     {
        cout << "ChannelArrayLocal::putArray" << endl;
     }
+    size_t newLength = offset + count*stride;
+    pvArray->setLength(newLength);
+    const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
         if(count<=0) count = pvCopy->getLength();
-        if(pvArray->getCapacity()<count) pvArray->setCapacity(count);
-        if(pvArray->getLength()<count) pvArray->setLength(count);
-        copy(*pvCopy.get(),0,*pvArray.get(),offset,count);
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
+        copy(pvArray,0,1,this->pvArray,offset,stride,count);
+    } catch(std::exception e) {
+        exceptionMessage = e.what();
     }
     pvRecord->unlock();
     Status status = Status::Ok;
-    if(stride!=1) status = strideNotSupportedStatus;
+    if(exceptionMessage!=NULL) {
+        status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+    }
     channelArrayRequester->putArrayDone(status,getPtrSelf());
 }
 

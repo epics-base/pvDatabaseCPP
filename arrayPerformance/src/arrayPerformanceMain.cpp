@@ -82,7 +82,7 @@ int main(int argc,char *argv[])
     pvRecord = ArrayPerformance::create(recordName,size,delay);
     result = master->addRecord(pvRecord);
     PVRecordPtr arrayPreformance = pvRecord;
-    arrayPreformance->setTraceLevel(1);
+    arrayPreformance->setTraceLevel(0);
     pvRecord = TraceRecord::create("traceRecordPGRPC");
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
