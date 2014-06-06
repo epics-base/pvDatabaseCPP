@@ -34,6 +34,19 @@ static Status channelDestroyedStatus(
     Status::Status::STATUSTYPE_ERROR,
     "was destroyed"
 );
+static Status illegalOffsetStatus(
+    Status::Status::STATUSTYPE_ERROR,
+    "count must be >0"
+);
+static Status illegalCountStatus(
+    Status::Status::STATUSTYPE_ERROR,
+    "count must be >0"
+);
+static Status illegalStrideStatus(
+    Status::Status::STATUSTYPE_ERROR,
+    "stride must be >0"
+);
+
 
 class ChannelProcessLocal;
 typedef std::tr1::shared_ptr<ChannelProcessLocal> ChannelProcessLocalPtr;
@@ -865,9 +878,28 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
             Status::Ok, array, pvCopy->getArray());
         return array;
     }
+    if(pvField->getField()->getType()==structureArray) {
+        PVStructureArrayPtr xxx = static_pointer_cast<PVStructureArray>(pvField);
+        pvCopy = getPVDataCreate()->createPVStructureArray(
+            xxx->getStructureArray()->getStructure());
+        ChannelArrayLocalPtr array(new ChannelArrayLocal(
+            channelLocal,
+            channelArrayRequester,
+            pvArray,
+            pvCopy,
+            pvRecord));
+        if(pvRecord->getTraceLevel()>0)
+        {
+            cout << "ChannelArrayLocal::create";
+            cout << " recordName " << pvRecord->getRecordName() << endl;
+        }
+        channelArrayRequester->channelArrayConnect(
+            Status::Ok, array, pvCopy->getArray());
+        return array;
+    }
     
     Status status(Status::Status::STATUSTYPE_ERROR,
-            "Sorry only ScalarArray is supported");
+            "Sorry only ScalarArray and Structure Array are supported");
     ChannelArrayLocalPtr channelArray;
     ArrayConstPtr array;
     channelArrayRequester->channelArrayConnect(status,channelArray,array);
@@ -893,20 +925,39 @@ void ChannelArrayLocal::destroy()
 void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
 {
     if(isDestroyed) {
-         channelArrayRequester->getArrayDone(
-             channelDestroyedStatus,getPtrSelf(),pvCopy);
+         channelArrayRequester->getArrayDone(channelDestroyedStatus,getPtrSelf(),pvCopy);
          return;
     }
     if(pvRecord->getTraceLevel()>1)
     {
        cout << "ChannelArrayLocal::getArray" << endl;
     }
+    if(offset<0) {
+         channelArrayRequester->getArrayDone(illegalOffsetStatus,getPtrSelf(),pvCopy);
+         return;
+    }
+    if(stride<0) {
+         channelArrayRequester->getArrayDone(illegalStrideStatus,getPtrSelf(),pvCopy);
+         return;
+    }
     const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
-        if(count<=0) count = pvArray->getLength() - offset;
-        size_t capacity = pvArray->getCapacity();
-        if(capacity!=0) {
+        bool ok = false;
+        while(true) {
+            size_t length  = pvArray->getLength();
+            if(length<=0) break;
+            if(count<=0) {
+                 count = -offset + length/stride;
+                 if(count>0) ok = true;
+                 break;
+            }
+            size_t maxcount = -offset + length/stride;
+            if(count>maxcount) count = maxcount;
+            ok = true;
+            break;
+        }
+        if(ok) {
             pvCopy->setLength(count);
             copy(pvArray,offset,stride,pvCopy,0,1,count);
         }
@@ -932,12 +983,23 @@ void ChannelArrayLocal::putArray(
     {
        cout << "ChannelArrayLocal::putArray" << endl;
     }
+    if(offset<0) {
+         channelArrayRequester->putArrayDone(illegalOffsetStatus,getPtrSelf());
+         return;
+    }
+    if(count<0) {
+         channelArrayRequester->putArrayDone(illegalCountStatus,getPtrSelf());
+         return;
+    }
+    if(stride<0) {
+         channelArrayRequester->putArrayDone(illegalStrideStatus,getPtrSelf());
+         return;
+    }
     size_t newLength = offset + count*stride;
     pvArray->setLength(newLength);
     const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
-        if(count<=0) count = pvCopy->getLength();
         copy(pvArray,0,1,this->pvArray,offset,stride,count);
     } catch(std::exception e) {
         exceptionMessage = e.what();
