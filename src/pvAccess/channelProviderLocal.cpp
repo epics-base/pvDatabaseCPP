@@ -121,6 +121,19 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     return channelFinder;
 }
 
+ChannelFind::shared_pointer ChannelProviderLocal::channelList(
+    ChannelListRequester::shared_pointer const & channelListRequester)
+{
+    PVStringArrayPtr records;
+    {
+        Lock guard(mutex);
+        records = pvDatabase->getRecordNames();
+    }
+
+    channelListRequester->channelListResult(Status::Ok, channelFinder, records->view(), false);
+    return channelFinder;
+}
+
 Channel::shared_pointer ChannelProviderLocal::createChannel(
     String const & channelName,
     ChannelRequester::shared_pointer  const &channelRequester,
