@@ -1014,10 +1014,22 @@ void ChannelArrayLocal::putArray(
 
 void ChannelArrayLocal::getLength()
 {
-    channelArrayRequester->getLengthDone(
-        Status::Ok,getPtrSelf(),
-        pvArray->getLength(),
-        pvArray->getCapacity());
+    size_t length = 0;
+    size_t capacity = 0;
+    const char *exceptionMessage = NULL;
+    pvRecord->lock();
+    try {
+        length = pvArray->getLength();
+        capacity = pvArray->getCapacity();
+    } catch(std::exception e) {
+        exceptionMessage = e.what();
+    }
+    pvRecord->unlock();
+    Status status = Status::Ok;
+    if(exceptionMessage!=NULL) {
+        status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+    }
+    channelArrayRequester->getLengthDone(status,getPtrSelf(),length,capacity);
 }
 
 void ChannelArrayLocal::setLength(size_t length, size_t capacity)
