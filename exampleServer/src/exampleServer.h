@@ -8,25 +8,14 @@
  * @author mrk
  * @date 2013.04.02
  */
-#ifndef EXAMPLESERVER_H
-#define EXAMPLESERVER_H
-
-#ifdef epicsExportSharedSymbols
-#   define exampleServerEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
+#ifndef EXAMPLECOUNTER_H
+#define EXAMPLECOUNTER_H
 
 #include <shareLib.h>
+
 #include <pv/pvDatabase.h>
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
-
-#ifdef exampleServerEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef exampleServerEpicsExportSharedSymbols
-#   include <shareLib.h>
-#endif
-
 
 namespace epics { namespace exampleServer { 
 
@@ -58,4 +47,4 @@ private:
 
 }}
 
-#endif  /* EXAMPLESERVER_H */
+#endif  /* EXAMPLECOUNTER_H */

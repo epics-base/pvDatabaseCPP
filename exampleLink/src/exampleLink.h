@@ -8,15 +8,11 @@
  * @author mrk
  * @date 2013.08.02
  */
-#ifndef EXAMPLELINK_H
-#define EXAMPLELINK_H
+#ifndef EXAMPLEPVADOUBLEARRAYGET_H
+#define EXAMPLEPVADOUBLEARRAYGET_H
 
-#ifdef epicsExportSharedSymbols
-#   define examplelinkEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
+#include <shareLib.h>
 
-//#include <shareLib.h>
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/alarm.h>
@@ -25,14 +21,6 @@
 #include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
-
-
-#ifdef examplelinkEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef examplelinkEpicsExportSharedSymbols
-#   include <shareLib.h>
-#endif
-
 
 namespace epics { namespace pvDatabase { 
 
@@ -102,4 +90,4 @@ private:
 
 }}
 
-#endif  /* EXAMPLELINK_H */
+#endif  /* EXAMPLEPVADOUBLEARRAYGET_H */

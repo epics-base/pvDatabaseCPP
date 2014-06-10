@@ -17,6 +17,7 @@
 
 #include <shareLib.h>
 
+#include <pv/monitorPlugin.h>
 #include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>

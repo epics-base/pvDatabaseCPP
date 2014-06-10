@@ -4,17 +4,20 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 
-DBD += exampleDatabaseRegister.dbd
+DBD += exampleDatabase.dbd
 
 INC += exampleDatabase.h
+INC += exampleMonitorPlugin.h
 
 LIBRARY += exampleDatabase
 exampleDatabase_SRCS += exampleDatabase.cpp
+exampleDatabase_SRCS += exampleMonitorPlugin.cpp
 exampleDatabase_SRCS += exampleDatabaseRegister.cpp
-exampleDatabase_LIBS += powerSupply
+exampleDatabase_SRCS += exampleMonitorPluginRegister.cpp
 exampleDatabase_LIBS += pvDatabase
 exampleDatabase_LIBS += pvAccess
 exampleDatabase_LIBS += pvData
+exampleDatabase_LIBS += Com
 exampleDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 PROD_HOST += exampleDatabaseMain

@@ -26,8 +26,8 @@
 #include <pv/recordList.h>
 #include <pv/traceRecord.h>
 
-#include <powerSupply.h>
-#include <exampleDatabase.h>
+#include <pv/powerSupply.h>
+#include <pv/exampleDatabase.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;

@@ -10,14 +10,6 @@
  */
 #ifndef CHANNELPROVIDERLOCAL_H
 #define CHANNELPROVIDERLOCAL_H
-
-
-#ifdef epicsExportSharedSymbols
-#   define channelProviderLocalEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
-
 #include <string>
 #include <cstring>
 #include <stdexcept>
@@ -29,17 +21,11 @@
 #include <pv/lock.h>
 #include <pv/pvType.h>
 #include <pv/pvData.h>
+#include <pv/monitorPlugin.h>
+#include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
-#include <pv/status.h>
-
-#ifdef channelProviderLocalEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef channelProviderLocalEpicsExportSharedSymbols
-#   include <shareLib.h>
-#endif
-
 #include <pv/pvDatabase.h>
-#include <pv/monitorAlgorithm.h>
+#include <pv/status.h>
 
 
 namespace epics { namespace pvDatabase { 
@@ -69,15 +55,10 @@ public:
         PVRecordPtr const & pvRecord,
         epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
         epics::pvData::PVStructurePtr const & pvRequest);
-    void registerMonitorAlgorithmCreate(
-        MonitorAlgorithmCreatePtr const &monitorAlgorithmCreate);
-    MonitorAlgorithmCreatePtr getMonitorAlgorithmCreate(
-        epics::pvData::String algorithmName);
 private:
     MonitorFactory();
     friend class MonitorLocal;
     friend MonitorFactoryPtr getMonitorFactory();
-    std::multiset<MonitorAlgorithmCreatePtr> monitorAlgorithmCreateList;
     bool isDestroyed;
     epics::pvData::Mutex mutex;
 };
@@ -97,6 +78,8 @@ public:
     virtual epics::pvAccess::ChannelFind::shared_pointer channelFind(
         epics::pvData::String const &channelName,
         epics::pvAccess::ChannelFindRequester::shared_pointer const & channelFindRequester);
+    virtual epics::pvAccess::ChannelFind::shared_pointer channelList(
+        epics::pvAccess::ChannelListRequester::shared_pointer const & channelListRequester);
     virtual epics::pvAccess::Channel::shared_pointer createChannel(
         epics::pvData::String const &channelName,
         epics::pvAccess::ChannelRequester::shared_pointer const &channelRequester,

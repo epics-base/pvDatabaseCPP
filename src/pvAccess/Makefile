@@ -3,13 +3,13 @@
 SRC_DIRS += $(PVDATABASE_SRC)/pvAccess
 
 INC += channelProviderLocal.h
-INC += pvCopy.h
-INC += monitorAlgorithm.h
+INC += pvCopyMonitor.h
 
 DBD += registerChannelProviderLocal.dbd
 
 LIBSRCS += channelProviderLocal.cpp
-LIBSRCS += pvCopy.cpp
-LIBSRCS += monitorFactory.cpp
 LIBSRCS += channelLocal.cpp
+LIBSRCS += pvCopyMonitor.cpp
+LIBSRCS += monitorFactory.cpp
 LIBSRCS += registerChannelProviderLocal.cpp
+

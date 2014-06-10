@@ -3,8 +3,14 @@ TOP=..
 include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
+#=============================
 
-DBD += exampleServerRegister.dbd
+#==================================================
+# Build an IOC support library
+#
+
+
+DBD += exampleServer.dbd
 
 INC += exampleServer.h
 
@@ -14,6 +20,7 @@ exampleServer_SRCS += exampleServerRegister.cpp
 exampleServer_LIBS += pvDatabase
 exampleServer_LIBS += pvAccess
 exampleServer_LIBS += pvData
+exampleServer_LIBS += Com
 exampleServer_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 PROD_HOST += exampleServerMain

@@ -27,7 +27,7 @@
 # If this example is built in a directory under pvDatabaseCPP,
 # use the following definitions:
 
-PVDATABASETEST = $(TOP)/../testTop
+PVDATABASETEST = $(TOP)/../test
 PVDATABASE = $(TOP)/..
 
 -include $(TOP)/../configure/RELEASE.local

@@ -33,7 +33,7 @@
 
 #include <epicsExport.h>
 
-#include <exampleDatabase.h>
+#include <pv/exampleDatabase.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

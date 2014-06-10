@@ -22,7 +22,8 @@
 #include <pv/channelProviderLocal.h>
 #include <pv/serverContext.h>
 
-#include <exampleDatabase.h>
+#include <pv/exampleDatabase.h>
+#include <pv/exampleMonitorPlugin.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
@@ -36,6 +37,7 @@ int main(int argc,char *argv[])
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     ExampleDatabase::create();
+    ExampleMonitorPlugin::create();
     ServerContext::shared_pointer ctx =
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleDatabase\n";
@@ -55,4 +57,3 @@ int main(int argc,char *argv[])
     channelProvider->destroy();
     return 0;
 }
-
