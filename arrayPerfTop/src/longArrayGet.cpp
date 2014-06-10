@@ -102,9 +102,12 @@ public:
     virtual void channelGetConnect(
         Status const & status,
         ChannelGet::shared_pointer const & channelGet,
+        StructureConstPtr const &structure);
+    virtual void getDone(
+        Status const & status,
+        ChannelGet::shared_pointer const & channelGet,
         PVStructurePtr const &pvStructure,
-        BitSetPtr const &bitSet);
-    virtual void getDone(Status const & status);
+        BitSetPtr const & bitSet);
 private:
     LongArrayChannelGetRequesterPtr getPtrSelf()
     {
@@ -155,9 +158,12 @@ public:
     virtual void channelGetConnect(
         Status const & status,
         ChannelGet::shared_pointer const & channelGet,
+        StructureConstPtr const &structure);
+    virtual void getDone(
+        Status const & status,
+        ChannelGet::shared_pointer channelGet,
         PVStructurePtr const &pvStructure,
-        BitSetPtr const &bitSet);
-    virtual void getDone(Status const & status);
+        BitSetPtr const & bitSet);
 private:
     LongArrayChannelGetPtr getPtrSelf()
     {
@@ -206,21 +212,24 @@ void LongArrayChannelRequester::channelStateChange(
 
 void LongArrayChannelGetRequester::channelGetConnect(
     Status const & status,
-    ChannelGet::shared_pointer const & channelGet,
-    PVStructurePtr const &pvStructure,
-    BitSetPtr const &bitSet)
+        ChannelGet::shared_pointer const & channelGet,
+        StructureConstPtr const &structure)
 {
     Lock guard(mutex);
     if(isDestroyed) return;
     longArrayChannelGet->channelGetConnect(
-        status,channelGet,pvStructure,bitSet);
+        status,channelGet,structure);
 }
 
-void LongArrayChannelGetRequester::getDone(Status const & status)
+void LongArrayChannelGetRequester::getDone(
+        Status const & status,
+        ChannelGet::shared_pointer const & channelGet,
+        PVStructurePtr const &pvStructure,
+        BitSetPtr const & bitSet)
 {
     Lock guard(mutex);
     if(isDestroyed) return;
-    longArrayChannelGet->getDone(status);
+    longArrayChannelGet->getDone(status,channelGet,pvStructure,bitSet);
 }
 
 void LongArrayChannelGet::channelCreated(
@@ -241,12 +250,10 @@ void LongArrayChannelGet::channelStateChange(
        (connectionState==Channel::CONNECTED ? infoMessage : errorMessage);
    message("channelStateChange",messageType);
 }
-
 void LongArrayChannelGet::channelGetConnect(
         Status const & status,
         ChannelGet::shared_pointer const & channelGet,
-        PVStructurePtr const &pvStructure,
-        BitSetPtr const &bitSet)
+        StructureConstPtr const &structure)
 {
     this->status = status;
     if(!status.isOK())  {
@@ -255,9 +262,8 @@ void LongArrayChannelGet::channelGetConnect(
         return;
     }
     this->channelGet = channelGet;
-    this->pvStructure = pvStructure;
-    this->bitSet = bitSet;
     bool structureOK(true);
+    PVStructurePtr pvStructure = getPVDataCreate()->createPVStructure(structure);
     PVFieldPtr pvField = pvStructure->getSubField("timeStamp");
     if(pvField==NULL) structureOK = false;
     pvField = pvStructure->getSubField("value");
@@ -284,7 +290,7 @@ void LongArrayChannelGet::channelGetConnect(
 bool LongArrayChannelGet::init()
 {
     ChannelProvider::shared_pointer channelProvider =
-        getChannelAccess()->getProvider(providerName);
+        getChannelProviderRegistry()->getProvider(providerName);
     if(channelProvider==NULL) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
@@ -355,7 +361,7 @@ void LongArrayChannelGet::run()
         int numChannelCreate = 0;
         size_t nElements = 0;
         while(true) {
-            channelGet->get(false);
+            channelGet->get();
             event.wait();
             if(isDestroyed) {
                 runReturned = true;
@@ -398,7 +404,7 @@ void LongArrayChannelGet::run()
                     longArrayChannelRequester->destroy();
                     channel->destroy();
                     ChannelProvider::shared_pointer channelProvider =
-                         getChannelAccess()->getProvider(providerName);
+                         getChannelProviderRegistry()->getProvider(providerName);
                     longArrayChannelRequester.reset(new LongArrayChannelRequester(getPtrSelf()));
                     channel = channelProvider->createChannel(
                          channelName,
@@ -445,10 +451,14 @@ void LongArrayChannelGet::run()
     }
 }
 
-
-
-void LongArrayChannelGet::getDone(Status const & status)
+void LongArrayChannelGet::getDone(
+        Status const & status,
+        ChannelGet::shared_pointer channelGet,
+        PVStructurePtr const &pvStructure,
+        BitSetPtr const & bitSet)
 {
+    this->pvStructure = pvStructure;
+    this->bitSet = bitSet;
     event.signal();
 }
 

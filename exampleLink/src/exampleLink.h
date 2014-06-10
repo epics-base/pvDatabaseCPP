@@ -65,9 +65,12 @@ public:
     virtual void channelGetConnect(
         const epics::pvData::Status& status,
         epics::pvAccess::ChannelGet::shared_pointer const & channelGet,
-        epics::pvData::PVStructure::shared_pointer const & pvStructure,
-        epics::pvData::BitSet::shared_pointer const & bitSet);
-    virtual void getDone(const epics::pvData::Status& status);
+        epics::pvData::StructureConstPtr const & structure);
+    virtual void getDone(
+        const epics::pvData::Status& status,
+        epics::pvAccess::ChannelGet::shared_pointer const & channelGet,
+        epics::pvData::PVStructurePtr const & pvStructure,
+        epics::pvData::BitSetPtr const &bitSet);
     virtual epics::pvData::String getRequesterName() {return channelName;}
     virtual void message(
         epics::pvData::String const & message,

@@ -15,6 +15,7 @@
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
 #include <pv/timeStamp.h>
+#include <pv/pvCopyMonitor.h>
 
 #define epicsExportSharedSymbols
 
@@ -27,27 +28,17 @@ using std::tr1::static_pointer_cast;
 using std::cout;
 using std::endl;
 
-static MonitorAlgorithmCreatePtr nullMonitorAlgorithmCreate;
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
 static Status wasDestroyedStatus(Status::STATUSTYPE_ERROR,"was destroyed");
 
 static ConvertPtr convert = getConvert();
 
-//class MonitorFieldNode;
-//typedef std::tr1::shared_ptr<MonitorFieldNode> MonitorFieldNodePtr;
 
 class ElementQueue;
 typedef std::tr1::shared_ptr<ElementQueue> ElementQueuePtr;
 class MultipleElementQueue;
 typedef std::tr1::shared_ptr<MultipleElementQueue> MultipleElementQueuePtr;
-
-//class MonitorFieldNode
-//{
-//public:
-//    MonitorAlgorithmPtr monitorAlgorithm;
-//    size_t bitOffset; // pv pvCopy
-//};
 
 class ElementQueue :
     public Monitor,
@@ -87,9 +78,7 @@ public:
 private:
     std::tr1::weak_ptr<MonitorLocal> monitorLocal;
     MonitorElementQueuePtr queue;
-    BitSetPtr changedBitSet;
-    BitSetPtr overrunBitSet;
-    MonitorElementPtr latestMonitorElement;
+    MonitorElementPtr activeElement;
     bool queueIsFull;
 };
 
@@ -267,7 +256,9 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
 
     pvField = pvRequest->getSubField("field");
     if(pvField.get()==NULL) {
-        pvCopy = PVCopy::create(pvRecord,pvRequest,"");
+        pvCopy = PVCopy::create(
+            pvRecord->getPVRecordStructure()->getPVStructure(),
+            pvRequest,"");
         if(pvCopy.get()==NULL) {
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
@@ -277,13 +268,16 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
         }
-        pvCopy = PVCopy::create(pvRecord,pvRequest,"field");
+        pvCopy = PVCopy::create(
+            pvRecord->getPVRecordStructure()->getPVStructure(),
+            pvRequest,"field");
         if(pvCopy.get()==NULL) {
             monitorRequester->message("illegal pvRequest",errorMessage);
             return false;
         }
     }
-    pvCopyMonitor = pvCopy->createPVCopyMonitor(getPtrSelf());
+    pvCopyMonitor = PVCopyMonitor::create(
+          getPtrSelf(),pvRecord,pvCopy);
     // MARTY MUST IMPLEMENT periodic
     if(queueSize<2) queueSize = 2;
     std::vector<MonitorElementPtr> monitorElementArray;
@@ -348,29 +342,6 @@ MonitorPtr MonitorFactory::createMonitor(
     return monitor;
 }
 
-void MonitorFactory::registerMonitorAlgorithmCreate(
-        MonitorAlgorithmCreatePtr const &monitorAlgorithmCreate)
-{
-    Lock xx(mutex);
-    if(isDestroyed) return;
-//    monitorAlgorithmCreateList.insert(monitorAlgorithmCreate);
-}
-
-MonitorAlgorithmCreatePtr MonitorFactory::getMonitorAlgorithmCreate(
-    String algorithmName)
-{
-    Lock xx(mutex);
-    if(isDestroyed) return nullMonitorAlgorithmCreate;
-//    std::multiset<MonitorAlgorithmCreatePtr>::iterator iter;
-//    for(iter = monitorAlgorithmCreateList.begin();
-//    iter!= monitorAlgorithmCreateList.end();
-//    ++iter)
-//    {
-//        if((*iter)->getAlgorithmName().compare(algorithmName))
-//             return *iter;
-//    }
-    return nullMonitorAlgorithmCreate;
-}
 
 MultipleElementQueue::MultipleElementQueue(
     MonitorLocalPtr const &monitorLocal,
@@ -378,8 +349,6 @@ MultipleElementQueue::MultipleElementQueue(
     size_t nfields)
 :  monitorLocal(monitorLocal),
    queue(queue),
-   changedBitSet(new BitSet(nfields)),
-   overrunBitSet(new BitSet(nfields)),
    queueIsFull(false)
 {
 }
@@ -388,11 +357,13 @@ Status MultipleElementQueue::start()
 {
     queue->clear();
     queueIsFull = false;
-    changedBitSet->clear();
-    overrunBitSet->clear();
+    activeElement = queue->getFree();
+    activeElement->changedBitSet->clear();
+    activeElement->overrunBitSet->clear();
     MonitorLocalPtr ml = monitorLocal.lock();
     if(ml==NULL) return wasDestroyedStatus;
-    ml->getPVCopyMonitor()->startMonitoring(changedBitSet,overrunBitSet);
+    ml->getPVCopyMonitor()->setMonitorElement(activeElement);
+    ml->getPVCopyMonitor()->startMonitoring();
     return Status::Ok;
 }
 
@@ -405,55 +376,41 @@ bool MultipleElementQueue::dataChanged()
 {
     MonitorLocalPtr ml = monitorLocal.lock();
     if(ml==NULL) return false;
-    if(queueIsFull) {
-        MonitorElementPtr monitorElement = latestMonitorElement;
-        PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
-        ml->getPVCopy()->updateCopyFromBitSet(pvStructure,changedBitSet);
-        (*monitorElement->changedBitSet)|= (*changedBitSet);
-        (*monitorElement->overrunBitSet)|= (*changedBitSet);
-        changedBitSet->clear();
-        overrunBitSet->clear();
-        return false;
-    }
-    MonitorElementPtr monitorElement = queue->getFree();
-    if(monitorElement==NULL) {
+    if(queueIsFull) return false;
+    ml->getPVCopy()->updateCopyFromBitSet(
+        activeElement->pvStructurePtr,activeElement->changedBitSet);
+    BitSetUtil::compress(activeElement->changedBitSet,activeElement->pvStructurePtr);
+    BitSetUtil::compress(activeElement->overrunBitSet,activeElement->pvStructurePtr);
+    queue->setUsed(activeElement);
+    activeElement = queue->getFree();
+    if(activeElement==NULL) {
         throw  std::logic_error(String("MultipleElementQueue::dataChanged() logic error"));
     }
-    if(queue->getNumberFree()==0){
-        queueIsFull = true;
-        latestMonitorElement = monitorElement;
-    }
-    PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
-    ml->getPVCopy()->updateCopyFromBitSet(
-        pvStructure,changedBitSet);
-    BitSetUtil::compress(changedBitSet,pvStructure);
-    BitSetUtil::compress(overrunBitSet,pvStructure);
-    monitorElement->changedBitSet->clear();
-    (*monitorElement->changedBitSet)|=(*changedBitSet);
-    monitorElement->overrunBitSet->clear();
-    (*monitorElement->overrunBitSet)|=(*overrunBitSet);
-    changedBitSet->clear();
-    overrunBitSet->clear();
-    queue->setUsed(monitorElement);
+    if(queue->getNumberFree()==0) queueIsFull = true;
+    activeElement->changedBitSet->clear();
+    activeElement->overrunBitSet->clear();
+    ml->getPVCopyMonitor()->setMonitorElement(activeElement);
     return true;
 }
 
 MonitorElementPtr MultipleElementQueue::poll()
 {
-    return queue->getUsed();
+    MonitorLocalPtr ml = monitorLocal.lock();
+    if(ml==NULL) return MonitorElementPtr();
+    MonitorElementPtr monitorElement = queue->getUsed();
+    if(monitorElement==NULL) return monitorElement;
+    ml->getPVCopyMonitor()->monitorDone(monitorElement);
+    return monitorElement;
 }
 
-void MultipleElementQueue::release(MonitorElementPtr const &currentElement)
+void MultipleElementQueue::release(MonitorElementPtr const &element)
 {
-    if(queueIsFull) {
-        MonitorElementPtr monitorElement = latestMonitorElement;
-        PVStructurePtr pvStructure = monitorElement->pvStructurePtr;
-        BitSetUtil::compress(monitorElement->changedBitSet,pvStructure);
-        BitSetUtil::compress(monitorElement->overrunBitSet,pvStructure);
-        queueIsFull = false;
-        latestMonitorElement.reset();
+    queue->releaseUsed(element);
+    if(!queueIsFull) return;
+    queueIsFull = false;
+    if(!activeElement->changedBitSet->isEmpty()) {
+        dataChanged();
     }
-    queue->releaseUsed(currentElement);
 }
 
 MonitorFactoryPtr getMonitorFactory()

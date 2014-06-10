@@ -17,5 +17,6 @@ iocInit()
 dbl
 epicsThreadSleep(2.0)
 exampleDatabase
+exampleMonitorPlugin
 startPVAServer
 pvdbl

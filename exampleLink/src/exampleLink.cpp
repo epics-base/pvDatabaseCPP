@@ -67,9 +67,8 @@ bool ExampleLink::init()
     if(pvValue==NULL) {
         return false;
     }
-    ChannelAccess::shared_pointer channelAccess = getChannelAccess();
     ChannelProvider::shared_pointer provider =
-        channelAccess->getProvider(providerName);
+        getChannelProviderRegistry()->getProvider(providerName);
     if(provider==NULL) {
          cout << getRecordName() << " provider "
               << providerName << " does not exist" << endl;
@@ -107,7 +106,7 @@ bool ExampleLink::init()
 void ExampleLink::process()
 {
     status = Status::Ok;
-    channelGet->get(false);
+    channelGet->get();
     event.wait();
     timeStamp.getCurrent();
     pvTimeStamp.set(timeStamp);
@@ -145,19 +144,22 @@ void ExampleLink::channelStateChange(
 void ExampleLink::channelGetConnect(
         const Status& status,
         ChannelGet::shared_pointer const & channelGet,
-        PVStructure::shared_pointer const & pvStructure,
-        BitSet::shared_pointer const & bitSet)
+        StructureConstPtr const & structure)
 {
     this->status = status;
     this->channelGet = channelGet;
-    this->getPVStructure = pvStructure;
-    this->bitSet = bitSet;
     event.signal();
 }
 
-void ExampleLink::getDone(const Status& status)
+void ExampleLink::getDone(
+        const Status& status,
+        ChannelGet::shared_pointer const & channelGet,
+        PVStructurePtr const & pvStructure,
+        BitSetPtr const & bitSet)
 {
     this->status = status;
+    getPVStructure = pvStructure;
+    this->bitSet = bitSet;
     event.signal();
 }
 

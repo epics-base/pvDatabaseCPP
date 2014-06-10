@@ -269,7 +269,8 @@ bool LongArrayMonitor::init(
     channelRequester = LAMChannelRequesterPtr(new LAMChannelRequester(getPtrSelf()));
     monitorRequester = LAMMonitorRequesterPtr(new LAMMonitorRequester(getPtrSelf(),waitTime));
     monitorRequester->init();
-    ChannelProvider::shared_pointer channelProvider = getChannelAccess()->getProvider(providerName);
+    ChannelProvider::shared_pointer channelProvider =
+       getChannelProviderRegistry()->getProvider(providerName);
     if(channelProvider==NULL) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
