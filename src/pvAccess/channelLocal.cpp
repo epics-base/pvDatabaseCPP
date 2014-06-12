@@ -847,7 +847,9 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
             status,channelArray,array);
         return channelArray;
     }
-    if(pvField->getField()->getType()!=scalarArray && pvField->getField()->getType()!=structureArray)
+    if(pvField->getField()->getType()!=scalarArray
+    && pvField->getField()->getType()!=structureArray
+    && pvField->getField()->getType()!=unionArray)
     {
         Status status(
             Status::Status::STATUSTYPE_ERROR,fieldName +" not array");
@@ -897,9 +899,28 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
             Status::Ok, array, pvCopy->getArray());
         return array;
     }
+    if(pvField->getField()->getType()==unionArray) {
+        PVUnionArrayPtr xxx = static_pointer_cast<PVUnionArray>(pvField);
+        pvCopy = getPVDataCreate()->createPVUnionArray(
+            xxx->getUnionArray()->getUnion());
+        ChannelArrayLocalPtr array(new ChannelArrayLocal(
+            channelLocal,
+            channelArrayRequester,
+            pvArray,
+            pvCopy,
+            pvRecord));
+        if(pvRecord->getTraceLevel()>0)
+        {
+            cout << "ChannelArrayLocal::create";
+            cout << " recordName " << pvRecord->getRecordName() << endl;
+        }
+        channelArrayRequester->channelArrayConnect(
+            Status::Ok, array, pvCopy->getArray());
+        return array;
+    }
     
     Status status(Status::Status::STATUSTYPE_ERROR,
-            "Sorry only ScalarArray and Structure Array are supported");
+            "Logic error. Should not reach this code");
     ChannelArrayLocalPtr channelArray;
     ArrayConstPtr array;
     channelArrayRequester->channelArrayConnect(status,channelArray,array);

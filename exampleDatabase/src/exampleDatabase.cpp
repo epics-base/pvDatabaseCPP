@@ -42,18 +42,57 @@ static StandardPVFieldPtr standardPVField = getStandardPVField();
 
 static void createStructureArrayRecord(
     PVDatabasePtr const &master,
-    ScalarType scalarType,
     String const &recordName)
 {
-    StructureConstPtr structure = standardField->scalar(
-        pvDouble,
-        String("value,alarm,timeStamp"));
     StringArray names(2);
     FieldConstPtrArray fields(2);
-    names[0] = "timeStamp";
+    names[0] = "name";
     names[1] = "value";
-    fields[0] = standardField->timeStamp();
-    fields[1] = fieldCreate->createStructureArray(structure);
+    fields[0] = fieldCreate->createScalar(pvString);
+    fields[1] = fieldCreate->createScalar(pvString);
+
+    StringArray topNames(1);
+    FieldConstPtrArray topFields(1);
+    topNames[0] = "value";
+    topFields[0] = fieldCreate->createStructureArray(
+        fieldCreate->createStructure(names, fields));
+    StructureConstPtr top = fieldCreate->createStructure(topNames,topFields);
+    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);
+    PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
+    bool result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
+}
+
+static void createRegularUnionArrayRecord(
+    PVDatabasePtr const &master,
+    String const &recordName)
+{
+    StringArray unionNames(2);
+    FieldConstPtrArray unionFields(2);
+    unionNames[0] = "string";
+    unionNames[1] = "stringArray";
+    unionFields[0] = fieldCreate->createScalar(pvString);
+    unionFields[1] = fieldCreate->createScalarArray(pvString);
+
+    StringArray names(1);
+    FieldConstPtrArray fields(1);
+    fields[0] = fieldCreate->createUnionArray(fieldCreate->createUnion(unionNames,unionFields));
+    names[0] = "value";
+    StructureConstPtr top = fieldCreate->createStructure(names,fields);
+    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);
+    PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
+    bool result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
+}
+
+static void createVariantUnionArrayRecord(
+    PVDatabasePtr const &master,
+    String const &recordName)
+{
+    StringArray names(1);
+    FieldConstPtrArray fields(1);
+    fields[0] = fieldCreate->createVariantUnionArray();
+    names[0] = "value";
     StructureConstPtr top = fieldCreate->createStructure(names,fields);
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);
     PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
@@ -98,7 +137,9 @@ void ExampleDatabase::create()
     createRecords(master,pvFloat,"exampleFloat",properties);
     createRecords(master,pvDouble,"exampleDouble",properties);
     createRecords(master,pvString,"exampleString",properties);
-    createStructureArrayRecord(master,pvDouble,"exampleStructureArray");
+    createStructureArrayRecord(master,"exampleStructureArray");
+    createRegularUnionArrayRecord(master,"exampleRegularUnionArray");
+    createVariantUnionArrayRecord(master,"exampleVariantUnionArray");
     recordName = "examplePowerSupply";
     PVStructurePtr pvStructure = createPowerSupply();
     PowerSupplyPtr psr =
