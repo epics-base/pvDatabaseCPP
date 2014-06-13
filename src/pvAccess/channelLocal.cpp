@@ -31,19 +31,19 @@ static StructureConstPtr nullStructure;
 static PVStructurePtr nullPVStructure;
 static BitSetPtr nullBitSet;
 static Status channelDestroyedStatus(
-    Status::Status::STATUSTYPE_ERROR,
+    Status::STATUSTYPE_ERROR,
     "was destroyed"
 );
 static Status illegalOffsetStatus(
-    Status::Status::STATUSTYPE_ERROR,
+    Status::STATUSTYPE_ERROR,
     "count must be >0"
 );
 static Status illegalCountStatus(
-    Status::Status::STATUSTYPE_ERROR,
+    Status::STATUSTYPE_ERROR,
     "count must be >0"
 );
 static Status illegalStrideStatus(
-    Status::Status::STATUSTYPE_ERROR,
+    Status::STATUSTYPE_ERROR,
     "stride must be >0"
 );
 
@@ -289,7 +289,7 @@ ChannelGetLocalPtr ChannelGetLocal::create(
         "");
     if(pvCopy==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelGet::shared_pointer channelGet;
         channelGetRequester->channelGetConnect(
@@ -440,7 +440,7 @@ ChannelPutLocalPtr ChannelPutLocal::create(
         "");
     if(pvCopy==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelPut::shared_pointer channelPut;
         PVStructurePtr pvStructure;
@@ -622,7 +622,7 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
         "getField");
     if(pvPutCopy==NULL || pvGetCopy==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,
+            Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
         ChannelPutGet::shared_pointer channelPutGet;
         channelPutGetRequester->channelPutGetConnect(
@@ -820,7 +820,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     PVFieldPtrArray const & pvFields = pvRequest->getPVFields();
     if(pvFields.size()!=1) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,"invalid pvRequest");
+            Status::STATUSTYPE_ERROR,"invalid pvRequest");
         ChannelArrayLocalPtr channelArray;
         ArrayConstPtr array;
         channelArrayRequester->channelArrayConnect(status,channelArray,array);
@@ -840,7 +840,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     pvField = pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(fieldName);
     if(pvField==NULL) {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,fieldName +" not found");
+            Status::STATUSTYPE_ERROR,fieldName +" not found");
         ChannelArrayLocalPtr channelArray;
         ArrayConstPtr array;
         channelArrayRequester->channelArrayConnect(
@@ -852,7 +852,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     && pvField->getField()->getType()!=unionArray)
     {
         Status status(
-            Status::Status::STATUSTYPE_ERROR,fieldName +" not array");
+            Status::STATUSTYPE_ERROR,fieldName +" not array");
         ChannelArrayLocalPtr channelArray;
         ArrayConstPtr array;
         channelArrayRequester->channelArrayConnect(
@@ -919,7 +919,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
         return array;
     }
     
-    Status status(Status::Status::STATUSTYPE_ERROR,
+    Status status(Status::STATUSTYPE_ERROR,
             "Logic error. Should not reach this code");
     ChannelArrayLocalPtr channelArray;
     ArrayConstPtr array;
@@ -988,7 +988,7 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
     pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
-      status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+      status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
     channelArrayRequester->getArrayDone(status,getPtrSelf(),pvCopy);
 }
@@ -1028,7 +1028,7 @@ void ChannelArrayLocal::putArray(
     pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
-        status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+        status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
     channelArrayRequester->putArrayDone(status,getPtrSelf());
 }
@@ -1048,7 +1048,7 @@ void ChannelArrayLocal::getLength()
     pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
-        status = Status(Status::Status::STATUSTYPE_ERROR,exceptionMessage);
+        status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
     channelArrayRequester->getLengthDone(status,getPtrSelf(),length,capacity);
 }
@@ -1067,7 +1067,7 @@ void ChannelArrayLocal::setLength(size_t length, size_t capacity)
     try {
         if(capacity>=0 && !pvArray->isCapacityMutable()) {
              Status status(
-                 Status::Status::STATUSTYPE_ERROR,
+                 Status::STATUSTYPE_ERROR,
                 "capacityImnutable");
              channelArrayRequester->setLengthDone(status,getPtrSelf());
              pvRecord->unlock();
