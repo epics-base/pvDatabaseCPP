@@ -8,12 +8,14 @@
  * @author Marty Kraimer
  * @date 2013.04
  */
-#define epicsExportSharedSymbols
 
 #include <pv/serverContext.h>
+#include <pv/syncChannelFind.h>
+
+#define epicsExportSharedSymbols
+
 #include <pv/channelProviderLocal.h>
 #include <pv/traceRecord.h>
-#include <pv/syncChannelFind.h>
 
 namespace epics { namespace pvDatabase { 
 

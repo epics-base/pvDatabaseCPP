@@ -12,11 +12,14 @@
 #include <sstream>
 
 #include <epicsThread.h>
-
 #include <pv/timeStamp.h>
-#include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
+
+#define epicsExportSharedSymbols
+
+#include <pv/channelProviderLocal.h>
+
 
 namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;

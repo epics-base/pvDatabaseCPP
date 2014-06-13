@@ -15,9 +15,10 @@
 
 #include <pv/thread.h>
 
+#define epicsExportSharedSymbols
+
 #include <pv/channelProviderLocal.h>
 #include <pv/pvCopyMonitor.h>
-
 
 namespace epics { namespace pvDatabase { 
 

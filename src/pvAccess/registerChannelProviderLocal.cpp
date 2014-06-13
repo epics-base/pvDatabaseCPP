@@ -31,6 +31,8 @@
 
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
+
+#define epicsExportSharedSymbols
 #include <pv/channelProviderLocal.h>
 
 using std::cout;

@@ -10,6 +10,12 @@
  */
 #ifndef PVCOPYMONITOR_H
 #define PVCOPYMONITOR_H
+
+#ifdef epicsExportSharedSymbols
+#   define pvCopyMonitorEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
+
 #include <string>
 #include <stdexcept>
 #include <memory>
@@ -20,6 +26,12 @@
 #include <pv/monitorPlugin.h>
 #include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
+
+#ifdef pvCopyMonitorEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef pvCopyMonitorEpicsExportSharedSymbols
+#endif
+
 #include <pv/pvDatabase.h>
 
 namespace epics { namespace pvDatabase { 
