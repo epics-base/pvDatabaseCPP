@@ -972,11 +972,11 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
             size_t length  = pvArray->getLength();
             if(length<=0) break;
             if(count<=0) {
-                 count = -offset + length/stride;
+                 count = (length -offset + stride -1)/stride;
                  if(count>0) ok = true;
                  break;
             }
-            size_t maxcount = -offset + length/stride;
+            size_t maxcount = (length -offset + stride -1)/stride;
             if(count>maxcount) count = maxcount;
             ok = true;
             break;
