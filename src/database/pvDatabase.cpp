@@ -70,7 +70,7 @@ void PVDatabase::unlock() {
     mutex.unlock();
 }
 
-PVRecordPtr PVDatabase::findRecord(String const& recordName)
+PVRecordPtr PVDatabase::findRecord(string const& recordName)
 {
     lock();
     try {
@@ -104,13 +104,13 @@ PVStringArrayPtr PVDatabase::getRecordNames()
         PVStringArrayPtr pvStringArray = static_pointer_cast<PVStringArray>
             (getPVDataCreate()->createPVScalarArray(pvString));
         size_t len = recordMap.size();
-        shared_vector<String> names(len);
+        shared_vector<string> names(len);
         PVRecordMap::iterator iter;
         size_t i = 0;
         for(iter = recordMap.begin(); iter!=recordMap.end(); ++iter) {
             names[i++] = (*iter).first;
         }
-        shared_vector<const String> temp(freeze(names));
+        shared_vector<const string> temp(freeze(names));
         pvStringArray->replace(temp);
         unlock();
         return pvStringArray;
@@ -128,7 +128,7 @@ bool PVDatabase::addRecord(PVRecordPtr const & record)
             unlock();
             return false;
         }
-        String recordName = record->getRecordName();
+        string recordName = record->getRecordName();
         PVRecordMap::iterator iter = recordMap.find(recordName);
         if(iter!=recordMap.end()) {
              unlock();
@@ -152,7 +152,7 @@ bool PVDatabase::removeRecord(PVRecordPtr const & record)
             unlock();
             return false;
         }
-        String recordName = record->getRecordName();
+        string recordName = record->getRecordName();
         PVRecordMap::iterator iter = recordMap.find(recordName);
         if(iter!=recordMap.end())  {
             PVRecordPtr pvRecord = (*iter).second;

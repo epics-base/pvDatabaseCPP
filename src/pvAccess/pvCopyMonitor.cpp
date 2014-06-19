@@ -20,14 +20,15 @@
 #include <pv/channelProviderLocal.h>
 #include <pv/pvCopyMonitor.h>
 
-namespace epics { namespace pvDatabase { 
-
 using namespace epics::pvData;
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::size_t;
 using std::cout;
 using std::endl;
+using std::string;
+
+namespace epics { namespace pvDatabase { 
 
 struct PVCopyMonitorFieldNode
 {
@@ -73,12 +74,12 @@ PVCopyMonitor::~PVCopyMonitor()
 void PVCopyMonitor::init(PVFieldPtr const &pvField)
 {
     size_t offset = pvCopy->getCopyOffset(pvField);
-    if(offset==String::npos) return;
+    if(offset==string::npos) return;
     PVStructurePtr pvOptions = pvCopy->getOptions(offset);
     if(pvOptions!=NULL) {
         PVStringPtr pvName = pvOptions->getSubField<PVString>("plugin");
         if(pvName!=NULL) {
-            String pluginName = pvName->get();
+            string pluginName = pvName->get();
             MonitorPluginManagerPtr manager = MonitorPluginManager::get();
             MonitorPluginCreatorPtr pluginCreator = manager->findPlugin(pluginName);
             if(pluginCreator!=NULL) {

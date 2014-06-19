@@ -44,7 +44,7 @@ class epicsShareClass  ArrayPerformance :
 public:
     POINTER_DEFINITIONS(ArrayPerformance);
     static ArrayPerformancePtr create(
-        epics::pvData::String const & recordName,
+        std::string const & recordName,
         size_t size,
         double delay);
     virtual ~ArrayPerformance();
@@ -53,7 +53,7 @@ public:
     virtual void process();
     virtual void destroy();
 private:
-    ArrayPerformance(epics::pvData::String const & recordName,
+    ArrayPerformance(std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure,
         size_t size,
         double delay);
@@ -81,7 +81,7 @@ private:
     ArrayPerformancePtr arrayPerformance;
     bool isDestroyed;
     bool runReturned;
-    epics::pvData::String threadName;
+    std::string threadName;
     epics::pvData::Mutex mutex;
     epics::pvData::int64 value;
     std::auto_ptr<epicsThread> thread;

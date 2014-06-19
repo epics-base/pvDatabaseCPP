@@ -38,10 +38,10 @@ using namespace epics::pvDatabase;
 
 int main(int argc,char *argv[])
 {
-    String channelName("arrayPerformance");
+    string channelName("arrayPerformance");
     int queueSize = 2;
     double waitTime = 0.0;
-    if(argc==2 && String(argv[1])==String("-help")) {
+    if(argc==2 && string(argv[1])==string("-help")) {
         cout << "longArrayMonitorMain channelName queueSize waitTime" << endl;
         cout << "default" << endl;
         cout << "longArrayMonitorMain " << channelName << " ";

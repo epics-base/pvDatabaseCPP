@@ -575,10 +575,10 @@ public:
     virtual void destroy();
 
     static PVRecordPtr create(
-        epics::pvData::String const &amp; recordName,
+        std::string const &amp; recordName,
         epics::pvData::PVStructurePtr const &amp; pvStructure);
     virtual ~PVRecord();
-    epics::pvData::String getRecordName();
+    std::string getRecordName();
     PVRecordStructurePtr getPVRecordStructure();
     PVRecordFieldPtr findPVRecordField(
         epics::pvData::PVFieldPtr const &amp; pvField);
@@ -596,13 +596,13 @@ public:
     bool removeListener(PVListenerPtr const &amp; pvListener);
     void beginGroupPut();
     void endGroupPut();
-    epics::pvData::String getRequesterName() {return getRecordName();}
+    std::string getRequesterName() {return getRecordName();}
     virtual void message(
-        epics::pvData::String const &amp; message,
+        std::string const &amp; message,
         epics::pvData::MessageType messageType);
     void message(
         PVRecordFieldPtr const &amp; pvRecordField,
-        epics::pvData::String const &amp; message,
+        std::string const &amp; message,
         epics::pvData::MessageType messageType);
     void toString(epics::pvData::StringBuilder buf);
     void toString(epics::pvData::StringBuilder buf,int indentLevel);
@@ -610,7 +610,7 @@ public:
     void setTraceLevel(int level);
 protected:
     PVRecord(
-        epics::pvData::String const &amp; recordName,
+        std::string const &amp; recordName,
         epics::pvData::PVStructurePtr const &amp; pvStructure);
     void initPVRecord();
     epics::pvData::PVStructurePtr getPVStructure();
@@ -742,14 +742,14 @@ public:
     virtual void destroy();
     PVRecordStructurePtr getParent();
     epics::pvData::PVFieldPtr getPVField();
-    epics::pvData::String getFullFieldName();
-    epics::pvData::String getFullName();
+    std::string getFullFieldName();
+    std::string getFullName();
     PVRecordPtr getPVRecord();
     bool addListener(PVListenerPtr const &amp; pvListener);
     virtual void removeListener(PVListenerPtr const &amp; pvListener);
     virtual void postPut();
     virtual void message(
-        epics::pvData::String const &amp; message,
+        std::string const &amp; message,
         epics::pvData::MessageType messageType);
 protected:
     PVRecordFieldPtr getPtrSelf()
@@ -896,13 +896,13 @@ public:
     static PVDatabasePtr getMaster();
     virtual ~PVDatabase();
     virtual void destroy();
-    PVRecordPtr findRecord(epics::pvData::String const&amp; recordName);
+    PVRecordPtr findRecord(std::string const&amp; recordName);
     bool addRecord(PVRecordPtr const &amp; record);
     epics::pvData::PVStringArrayPtr getRecordNames();
     bool removeRecord(PVRecordPtr const &amp; record);
-    virtual epics::pvData::String getRequesterName();
+    virtual std::string getRequesterName();
     virtual void message(
-        epics::pvData::String const &amp;message,
+        std::string const &amp;message,
         epics::pvData::MessageType messageType);
 private:
     PVDatabase();
@@ -1227,13 +1227,13 @@ class ExampleServer :
 public:
     POINTER_DEFINITIONS(ExampleServer);
     static ExampleServerPtr create(
-        epics::pvData::String const &amp; recordName);
+        std::string const &amp; recordName);
     virtual ~ExampleServer();
     virtual void destroy();
     virtual bool init();
     virtual void process();
 private:
-    ExampleServer(epics::pvData::String const &amp; recordName,
+    ExampleServer(std::string const &amp; recordName,
         epics::pvData::PVStructurePtr const &amp; pvStructure);
 
     epics::pvData::PVStringPtr pvArgumentValue;
@@ -1271,7 +1271,7 @@ private:
 <p>The implementation of create method is:</p>
 <pre>
 ExampleServerPtr ExampleServer::create(
-    epics::pvData::String const &amp; recordName)
+    std::string const &amp; recordName)
 {
     StandardPVFieldPtr standardPVField = getStandardPVField();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -1302,7 +1302,7 @@ This:
 <p>The private constructor method is:</p>
 <pre>
 ExampleServer::ExampleServer(
-    epics::pvData::String const &amp; recordName,
+    std::string const &amp; recordName,
     epics::pvData::PVStructurePtr const &amp; pvStructure)
 : PVRecord(recordName,pvStructure)
 {
@@ -1576,9 +1576,9 @@ class ExampleLink :
 public:
     POINTER_DEFINITIONS(ExampleLink);
     static ExampleLinkPtr create(
-        epics::pvData::String const &amp; recordName,
-        epics::pvData::String const &amp; providerName,
-        epics::pvData::String const &amp; channelName
+        std::string const &amp; recordName,
+        std::string const &amp; providerName,
+        std::string const &amp; channelName
         );
     virtual ~ExampleLink() {}
     virtual void destroy();

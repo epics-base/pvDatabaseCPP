@@ -39,15 +39,15 @@ using namespace epics::pvDatabase;
 int main(int argc,char *argv[])
 {
     bool result(false);
-    String recordName;
+    string recordName;
     recordName = "arrayPerformance";
     size_t size = 10000000;
     double delay = .0001;
-    String providerName("local");
+    string providerName("local");
     size_t nMonitor = 1;
     int queueSize = 2;
     double waitTime = 0.0;
-    if(argc==2 && String(argv[1])==String("-help")) {
+    if(argc==2 && string(argv[1])==string("-help")) {
         cout << "arrayPerformanceMain recordName size";
         cout << " delay providerName nMonitor queueSize waitTime" << endl;
         cout << "default" << endl;

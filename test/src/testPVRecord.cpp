@@ -34,11 +34,12 @@ using namespace std;
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvDatabase;
+using std::string;
 
 static PVRecordPtr createScalar(
-    String const & recordName,
+    string const & recordName,
     ScalarType scalarType,
-    String const & properties)
+    string const & properties)
 {
     PVStructurePtr pvStructure = getStandardPVField()->scalar(scalarType,properties);
     PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
@@ -47,9 +48,9 @@ static PVRecordPtr createScalar(
 }
 
 static PVRecordPtr createScalarArray(
-    String const & recordName,
+    string const & recordName,
     ScalarType scalarType,
-    String const & properties)
+    string const & properties)
 {
     PVStructurePtr pvStructure = getStandardPVField()->scalarArray(scalarType,properties);
     return PVRecord::create(recordName,pvStructure);

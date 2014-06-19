@@ -26,13 +26,13 @@ class epicsShareClass RecordListRecord :
 public:
     POINTER_DEFINITIONS(RecordListRecord);
     static RecordListRecordPtr create(
-        epics::pvData::String const & recordName);
+        std::string const & recordName);
     virtual ~RecordListRecord();
     virtual void destroy();
     virtual bool init();
     virtual void process();
 private:
-    RecordListRecord(epics::pvData::String const & recordName,
+    RecordListRecord(std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     epics::pvData::PVStringPtr database;
     epics::pvData::PVStringPtr regularExpression;

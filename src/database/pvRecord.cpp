@@ -22,7 +22,7 @@ using namespace std;
 namespace epics { namespace pvDatabase {
 
 PVRecordPtr PVRecord::create(
-    String const &recordName,
+    string const &recordName,
     PVStructurePtr const & pvStructure)
 {
     PVRecordPtr pvRecord(new PVRecord(recordName,pvStructure));
@@ -35,7 +35,7 @@ PVRecordPtr PVRecord::create(
 
 
 PVRecord::PVRecord(
-    String const & recordName,
+    string const & recordName,
     PVStructurePtr const & pvStructure)
 : recordName(recordName),
   pvStructure(pvStructure),
@@ -103,7 +103,7 @@ void PVRecord::destroy()
     }
 }
 
-String PVRecord::getRecordName() {return recordName;}
+string PVRecord::getRecordName() {return recordName;}
 
 PVRecordStructurePtr PVRecord::getPVRecordStructure() {return pvRecordStructure;}
 
@@ -346,15 +346,17 @@ void PVRecord::endGroupPut()
    }
 }
 
-void PVRecord::toString(StringBuilder buf)
+void PVRecord::toString(string* buf)
 {
     toString(buf,0);
 }
 
-void PVRecord::toString(StringBuilder buf,int indentLevel)
+void PVRecord::toString(string* buf,int indentLevel)
 {
-    *buf += "\nrecord " + recordName + " ";
-    pvRecordStructure->getPVStructure()->toString(buf, indentLevel);
+    std::ostringstream oss;
+    // TODO indent ignored
+    oss << endl << recordName << ' ' << *pvRecordStructure->getPVStructure();
+    *buf += oss.str();
 }
 
 PVRecordField::PVRecordField(
@@ -373,7 +375,7 @@ void PVRecordField::init()
     fullFieldName = pvField->getFieldName();
     PVRecordStructurePtr pvParent = parent;
     while(pvParent.get()!= NULL) {
-        String parentName = pvParent->getPVField()->getFieldName();
+        string parentName = pvParent->getPVField()->getFieldName();
         if(parentName.size()>0) {
             fullFieldName = pvParent->getPVField()->getFieldName()
                 + '.' + fullFieldName;
@@ -404,9 +406,9 @@ PVRecordStructurePtr PVRecordField::getParent() {return parent;}
 
 PVFieldPtr PVRecordField::getPVField() {return pvField;}
 
-String PVRecordField::getFullFieldName() {return fullFieldName; }
+string PVRecordField::getFullFieldName() {return fullFieldName; }
 
-String PVRecordField::getFullName() {return fullName; }
+string PVRecordField::getFullName() {return fullName; }
 
 PVRecordPtr PVRecordField::getPVRecord() {return pvRecord;}
 

@@ -20,7 +20,7 @@ using namespace std;
 namespace epics { namespace pvDatabase { 
 
 RecordListRecordPtr RecordListRecord::create(
-    epics::pvData::String const & recordName)
+    std::string const & recordName)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -52,7 +52,7 @@ RecordListRecordPtr RecordListRecord::create(
 }
 
 RecordListRecord::RecordListRecord(
-    epics::pvData::String const & recordName,
+    std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure)
 {
@@ -93,11 +93,11 @@ void RecordListRecord::process()
 {
     PVStringArrayPtr pvNames = PVDatabase::getMaster()->getRecordNames();
     names->replace(pvNames->view());
-    String message("");
+    string message("");
     if(database->get().compare("master")!=0) {
         message += " can only access master ";
     }
-    String regEx = regularExpression->get();
+    string regEx = regularExpression->get();
     if(regEx.compare("")!=0 && regEx.compare(".*")!=0) {
          message += " regularExpression not implemented ";
     }

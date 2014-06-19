@@ -49,8 +49,8 @@ class epicsShareClass  LongArrayMonitor :
 public:
     POINTER_DEFINITIONS(LongArrayMonitor);
     static LongArrayMonitorPtr create(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         int queueSize = 1,
         double waitTime = 0.0);
     ~LongArrayMonitor();
@@ -60,8 +60,8 @@ public:
 private:
     static epics::pvData::Mutex printMutex;
     bool init(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         int queueSize,
         double waitTime);
     LongArrayMonitorPtr getPtrSelf()

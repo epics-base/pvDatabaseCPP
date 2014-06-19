@@ -86,21 +86,21 @@ public:
     POINTER_DEFINITIONS(ChannelProviderLocal);
     virtual ~ChannelProviderLocal();
     virtual void destroy();
-    virtual  epics::pvData::String getProviderName();
+    virtual  std::string getProviderName();
     virtual epics::pvAccess::ChannelFind::shared_pointer channelFind(
-        epics::pvData::String const &channelName,
+        std::string const &channelName,
         epics::pvAccess::ChannelFindRequester::shared_pointer const & channelFindRequester);
     virtual epics::pvAccess::ChannelFind::shared_pointer channelList(
         epics::pvAccess::ChannelListRequester::shared_pointer const & channelListRequester);
     virtual epics::pvAccess::Channel::shared_pointer createChannel(
-        epics::pvData::String const &channelName,
+        std::string const &channelName,
         epics::pvAccess::ChannelRequester::shared_pointer const &channelRequester,
         short priority);
     virtual epics::pvAccess::Channel::shared_pointer createChannel(
-        epics::pvData::String const &channelName,
+        std::string const &channelName,
         epics::pvAccess::ChannelRequester::shared_pointer const &channelRequester,
         short priority,
-        epics::pvData::String const &address);
+        std::string const &address);
 private:
     shared_pointer getPtrSelf()
     {
@@ -129,22 +129,22 @@ public:
     );
     virtual ~ChannelLocal();
     virtual void destroy();
-    virtual epics::pvData::String getRequesterName();
+    virtual std::string getRequesterName();
     virtual void message(
-        epics::pvData::String const & message,
+        std::string const & message,
         epics::pvData::MessageType messageType);
     virtual epics::pvAccess::ChannelProvider::shared_pointer getProvider()
     {
         return provider;
     }
-    virtual epics::pvData::String getRemoteAddress();
+    virtual std::string getRemoteAddress();
     virtual epics::pvAccess::Channel::ConnectionState getConnectionState();
-    virtual epics::pvData::String getChannelName();
+    virtual std::string getChannelName();
     virtual epics::pvAccess::ChannelRequester::shared_pointer getChannelRequester();
     virtual bool isConnected();
     virtual void getField(
         epics::pvAccess::GetFieldRequester::shared_pointer const &requester,
-        epics::pvData::String const & subField);
+        std::string const & subField);
     virtual epics::pvAccess::AccessRights getAccessRights(
         epics::pvData::PVField::shared_pointer const &pvField);
     virtual epics::pvAccess::ChannelProcess::shared_pointer createChannelProcess(
@@ -169,7 +169,7 @@ public:
         epics::pvAccess::ChannelArrayRequester::shared_pointer const &requester,
         epics::pvData::PVStructurePtr const &pvRequest);
     virtual void printInfo();
-    virtual void printInfo(epics::pvData::StringBuilder out);
+    virtual void printInfo(std::ostream& out);
     virtual void detach(PVRecordPtr const &pvRecord);
 protected:
     shared_pointer getPtrSelf()

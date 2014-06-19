@@ -24,9 +24,10 @@ using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
 using std::ostringstream;
+using std::string;
 
-static String requesterName("longArrayGet");
-static String request("value,timeStamp,alarm");
+static string requesterName("longArrayGet");
+static string request("value,timeStamp,alarm");
 static epics::pvData::Mutex printMutex;
 
 class LongArrayChannelRequester;
@@ -52,8 +53,8 @@ public:
             isDestroyed = true;
             longArrayChannelGet.reset();
         }
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    virtual string  getRequesterName() { return requesterName;}
+    virtual void message(string const & message, MessageType messageType)
        {
             Lock guard(printMutex);
             cout << requesterName << " message " << message << endl;
@@ -93,8 +94,8 @@ public:
             isDestroyed = true;
             longArrayChannelGet.reset();
         }
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    virtual string  getRequesterName() { return requesterName;}
+    virtual void message(string const & message, MessageType messageType)
        {
             Lock guard(printMutex);
             cout << requesterName << " message " << message << endl;
@@ -126,8 +127,8 @@ class LongArrayChannelGet :
 {
 public:
     LongArrayChannelGet(
-        String providerName,
-        String channelName,
+        string  providerName,
+        string  channelName,
         int iterBetweenCreateChannel,
         int iterBetweenCreateChannelGet,
         double delayTime)
@@ -144,7 +145,7 @@ public:
     bool init();
     virtual void destroy();
     virtual void run();
-    void message(String const & message, MessageType messageType)
+    void message(string const & message, MessageType messageType)
        {
             Lock guard(printMutex);
             cout << requesterName << " message " << message << endl;
@@ -170,14 +171,14 @@ private:
         return shared_from_this();
     }
     size_t checkResult();
-    String providerName;
-    String channelName;
+    string  providerName;
+    string  channelName;
     int iterBetweenCreateChannel;
     int iterBetweenCreateChannelGet;
     double delayTime;
     bool isDestroyed;
     bool runReturned;
-    epics::pvData::String threadName;
+    std::string threadName;
     Status status;
     Event event;
     Mutex mutex;
@@ -203,7 +204,7 @@ void LongArrayChannelRequester::channelStateChange(
     Channel::shared_pointer const & channel,
     Channel::ConnectionState connectionState)
 {
-    String mess(Channel::ConnectionStateNames[connectionState]);
+    string  mess(Channel::ConnectionStateNames[connectionState]);
     message(mess,infoMessage);
     Lock guard(mutex);
     if(isDestroyed) return;
@@ -279,7 +280,7 @@ void LongArrayChannelGet::channelGetConnect(
         }
     }
     if(!structureOK) {
-        String mess("channelGetConnect: illegal structure");
+        string  mess("channelGetConnect: illegal structure");
         message(mess,errorMessage);
         this->status = Status(Status::STATUSTYPE_ERROR,mess);
     }
@@ -487,8 +488,8 @@ size_t LongArrayChannelGet::checkResult()
 
 
 LongArrayGetPtr LongArrayGet::create(
-    String const &providerName,
-    String const & channelName,
+    string  const &providerName,
+    string  const & channelName,
     int iterBetweenCreateChannel,
     int iterBetweenCreateChannelGet,
     double delayTime)
@@ -505,8 +506,8 @@ LongArrayGetPtr LongArrayGet::create(
 }
 
 LongArrayGet::LongArrayGet(
-    String const &providerName,
-    String const & channelName,
+    string  const &providerName,
+    string  const & channelName,
     int iterBetweenCreateChannel,
     int iterBetweenCreateChannelGet,
     double delayTime)

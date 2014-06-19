@@ -25,11 +25,12 @@ using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::string;
 using std::ostringstream;
 
-static String requesterName("longArrayMonitor");
+static string  requesterName("longArrayMonitor");
 
-static void messagePvt(String const & message, MessageType messageType)
+static void messagePvt(string const & message, MessageType messageType)
 {
     cout << requesterName << " message " << message << endl;
 }
@@ -43,8 +44,8 @@ public:
     {}
     virtual ~LAMChannelRequester(){}
     virtual void destroy(){longArrayMonitor.reset();}
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    virtual string  getRequesterName() { return requesterName;}
+    virtual void message(string const & message, MessageType messageType)
        { messagePvt(message,messageType);}
     virtual void channelCreated(const Status& status, Channel::shared_pointer const & channel);
     virtual void channelStateChange(Channel::shared_pointer const & channel, Channel::ConnectionState connectionState);
@@ -83,8 +84,8 @@ public:
     void init();
     virtual void destroy();
     virtual void run();
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    virtual string  getRequesterName() { return requesterName;}
+    virtual void message(string const & message, MessageType messageType)
        { messagePvt(message,messageType);}
     virtual void monitorConnect(Status const & status,
         MonitorPtr const & monitor, StructureConstPtr const & structure);
@@ -95,7 +96,7 @@ private:
     double waitTime;
     bool isDestroyed;
     bool runReturned;
-    epics::pvData::String threadName;
+    std::string threadName;
     Event event;
     Mutex mutex;
     std::auto_ptr<epicsThread> thread;
@@ -150,7 +151,7 @@ void LAMMonitorRequester::monitorConnect(Status const & status,
         }
     }
     if(!structureOK) {
-        String message("monitorConnect: illegal structure");
+        string  message("monitorConnect: illegal structure");
         messagePvt(message,errorMessage);
         longArrayMonitor->status = Status(Status::STATUSTYPE_ERROR,message);
     }
@@ -200,12 +201,8 @@ void LAMMonitorRequester::run()
                     out << "first " << first << " last " << last ;
                     BitSetPtr changed = monitorElement->changedBitSet;
                     BitSetPtr overrun = monitorElement->overrunBitSet;
-                    String buffer;
-                    changed->toString(&buffer);
-                    out << " changed " << buffer;
-                    buffer.clear();
-                    overrun->toString(&buffer);
-                    out << " overrun " << buffer;
+                    out << " changed " << *changed;
+                    out << " overrun " << *overrun;
                     double elementsPerSec = nElements;
                     elementsPerSec /= diff;
                     if(elementsPerSec>10.0e9) {
@@ -246,8 +243,8 @@ void LAMMonitorRequester::unlisten(MonitorPtr const & monitor)
 
 
 LongArrayMonitorPtr LongArrayMonitor::create(
-    String const &providerName,
-    String const & channelName,
+    string  const &providerName,
+    string  const & channelName,
     int queueSize,
     double waitTime)
 {
@@ -261,8 +258,8 @@ LongArrayMonitor::LongArrayMonitor() {}
 LongArrayMonitor::~LongArrayMonitor() {}
 
 bool LongArrayMonitor::init(
-    String const &providerName,
-    String const &channelName,
+    string  const &providerName,
+    string  const &channelName,
     int queueSize,
     double waitTime)
 {
@@ -278,7 +275,7 @@ bool LongArrayMonitor::init(
     channel = channelProvider->createChannel(channelName,channelRequester,0);
     event.wait();
     if(!status.isOK()) return false;
-    String request("record[queueSize=");
+    string  request("record[queueSize=");
     char buff[20];
     sprintf(buff,"%d",queueSize);
     request += buff;

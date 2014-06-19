@@ -29,13 +29,13 @@ class epicsShareClass ExampleServer :
 public:
     POINTER_DEFINITIONS(ExampleServer);
     static ExampleServerPtr create(
-        epics::pvData::String const & recordName);
+        std::string const & recordName);
     virtual ~ExampleServer();
     virtual void destroy();
     virtual bool init();
     virtual void process();
 private:
-    ExampleServer(epics::pvData::String const & recordName,
+    ExampleServer(std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
 
     epics::pvData::PVStringPtr pvArgumentValue;

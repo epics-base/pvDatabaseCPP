@@ -49,8 +49,8 @@ class epicsShareClass  LongArrayGet :
 public:
     POINTER_DEFINITIONS(LongArrayGet);
     static LongArrayGetPtr create(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         int iterBetweenCreateChannel = 0,
         int iterBetweenCreateChannelGet = 0,
         double delayTime = 0.0);
@@ -62,15 +62,15 @@ private:
         return shared_from_this();
     }
     LongArrayGet(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         int iterBetweenCreateChannel = 0,
         int iterBetweenCreateChannelGet = 0,
         double delayTime = 0.0);
     bool init();
 
-    epics::pvData::String providerName;
-    epics::pvData::String channelName;
+    std::string providerName;
+    std::string channelName;
     int iterBetweenCreateChannel;
     int iterBetweenCreateChannelGet;
     double delayTime;

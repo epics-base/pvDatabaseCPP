@@ -32,7 +32,7 @@ class PowerSupply :
 public:
     POINTER_DEFINITIONS(PowerSupply);
     static PowerSupplyPtr create(
-        epics::pvData::String const & recordName,
+        std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     virtual ~PowerSupply();
     virtual void destroy();
@@ -43,7 +43,7 @@ public:
     double getVoltage();
     double getCurrent();
 private:
-    PowerSupply(epics::pvData::String const & recordName,
+    PowerSupply(std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     epics::pvData::PVDoublePtr pvCurrent;
     epics::pvData::PVDoublePtr pvPower;

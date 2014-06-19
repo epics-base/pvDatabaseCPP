@@ -26,7 +26,7 @@ using std::endl;
 using std::ostringstream;
 
 ArrayPerformancePtr ArrayPerformance::create(
-    epics::pvData::String const & recordName,
+    std::string const & recordName,
         size_t size,
         double delay)
 {
@@ -39,7 +39,7 @@ ArrayPerformancePtr ArrayPerformance::create(
 }
 
 ArrayPerformance::ArrayPerformance(
-    epics::pvData::String const & recordName,
+    std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure,
         size_t size,
         double delay)

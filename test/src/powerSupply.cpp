@@ -13,8 +13,10 @@
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
 
-namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
+using std::string;
+
+namespace epics { namespace pvDatabase { 
 
 PVStructurePtr createPowerSupply()
 {
@@ -31,7 +33,7 @@ PVStructurePtr createPowerSupply()
     powerSupply.push_back(standardField->alarm());
     names.push_back("timeStamp");
     powerSupply.push_back(standardField->timeStamp());
-    String properties("alarm,display");
+    string properties("alarm,display");
     names.push_back("voltage");
     powerSupply.push_back(standardField->scalar(pvDouble,properties));
     names.push_back("power");
@@ -42,11 +44,8 @@ PVStructurePtr createPowerSupply()
             fieldCreate->createStructure(names,powerSupply));
 }
 
-using namespace epics::pvData;
-
-
 PowerSupplyPtr PowerSupply::create(
-    String const & recordName,
+    string const & recordName,
     PVStructurePtr const & pvStructure)
 {
     PowerSupplyPtr pvRecord(
@@ -56,7 +55,7 @@ PowerSupplyPtr PowerSupply::create(
 }
 
 PowerSupply::PowerSupply(
-    String const & recordName,
+    string const & recordName,
     PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure)
 {
@@ -97,7 +96,7 @@ bool PowerSupply::init()
         std::cerr << "no alarm" << std::endl;
         return false;
     }
-    String name;
+    string name;
     name = "current.value";
     pvField = pvStructure->getSubField(name);
     if(pvField.get()==NULL) {

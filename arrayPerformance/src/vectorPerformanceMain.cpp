@@ -140,7 +140,7 @@ int main(int argc,char *argv[])
     size_t size = 50000000;
     double delay = .01;
     size_t nThread = 1;
-    if(argc==2 && String(argv[1])==String("-help")) {
+    if(argc==2 && string(argv[1])==string("-help")) {
         cout << "vectorPerformanceMain size delay nThread" << endl;
         cout << "default" << endl;
         cout << "vectorPerformance ";

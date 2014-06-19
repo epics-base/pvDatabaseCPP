@@ -42,9 +42,7 @@ int main(int argc,char *argv[])
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "exampleDatabase\n";
     PVStringArrayPtr pvNames = master->getRecordNames();
-    String buffer;
-    pvNames->toString(&buffer);
-    cout << "recordNames" << endl << buffer << endl;
+    cout << "recordNames" << endl << *pvNames << endl;
     string str;
     while(true) {
         cout << "Type exit to stop: \n";

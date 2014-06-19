@@ -42,7 +42,7 @@ static StandardPVFieldPtr standardPVField = getStandardPVField();
 
 static void createStructureArrayRecord(
     PVDatabasePtr const &master,
-    String const &recordName)
+    string const &recordName)
 {
     StringArray names(2);
     FieldConstPtrArray fields(2);
@@ -65,7 +65,7 @@ static void createStructureArrayRecord(
 
 static void createRegularUnionArrayRecord(
     PVDatabasePtr const &master,
-    String const &recordName)
+    string const &recordName)
 {
     StringArray unionNames(2);
     FieldConstPtrArray unionFields(2);
@@ -87,7 +87,7 @@ static void createRegularUnionArrayRecord(
 
 static void createVariantUnionArrayRecord(
     PVDatabasePtr const &master,
-    String const &recordName)
+    string const &recordName)
 {
     StringArray names(1);
     FieldConstPtrArray fields(1);
@@ -103,10 +103,10 @@ static void createVariantUnionArrayRecord(
 static void createRecords(
     PVDatabasePtr const &master,
     ScalarType scalarType,
-    String const &recordNamePrefix,
-    String const &properties)
+    string const &recordNamePrefix,
+    string const &properties)
 {
-    String recordName = recordNamePrefix;
+    string recordName = recordNamePrefix;
     PVStructurePtr pvStructure = standardPVField->scalar(scalarType,properties);
     PVRecordPtr pvRecord = PVRecord::create(recordName,pvStructure);
     bool result = master->addRecord(pvRecord);
@@ -121,13 +121,13 @@ void ExampleDatabase::create()
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     PVRecordPtr pvRecord;
-    String recordName;
+    string recordName;
     bool result(false);
     recordName = "traceRecordPGRPC";
     pvRecord = TraceRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    String properties;
+    string properties;
     properties = "alarm,timeStamp";
     createRecords(master,pvBoolean,"exampleBoolean",properties);
     createRecords(master,pvByte,"exampleByte",properties);

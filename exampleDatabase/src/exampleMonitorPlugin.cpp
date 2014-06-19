@@ -13,12 +13,14 @@
 #include <pv/monitorPlugin.h>
 #include <pv/exampleMonitorPlugin.h>
 
-namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using std::cout;
 using std::endl;
+using std::string;
 
-static String pluginName("onChange");
+namespace epics { namespace pvDatabase { 
+
+static string pluginName("onChange");
 static ConvertPtr convert(getConvert());
 
 class OnChangePlugin;
@@ -42,13 +44,13 @@ public:
             PVStringPtr pvString =
                 pvFieldOptions->getSubField<PVString>("raiseMonitor");
                 if(pvString!=NULL) {
-                    String value = pvString->get();
+                    string value = pvString->get();
                     if(value.compare("false")==0) raiseMonitor = false;
                 }
         }
         return true;
    }
-   virtual String &getName(){return pluginName;}
+   virtual string &getName(){return pluginName;}
    virtual bool causeMonitor(
         PVFieldPtr const &pvNew,
         PVStructurePtr const &pvTop,
@@ -67,7 +69,7 @@ private:
 class OnChangePluginCreator : public MonitorPluginCreator
 {
 public:
-    virtual String &getName(){return pluginName;}
+    virtual string &getName(){return pluginName;}
     virtual MonitorPluginPtr create(
         FieldConstPtr const &field,
         StructureConstPtr const &top,

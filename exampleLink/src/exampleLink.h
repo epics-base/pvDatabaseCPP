@@ -36,9 +36,9 @@ class epicsShareClass ExampleLink :
 public:
     POINTER_DEFINITIONS(ExampleLink);
     static ExampleLinkPtr create(
-        epics::pvData::String const & recordName,
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName
+        std::string const & recordName,
+        std::string const & providerName,
+        std::string const & channelName
         );
     virtual ~ExampleLink() {}
     virtual void destroy();
@@ -59,20 +59,20 @@ public:
         epics::pvAccess::ChannelGet::shared_pointer const & channelGet,
         epics::pvData::PVStructurePtr const & pvStructure,
         epics::pvData::BitSetPtr const &bitSet);
-    virtual epics::pvData::String getRequesterName() {return channelName;}
+    virtual std::string getRequesterName() {return channelName;}
     virtual void message(
-        epics::pvData::String const & message,
+        std::string const & message,
         epics::pvData::MessageType messageType)
         {
            std::cout << "Why is ExampleLink::message called\n";
         }
 private:
-    ExampleLink(epics::pvData::String const & recordName,
-        epics::pvData::String providerName,
-        epics::pvData::String channelName,
+    ExampleLink(std::string const & recordName,
+        std::string providerName,
+        std::string channelName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::String providerName;
-    epics::pvData::String channelName;
+    std::string providerName;
+    std::string channelName;
     epics::pvData::ConvertPtr convert;
     epics::pvData::PVDoubleArrayPtr pvValue;
     epics::pvData::PVTimeStamp pvTimeStamp;

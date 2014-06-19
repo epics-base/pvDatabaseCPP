@@ -24,9 +24,10 @@ using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
 using std::ostringstream;
+using std::string;
 
-static String requesterName("longArrayPut");
-static String request("value");
+static string requesterName("longArrayPut");
+static string request("value");
 static epics::pvData::Mutex printMutex;
 
 class LongArrayChannelPut :
@@ -37,8 +38,8 @@ class LongArrayChannelPut :
 {
 public:
     LongArrayChannelPut(
-        String providerName,
-        String channelName,
+        string providerName,
+        string channelName,
         size_t arraySize,
         int iterBetweenCreateChannel,
         int iterBetweenCreateChannelPut,
@@ -57,8 +58,8 @@ public:
     bool init();
     virtual void destroy();
     virtual void run();
-    virtual String getRequesterName() { return requesterName;}
-    virtual void message(String const & message, MessageType messageType)
+    virtual string getRequesterName() { return requesterName;}
+    virtual void message(string const & message, MessageType messageType)
        {
            Lock guard(printMutex);
            cout << requesterName << " message " << message << endl;
@@ -86,15 +87,15 @@ private:
     {
         return shared_from_this();
     }
-    String providerName;
-    String channelName;
+    string providerName;
+    string channelName;
     size_t arraySize;
     int iterBetweenCreateChannel;
     int iterBetweenCreateChannelPut;
     double delayTime;
     bool isDestroyed;
     bool runReturned;
-    epics::pvData::String threadName;
+    std::string threadName;
     Status status;
     Event event;
     Mutex mutex;
@@ -198,7 +199,7 @@ void LongArrayChannelPut::channelPutConnect(
         }
     }
     if(!structureOK) {
-        String mess("channelPutConnect: illegal structure");
+        string mess("channelPutConnect: illegal structure");
         message(mess,errorMessage);
         this->status = Status(Status::STATUSTYPE_ERROR,mess);
     }
@@ -323,8 +324,8 @@ void LongArrayChannelPut::putDone(
 
 
 LongArrayPutPtr LongArrayPut::create(
-    String const &providerName,
-    String const & channelName,
+    string const &providerName,
+    string const & channelName,
     size_t arraySize,
     int iterBetweenCreateChannel,
     int iterBetweenCreateChannelPut,
@@ -343,8 +344,8 @@ LongArrayPutPtr LongArrayPut::create(
 }
 
 LongArrayPut::LongArrayPut(
-    String const &providerName,
-    String const & channelName,
+    string const &providerName,
+    string const & channelName,
     size_t arraySize,
     int iterBetweenCreateChannel,
     int iterBetweenCreateChannelPut,

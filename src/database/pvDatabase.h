@@ -35,7 +35,7 @@ namespace epics { namespace pvDatabase {
 
 class PVRecord;
 typedef std::tr1::shared_ptr<PVRecord> PVRecordPtr;
-typedef std::map<epics::pvData::String,PVRecordPtr> PVRecordMap;
+typedef std::map<std::string,PVRecordPtr> PVRecordMap;
 
 class PVRecordField;
 typedef std::tr1::shared_ptr<PVRecordField> PVRecordFieldPtr;
@@ -97,7 +97,7 @@ public:
      * @return A shared pointer to the newly created record.
      */
     static PVRecordPtr create(
-        epics::pvData::String const & recordName,
+        std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     /**
      * The Destructor. Must be virtual.
@@ -107,7 +107,7 @@ public:
      * Get the name of the record.
      * @return The name.
      */
-    epics::pvData::String getRecordName();
+    std::string getRecordName();
     /**
      * Get the top level PVStructure.
      * @return The shared pointer.
@@ -187,13 +187,15 @@ public:
      *  Calls the next method with indentLevel = 0.
      * @param buf String Builder.
      */
-    void toString(epics::pvData::StringBuilder buf);
+    // TODO
+    void toString(std::string* buf);
     /**
      * Dumps the data from the top level PVStructure. 
      * @param buf String Builder.
      * @param indentLevel The indentation level.
      */
-    void toString(epics::pvData::StringBuilder buf,int indentLevel);
+    // TODO
+    void toString(std::string* buf,int indentLevel);
     /**
      * get trace level (0,1,2) means (nothing,lifetime,process)
      * @return the level
@@ -211,7 +213,7 @@ protected:
      * @param pvStructure The top level PVStructutre
      */
     PVRecord(
-        epics::pvData::String const & recordName,
+        std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     /**
      * Initializes the base class. Must be called by derived classes.
@@ -230,7 +232,7 @@ private:
     PVRecordFieldPtr findPVRecordField(
         PVRecordStructurePtr const & pvrs,
         epics::pvData::PVFieldPtr const & pvField);
-    epics::pvData::String recordName;
+    std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
     epics::pvData::ConvertPtr convert;
     PVRecordStructurePtr pvRecordStructure;
@@ -284,12 +286,12 @@ public:
      * Get the full name of the field, i.e. field,field,..
      * @return The full name.
      */
-    epics::pvData::String getFullFieldName();
+    std::string getFullFieldName();
     /**
      * Get the recordName plus the full name of the field, i.e. recordName.field,field,..
      * @return The name.
      */
-    epics::pvData::String getFullName();
+    std::string getFullName();
     /**
      * Returns the PVRecord to which this field belongs.
      * @return The shared pointer,
@@ -331,8 +333,8 @@ private:
     bool isStructure;
     PVRecordStructurePtr parent;
     PVRecordPtr pvRecord;
-    epics::pvData::String fullName;
-    epics::pvData::String fullFieldName;
+    std::string fullName;
+    std::string fullFieldName;
     friend class PVRecordStructure;
     friend class PVRecord;
 };
@@ -481,7 +483,7 @@ public:
      * @param recordName The record to find.
      * @return The shared pointer.
      */
-    PVRecordPtr findRecord(epics::pvData::String const& recordName);
+    PVRecordPtr findRecord(std::string const& recordName);
     /**
      * Add a record.
      * @param The record to add.

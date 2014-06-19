@@ -20,14 +20,15 @@
 
 #include <pv/channelProviderLocal.h>
 
-
-namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::string;
+
+namespace epics { namespace pvDatabase { 
 
 static ConvertPtr convert = getConvert();
 static StructureConstPtr nullStructure;
@@ -830,9 +831,9 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
         return channelArray;
     }
     PVFieldPtr pvField = pvFields[0];
-    String fieldName("");
+    string fieldName("");
     while(true) {
-        String name = pvField->getFieldName();
+        string name = pvField->getFieldName();
         if(fieldName.size()>0) fieldName += '.';
         fieldName += name;
         PVStructurePtr pvs = static_pointer_cast<PVStructure>(pvField);
@@ -1150,21 +1151,21 @@ void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 }
 
 
-String ChannelLocal::getRequesterName()
+string ChannelLocal::getRequesterName()
 {
     return requester->getRequesterName();
 }
 
 void ChannelLocal::message(
-        String const &message,
+        string const &message,
         MessageType messageType)
 {
     requester->message(message,messageType);
 }
 
-String ChannelLocal::getRemoteAddress()
+string ChannelLocal::getRemoteAddress()
 {
-    return String("local");
+    return string("local");
 }
 
 Channel::ConnectionState ChannelLocal::getConnectionState()
@@ -1172,7 +1173,7 @@ Channel::ConnectionState ChannelLocal::getConnectionState()
     return Channel::CONNECTED;
 }
 
-String ChannelLocal::getChannelName()
+string ChannelLocal::getChannelName()
 {
     return pvRecord->getRecordName();
 }
@@ -1188,7 +1189,7 @@ bool ChannelLocal::isConnected()
 }
 
 void ChannelLocal::getField(GetFieldRequester::shared_pointer const &requester,
-        String const &subField)
+        string const &subField)
 {
     if(subField.size()<1) {
         StructureConstPtr structure =
@@ -1203,14 +1204,14 @@ void ChannelLocal::getField(GetFieldRequester::shared_pointer const &requester,
         return;
     }
     Status status(Status::STATUSTYPE_ERROR,
-        String("client asked for illegal field"));
+        "client asked for illegal field");
     requester->getDone(status,FieldConstPtr());
 }
 
 AccessRights ChannelLocal::getAccessRights(
         PVField::shared_pointer const &pvField)
 {
-    throw std::logic_error(String("Not Implemented"));
+    throw std::logic_error("Not Implemented");
 }
 
 ChannelProcess::shared_pointer ChannelLocal::createChannelProcess(
@@ -1270,7 +1271,7 @@ ChannelRPC::shared_pointer ChannelLocal::createChannelRPC(
         PVStructure::shared_pointer const & pvRequest)
 {
     Status status(Status::STATUSTYPE_ERROR,
-        String("ChannelRPC not supported"));
+        "ChannelRPC not supported");
     channelRPCRequester->channelRPCConnect(status,ChannelRPC::shared_pointer());
     return ChannelRPC::shared_pointer();
 }
@@ -1302,12 +1303,12 @@ ChannelArray::shared_pointer ChannelLocal::createChannelArray(
 
 void ChannelLocal::printInfo()
 {
-    cout << "ChannelLocal provides access to service" << endl;
+    printInfo(std::cout);
 }
 
-void ChannelLocal::printInfo(StringBuilder out)
+void ChannelLocal::printInfo(std::ostream& out)
 {
-    *out += "ChannelLocal provides access to service";
+    out << "ChannelLocal provides access to service";
 }
 
 }}

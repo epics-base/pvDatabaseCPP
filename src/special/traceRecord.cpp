@@ -20,7 +20,7 @@ using namespace std;
 namespace epics { namespace pvDatabase { 
 
 TraceRecordPtr TraceRecord::create(
-    epics::pvData::String const & recordName)
+    std::string const & recordName)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -50,7 +50,7 @@ TraceRecordPtr TraceRecord::create(
 }
 
 TraceRecord::TraceRecord(
-    epics::pvData::String const & recordName,
+    std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure),
   pvDatabase(PVDatabase::getMaster()),
@@ -82,7 +82,7 @@ bool TraceRecord::init()
 
 void TraceRecord::process()
 {
-    String name = pvRecordName->get();
+    string name = pvRecordName->get();
     PVRecordPtr pvRecord = pvDatabase->findRecord(name);
     if(pvRecord==NULL) {
         pvResult->put(name + " not found");

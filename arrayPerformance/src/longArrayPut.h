@@ -48,8 +48,8 @@ class epicsShareClass  LongArrayPut :
 public:
     POINTER_DEFINITIONS(LongArrayPut);
     static LongArrayPutPtr create(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         size_t arraySize = 100,
         int iterBetweenCreateChannel = 0,
         int iterBetweenCreateChannelPut = 0,
@@ -62,16 +62,16 @@ private:
         return shared_from_this();
     }
     LongArrayPut(
-        epics::pvData::String const & providerName,
-        epics::pvData::String const & channelName,
+        std::string const & providerName,
+        std::string const & channelName,
         size_t arraySize,
         int iterBetweenCreateChannel,
         int iterBetweenCreateChannelPut,
         double delayTime);
     bool init();
 
-    epics::pvData::String providerName;
-    epics::pvData::String channelName;
+    std::string providerName;
+    std::string channelName;
     size_t arraySize;
     int iterBetweenCreateChannel;
     int iterBetweenCreateChannelPut;

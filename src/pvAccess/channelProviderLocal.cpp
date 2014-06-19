@@ -17,16 +17,17 @@
 #include <pv/channelProviderLocal.h>
 #include <pv/traceRecord.h>
 
-namespace epics { namespace pvDatabase { 
-
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::string;
 
-static String providerName("local");
+namespace epics { namespace pvDatabase { 
+
+static string providerName("local");
 
 
 class LocalChannelProviderFactory;
@@ -37,7 +38,7 @@ class LocalChannelProviderFactory : public ChannelProviderFactory
     
 public:
     POINTER_DEFINITIONS(LocalChannelProviderFactory);
-    virtual String getFactoryName() { return providerName;}
+    virtual string getFactoryName() { return providerName;}
     static LocalChannelProviderFactoryPtr create(
         ChannelProviderLocalPtr const &channelProvider)
     {
@@ -97,13 +98,13 @@ void ChannelProviderLocal::destroy()
     pvDatabase->destroy();
 }
 
-String ChannelProviderLocal::getProviderName()
+string ChannelProviderLocal::getProviderName()
 {
     return providerName;
 }
 
 ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
-    String const & channelName,
+    string const & channelName,
     ChannelFindRequester::shared_pointer  const &channelFindRequester)
 {
     Lock xx(mutex);
@@ -115,7 +116,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
             true);
         
     } else {
-        Status notFoundStatus(Status::STATUSTYPE_ERROR,String("pv not found"));
+        Status notFoundStatus(Status::STATUSTYPE_ERROR,"pv not found");
         channelFindRequester->channelFindResult(
             notFoundStatus,
             channelFinder,
@@ -138,7 +139,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelList(
 }
 
 Channel::shared_pointer ChannelProviderLocal::createChannel(
-    String const & channelName,
+    string const & channelName,
     ChannelRequester::shared_pointer  const &channelRequester,
     short priority)
 {
@@ -146,10 +147,10 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
 }
 
 Channel::shared_pointer ChannelProviderLocal::createChannel(
-    String const & channelName,
+    string const & channelName,
     ChannelRequester::shared_pointer  const &channelRequester,
     short priority,
-    String const &address)
+    string const &address)
 {
     Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
@@ -162,7 +163,7 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
         pvRecord->addPVRecordClient(channel);
         return channel;
     }   
-    Status notFoundStatus(Status::STATUSTYPE_ERROR,String("pv not found"));
+    Status notFoundStatus(Status::STATUSTYPE_ERROR,"pv not found");
     channelRequester->channelCreated(
         notFoundStatus,
         Channel::shared_pointer());

@@ -21,12 +21,14 @@
 
 #include <pv/channelProviderLocal.h>
 
-namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 using std::cout;
 using std::endl;
+using std::string;
+
+namespace epics { namespace pvDatabase { 
 
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
@@ -384,7 +386,7 @@ bool MultipleElementQueue::dataChanged()
     queue->setUsed(activeElement);
     activeElement = queue->getFree();
     if(activeElement==NULL) {
-        throw  std::logic_error(String("MultipleElementQueue::dataChanged() logic error"));
+        throw  std::logic_error("MultipleElementQueue::dataChanged() logic error");
     }
     if(queue->getNumberFree()==0) queueIsFull = true;
     activeElement->changedBitSet->clear();

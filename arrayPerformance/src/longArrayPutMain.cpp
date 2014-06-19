@@ -38,12 +38,12 @@ using namespace epics::pvDatabase;
 
 int main(int argc,char *argv[])
 {
-    String channelName("arrayPerformance");
+    string channelName("arrayPerformance");
     size_t arraySize = 10;
     int iterBetweenCreateChannel = 0;
     int iterBetweenCreateChannelPut = 0;
     double delayTime = 1.0;
-    if(argc==2 && String(argv[1])==String("-help")) {
+    if(argc==2 && string(argv[1])==string("-help")) {
         cout << "longArrayPutMain channelName arraySize ";
         cout << "iterBetweenCreateChannel iterBetweenCreateChannelPut delayTime" << endl;
         cout << "default" << endl;

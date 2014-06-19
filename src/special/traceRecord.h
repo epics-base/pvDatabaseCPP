@@ -27,14 +27,14 @@ class epicsShareClass TraceRecord :
 public:
     POINTER_DEFINITIONS(TraceRecord);
     static TraceRecordPtr create(
-        epics::pvData::String const & recordName);
+        std::string const & recordName);
     virtual ~TraceRecord();
     virtual void destroy();
     virtual bool init();
     virtual void process();
 private:
     TraceRecord(
-        epics::pvData::String const & recordName,
+        std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     PVDatabasePtr pvDatabase;
     epics::pvData::PVStringPtr pvRecordName;

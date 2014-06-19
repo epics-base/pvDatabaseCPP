@@ -43,9 +43,9 @@ using namespace epics::pvDatabase;
 void test()
 {
     StandardPVFieldPtr standardPVField = getStandardPVField();
-    String properties;
+    string properties;
     ScalarType scalarType;
-    String recordName;
+    string recordName;
     properties = "alarm,timeStamp";
     scalarType = pvDouble;
     recordName = "exampleDouble";
