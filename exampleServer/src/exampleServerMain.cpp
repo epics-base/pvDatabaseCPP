@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
     PVRecordPtr pvRecord;
     bool result(false);
-    String recordName;
+    string recordName;
     recordName = "exampleServer";
     pvRecord = ExampleServer::create(recordName);
     result = master->addRecord(pvRecord);

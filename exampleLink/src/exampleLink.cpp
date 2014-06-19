@@ -13,18 +13,20 @@
 #include <pv/standardPVField.h>
 #include <pv/convert.h>
 
-namespace epics { namespace pvDatabase { 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
 using std::cout;
 using std::endl;
+using std::string;
+
+namespace epics { namespace pvDatabase { 
 
 ExampleLinkPtr ExampleLink::create(
-    String const & recordName,
-    String const & providerName,
-    String const & channelName)
+    string const & recordName,
+    string const & providerName,
+    string const & channelName)
 {
     PVStructurePtr pvStructure = getStandardPVField()->scalarArray(
         pvDouble,"alarm.timeStamp");
@@ -36,9 +38,9 @@ ExampleLinkPtr ExampleLink::create(
 }
 
 ExampleLink::ExampleLink(
-    String const & recordName,
-    String providerName,
-    String channelName,
+    string const & recordName,
+    string providerName,
+    string channelName,
     PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure),
   providerName(providerName),

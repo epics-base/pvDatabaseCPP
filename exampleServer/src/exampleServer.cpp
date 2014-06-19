@@ -12,14 +12,16 @@
 #include <pv/standardPVField.h>
 #include <pv/exampleServer.h>
 
-namespace epics { namespace exampleServer { 
 using namespace epics::pvData;
 using namespace epics::pvDatabase;
 using std::tr1::static_pointer_cast;
+using std::string;
+
+namespace epics { namespace exampleServer { 
 
 
 ExampleServerPtr ExampleServer::create(
-    String const & recordName)
+    string const & recordName)
 {
     StandardPVFieldPtr standardPVField = getStandardPVField();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -41,7 +43,7 @@ ExampleServerPtr ExampleServer::create(
 }
 
 ExampleServer::ExampleServer(
-    String const & recordName,
+    string const & recordName,
     PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure)
 {
@@ -71,7 +73,7 @@ bool ExampleServer::init()
 
 void ExampleServer::process()
 {
-    pvResultValue->put(String("Hello ") + pvArgumentValue->get());
+    pvResultValue->put(string("Hello ") + pvArgumentValue->get());
     timeStamp.getCurrent();
     pvTimeStamp.set(timeStamp);
 }

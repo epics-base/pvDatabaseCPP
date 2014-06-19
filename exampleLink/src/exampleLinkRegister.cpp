@@ -42,6 +42,7 @@ using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
 using std::cout;
 using std::endl;
+using std::string;
 
 static StandardPVFieldPtr standardPVField = getStandardPVField();
 
@@ -58,7 +59,7 @@ static void exampleLinkCallFunc(const iocshArgBuf *args)
     PVDatabasePtr master = PVDatabase::getMaster();
     PVRecordPtr pvRecord;
     bool result(false);
-    String recordName;
+    string recordName;
     PVStructurePtr pvStructure = standardPVField->scalarArray(
         pvDouble,"alarm,timeStamp");
     pvRecord = PVRecord::create("doubleArray",pvStructure);
