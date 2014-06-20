@@ -58,4 +58,7 @@ std::cout << "exampleMonitorPluginRegister\n";
     }
 std::cout << "exampleMonitorPluginRegister returning\n";
 }
-epicsExportRegistrar(exampleMonitorPluginRegister);
+
+extern "C" {
+    epicsExportRegistrar(exampleMonitorPluginRegister);
+}
