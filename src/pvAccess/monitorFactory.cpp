@@ -15,10 +15,10 @@
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
 #include <pv/timeStamp.h>
-#include <pv/pvCopyMonitor.h>
 
 #define epicsExportSharedSymbols
 
+#include <pv/pvCopyMonitor.h>
 #include <pv/channelProviderLocal.h>
 
 using namespace epics::pvData;

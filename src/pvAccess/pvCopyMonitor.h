@@ -41,7 +41,7 @@ typedef std::tr1::shared_ptr<PVCopyMonitor> PVCopyMonitorPtr;
 class PVCopyMonitorRequester;
 typedef std::tr1::shared_ptr<PVCopyMonitorRequester> PVCopyMonitorRequesterPtr;
 
-class PVCopyMonitorFieldNode;
+struct PVCopyMonitorFieldNode;
 typedef std::tr1::shared_ptr<PVCopyMonitorFieldNode> PVCopyMonitorFieldNodePtr;
 
 
