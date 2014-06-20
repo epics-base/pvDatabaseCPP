@@ -103,9 +103,9 @@ void PVRecord::destroy()
     }
 }
 
-string PVRecord::getRecordName() {return recordName;}
+string PVRecord::getRecordName() const {return recordName;}
 
-PVRecordStructurePtr PVRecord::getPVRecordStructure() {return pvRecordStructure;}
+PVRecordStructurePtr PVRecord::getPVRecordStructure() const {return pvRecordStructure;}
 
 PVStructurePtr PVRecord::getPVStructure() {return pvStructure;}
 
@@ -346,17 +346,14 @@ void PVRecord::endGroupPut()
    }
 }
 
-void PVRecord::toString(string* buf)
+std::ostream& operator<<(std::ostream& o, const PVRecord& record)
 {
-    toString(buf,0);
-}
-
-void PVRecord::toString(string* buf,int indentLevel)
-{
-    std::ostringstream oss;
-    // TODO indent ignored
-    oss << endl << recordName << ' ' << *pvRecordStructure->getPVStructure();
-    *buf += oss.str();
+    o << format::indent() << "record " << record.getRecordName() << endl;
+    {
+        format::indent_scope s(o);
+        o <<  *record.getPVRecordStructure()->getPVStructure();
+    }
+    return o;
 }
 
 PVRecordField::PVRecordField(

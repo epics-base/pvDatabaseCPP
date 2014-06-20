@@ -107,12 +107,12 @@ public:
      * Get the name of the record.
      * @return The name.
      */
-    std::string getRecordName();
+    std::string getRecordName() const;
     /**
      * Get the top level PVStructure.
      * @return The shared pointer.
      */
-    PVRecordStructurePtr getPVRecordStructure();
+    PVRecordStructurePtr getPVRecordStructure() const;
     /**
      * Find the PVRecordField for the PVField.
      * @param pvField The PVField.
@@ -184,19 +184,6 @@ public:
      */
     void endGroupPut();
     /**
-     *  Calls the next method with indentLevel = 0.
-     * @param buf String Builder.
-     */
-    // TODO
-    void toString(std::string* buf);
-    /**
-     * Dumps the data from the top level PVStructure. 
-     * @param buf String Builder.
-     * @param indentLevel The indentation level.
-     */
-    // TODO
-    void toString(std::string* buf,int indentLevel);
-    /**
      * get trace level (0,1,2) means (nothing,lifetime,process)
      * @return the level
      */
@@ -243,6 +230,8 @@ private:
     int traceLevel;
     bool isDestroyed;
 };
+
+epicsShareExtern std::ostream& operator<<(std::ostream& o, const PVRecord& record);
 
 /**
  * Interface for a field of a record.
