@@ -136,6 +136,11 @@ void ExampleDatabase::create()
     createRecords(master,pvLong,"exampleLong",properties);
     createRecords(master,pvFloat,"exampleFloat",properties);
     createRecords(master,pvDouble,"exampleDouble",properties);
+    createRecords(master,pvDouble,"exampleDouble01",properties);
+    createRecords(master,pvDouble,"exampleDouble02",properties);
+    createRecords(master,pvDouble,"exampleDouble03",properties);
+    createRecords(master,pvDouble,"exampleDouble04",properties);
+    createRecords(master,pvDouble,"exampleDouble05",properties);
     createRecords(master,pvString,"exampleString",properties);
     createStructureArrayRecord(master,"exampleStructureArray");
     createRegularUnionArrayRecord(master,"exampleRegularUnionArray");
