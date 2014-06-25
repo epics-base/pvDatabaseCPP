@@ -7,6 +7,7 @@ dbLoadDatabase("dbd/exampleDatabase.dbd")
 exampleDatabase_registerRecordDeviceDriver(pdbbase)
 
 ## Load record instances
+dbLoadRecords("db/dbScalar.db","name=double00,type=ao")
 dbLoadRecords("db/dbScalar.db","name=double01,type=ao")
 dbLoadRecords("db/dbScalar.db","name=double02,type=ao")
 dbLoadRecords("db/dbScalar.db","name=double03,type=ao")
