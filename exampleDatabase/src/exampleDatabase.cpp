@@ -147,17 +147,20 @@ void ExampleDatabase::create()
     createVariantUnionArrayRecord(master,"exampleVariantUnionArray");
     recordName = "examplePowerSupply";
     PVStructurePtr pvStructure = createPowerSupply();
-    PowerSupplyPtr psr =
-        PowerSupply::create(recordName,pvStructure);
-    if(psr.get()==NULL) {
-        cout << "PowerSupply::create failed" << endl;
-        return;
+    PowerSupplyPtr psr = PowerSupply::create(recordName,pvStructure);
+    if(psr==NULL) {
+          cout << "PowerSupply::create failed" << endl;
+    } else {
+        result = master->addRecord(psr);
+        if(!result) cout<< "record " << recordName << " not added" << endl;
     }
-    result = master->addRecord(psr);
-    if(!result) cout<< "record " << recordName << " not added" << endl;
     recordName = "laptoprecordListPGRPC";
     pvRecord = RecordListRecord::create(recordName);
-    result = master->addRecord(pvRecord);
-    if(!result) cout<< "record " << recordName << " not added" << endl;
+    if(pvRecord==NULL) {
+          cout << "RecordListRecord::create failed" << endl;
+    } else {
+        result = master->addRecord(pvRecord);
+        if(!result) cout<< "record " << recordName << " not added" << endl;
+    }
 }
 

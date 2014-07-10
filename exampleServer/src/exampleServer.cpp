@@ -9,7 +9,7 @@
  * @date 2013.04.02
  */
 
-#include <pv/standardPVField.h>
+#include <pv/standardField.h>
 #include <pv/exampleServer.h>
 
 using namespace epics::pvData;
@@ -23,19 +23,20 @@ namespace epics { namespace exampleServer {
 ExampleServerPtr ExampleServer::create(
     string const & recordName)
 {
-    StandardPVFieldPtr standardPVField = getStandardPVField();
+    StandardFieldPtr standardField = getStandardField();
+    FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    PVStructurePtr pvArgument = standardPVField->scalar(pvString,"");
-    PVStructurePtr pvResult = standardPVField->scalar(pvString,"timeStamp");
-    StringArray names;
-    names.reserve(2);
-    PVFieldPtrArray fields;
-    fields.reserve(2);
-    names.push_back("argument");
-    fields.push_back(pvArgument);
-    names.push_back("result");
-    fields.push_back(pvResult);
-    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(names,fields);
+    StructureConstPtr  topStructure = fieldCreate->createFieldBuilder()->
+        addNestedStructure("argument")->
+            add("value",pvString)->
+            endNested()->
+        addNestedStructure("result") ->
+            add("value",pvString) ->
+            add("timeStamp",standardField->timeStamp()) ->
+            endNested()->
+        createStructure();
+    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
+
     ExampleServerPtr pvRecord(
         new ExampleServer(recordName,pvStructure));
     if(!pvRecord->init()) pvRecord.reset();

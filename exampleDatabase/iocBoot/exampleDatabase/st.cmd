@@ -16,6 +16,8 @@ dbLoadRecords("db/dbDouble.db","name=double05")
 dbLoadRecords("db/dbStringArray.db","name=stringArray01")
 dbLoadRecords("db/dbEnum.db","name=enum01")
 dbLoadRecords("db/dbCounter.db","name=counter01");
+dbLoadRecords("db/dbArray.db","name=doubleArray,type=DOUBLE");
+
 
 cd ${TOP}/iocBoot/${IOC}
 iocInit()

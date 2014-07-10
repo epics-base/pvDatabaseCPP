@@ -37,7 +37,7 @@ private:
     epics::pvData::PVStringPtr database;
     epics::pvData::PVStringPtr regularExpression;
     epics::pvData::PVStringPtr status;
-    epics::pvData::PVStringArrayPtr names;
+    epics::pvData::PVStringArrayPtr name;
 };
 
 }}

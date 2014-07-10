@@ -22,6 +22,7 @@
 #include <pv/standardPVField.h>
 #include <pv/exampleServer.h>
 #include <pv/traceRecord.h>
+#include <pv/recordList.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/serverContext.h>
 
@@ -42,15 +43,20 @@ int main(int argc,char *argv[])
     recordName = "exampleServer";
     pvRecord = ExampleServer::create(recordName);
     result = master->addRecord(pvRecord);
-    cout << "result of addRecord " << recordName << " " << result << endl;
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     recordName = "traceRecordPGRPC";
     pvRecord = TraceRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    pvRecord.reset();
+    recordName = "recordListPGRPC";
+    pvRecord = RecordListRecord::create(recordName);
+    result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     ServerContext::shared_pointer pvaServer = 
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
-    cout << "exampleServer\n";
+    PVStringArrayPtr pvNames = master->getRecordNames();
+    shared_vector<const string> names = pvNames->view();
+    for(size_t i=0; i<names.size(); ++i) cout << names[i] << endl;
     string str;
     while(true) {
         cout << "Type exit to stop: \n";

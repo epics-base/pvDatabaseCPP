@@ -24,26 +24,16 @@ RecordListRecordPtr RecordListRecord::create(
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    StringArray argNames(2);
-    FieldConstPtrArray argFields(2);
-    argNames[0] = "database";
-    argFields[0] = fieldCreate->createScalar(pvString);
-    argNames[1] = "regularExpression";
-    argFields[1] = fieldCreate->createScalar(pvString);
-    StringArray resNames(2);
-    FieldConstPtrArray resFields(2);
-    resNames[0] = "status";
-    resFields[0] = fieldCreate->createScalar(pvString);
-    resNames[1] = "names";
-    resFields[1] = fieldCreate->createScalarArray(pvString);
-    StringArray topNames(2);
-    FieldConstPtrArray topFields(2);
-    topNames[0] = "argument";
-    topFields[0] = fieldCreate->createStructure(argNames,argFields);
-    topNames[1] = "result";
-    topFields[1] = fieldCreate->createStructure(resNames,resFields);
-    StructureConstPtr topStructure =
-        fieldCreate->createStructure(topNames,topFields);
+    StructureConstPtr  topStructure = fieldCreate->createFieldBuilder()->
+        addNestedStructure("argument")->
+            add("database",pvString)->
+            add("regularExpression",pvString)->
+            endNested()->
+        addNestedStructure("result") ->
+            add("status",pvString) ->
+            addArray("name",pvString) ->
+            endNested()->
+        createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
     RecordListRecordPtr pvRecord(
         new RecordListRecord(recordName,pvStructure));
@@ -78,21 +68,21 @@ bool RecordListRecord::init()
     if(regularExpression.get()==NULL) return false;
     status = pvStructure->getStringField("result.status");
     if(status.get()==NULL) return false;
-    PVFieldPtr pvField = pvStructure->getSubField("result.names");
+    PVFieldPtr pvField = pvStructure->getSubField("result.name");
     if(pvField.get()==NULL) {
-        std::cerr << "no result.names" << std::endl;
+        std::cerr << "no result.name" << std::endl;
         return false;
     }
-    names = static_pointer_cast<PVStringArray>(
-         pvStructure->getScalarArrayField("result.names",pvString));
-    if(names.get()==NULL) return false;
+    name = static_pointer_cast<PVStringArray>(
+         pvStructure->getScalarArrayField("result.name",pvString));
+    if(name.get()==NULL) return false;
     return true;
 }
 
 void RecordListRecord::process()
 {
     PVStringArrayPtr pvNames = PVDatabase::getMaster()->getRecordNames();
-    names->replace(pvNames->view());
+    name->replace(pvNames->view());
     string message("");
     if(database->get().compare("master")!=0) {
         message += " can only access master ";

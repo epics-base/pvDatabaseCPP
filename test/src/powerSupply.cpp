@@ -15,6 +15,9 @@
 
 using namespace epics::pvData;
 using std::string;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 namespace epics { namespace pvDatabase { 
 
@@ -24,24 +27,23 @@ PVStructurePtr createPowerSupply()
     StandardFieldPtr standardField = getStandardField();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
 
-    size_t nfields = 5;
-    StringArray names;
-    names.reserve(nfields);
-    FieldConstPtrArray powerSupply;
-    powerSupply.reserve(nfields);
-    names.push_back("alarm");
-    powerSupply.push_back(standardField->alarm());
-    names.push_back("timeStamp");
-    powerSupply.push_back(standardField->timeStamp());
-    string properties("alarm,display");
-    names.push_back("voltage");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("power");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
-    names.push_back("current");
-    powerSupply.push_back(standardField->scalar(pvDouble,properties));
     return pvDataCreate->createPVStructure(
-            fieldCreate->createStructure(names,powerSupply));
+        fieldCreate->createFieldBuilder()->
+            add("alarm",standardField->alarm()) ->
+            add("timeStamp",standardField->timeStamp()) ->
+            addNestedStructure("power") ->
+               add("value",pvDouble) ->
+               add("alarm",standardField->alarm()) ->
+               endNested()->
+            addNestedStructure("voltage") ->
+               add("value",pvDouble) ->
+               add("alarm",standardField->alarm()) ->
+               endNested()->
+            addNestedStructure("current") ->
+               add("value",pvDouble) ->
+               add("alarm",standardField->alarm()) ->
+               endNested()->
+            createStructure());
 }
 
 PowerSupplyPtr PowerSupply::create(
@@ -77,62 +79,40 @@ bool PowerSupply::init()
     PVFieldPtr pvField;
     bool result;
     pvField = pvStructure->getSubField("timeStamp");
-    if(pvField.get()==NULL) {
-        std::cerr << "no timeStamp" << std::endl;
+    if(pvField==NULL) {
+        cerr << "no timeStamp" << endl;
         return false;
     }
     result = pvTimeStamp.attach(pvField);
     if(!result) {
-        std::cerr << "no timeStamp" << std::endl;
+        cerr << "no timeStamp" << endl;
         return false;
     }
     pvField = pvStructure->getSubField("alarm");
-    if(pvField.get()==NULL) {
-        std::cerr << "no alarm" << std::endl;
+    if(pvField==NULL) {
+        cerr << "no alarm" << endl;
         return false;
     }
     result = pvAlarm.attach(pvField);
     if(!result) {
-        std::cerr << "no alarm" << std::endl;
+        cerr << "no alarm" << endl;
         return false;
     }
-    string name;
-    name = "current.value";
-    pvField = pvStructure->getSubField(name);
-    if(pvField.get()==NULL) {
-        name = "current";
-        pvField = pvStructure->getSubField(name);
-    }
-    if(pvField.get()==NULL) {
-        std::cerr << "no current" << std::endl;
+    pvCurrent = pvStructure->getSubField<PVDouble>("current.value");
+    if(pvCurrent==NULL) {
+        cerr << "no current\n";
         return false;
     }
-    pvCurrent = pvStructure->getDoubleField(name);
-    if(pvCurrent.get()==NULL) return false;
-    name = "voltage.value";
-    pvField = pvStructure->getSubField(name);
-    if(pvField.get()==NULL) {
-        name = "voltage";
-        pvField = pvStructure->getSubField(name);
-    }
-    if(pvField.get()==NULL) {
-        std::cerr << "no voltage" << std::endl;
+    pvVoltage = pvStructure->getSubField<PVDouble>("voltage.value");
+    if(pvVoltage==NULL) {
+        cerr << "no current\n";
         return false;
     }
-    pvVoltage = pvStructure->getDoubleField(name);
-    if(pvVoltage.get()==NULL) return false;
-    name = "power.value";
-    pvField = pvStructure->getSubField(name);
-    if(pvField.get()==NULL) {
-        name = "power";
-        pvField = pvStructure->getSubField(name);
-    }
-    if(pvField.get()==NULL) {
-        std::cerr << "no power" << std::endl;
+    pvPower = pvStructure->getSubField<PVDouble>("power.value");
+    if(pvPower==NULL) {
+        cerr << "no powert\n";
         return false;
     }
-    pvPower = pvStructure->getDoubleField(name);
-    if(pvPower.get()==NULL) return false;
     return true;
 }
 
