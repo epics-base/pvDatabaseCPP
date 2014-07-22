@@ -1,0 +1,9 @@
+<h1>TODO</h1>
+<h2>monitorPlugin</h2>
+<p>A debate is on-going about what semantics should be.</p>
+<h2>memory leak</h2>
+<p>arrayPerformanceMain shows a slight memory leak at termination.</p>
+<h2>channel destroy and recreate</h2>
+<p>longArrayGet and longArrayPut fail if the channel is destroyed and immediately recreated. If epicsThreadSleep(1.0) is called between destroy and recreate then they work. The current version of each does wait.</p>
+<h2>create more regresion tests</h2>
+<p>Currently only some simple tests exist. Most of the testing has been via the examples</p>

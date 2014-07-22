@@ -777,7 +777,7 @@ public:
          PVArrayPtr const &putArray,
          size_t offset, size_t count, size_t stride);
     virtual void getLength();
-    virtual void setLength(size_t length, size_t capacity);
+    virtual void setLength(size_t length);
     virtual void destroy();
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
@@ -1021,7 +1021,7 @@ void ChannelArrayLocal::putArray(
          return;
     }
     size_t newLength = offset + count*stride;
-    pvArray->setLength(newLength);
+    if(newLength<pvArray->getLength()) pvArray->setLength(newLength);
     const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
@@ -1040,12 +1040,10 @@ void ChannelArrayLocal::putArray(
 void ChannelArrayLocal::getLength()
 {
     size_t length = 0;
-    size_t capacity = 0;
     const char *exceptionMessage = NULL;
     pvRecord->lock();
     try {
         length = pvArray->getLength();
-        capacity = pvArray->getCapacity();
     } catch(std::exception e) {
         exceptionMessage = e.what();
     }
@@ -1054,10 +1052,10 @@ void ChannelArrayLocal::getLength()
     if(exceptionMessage!=NULL) {
         status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
-    channelArrayRequester->getLengthDone(status,getPtrSelf(),length,capacity);
+    channelArrayRequester->getLengthDone(status,getPtrSelf(),length);
 }
 
-void ChannelArrayLocal::setLength(size_t length, size_t capacity)
+void ChannelArrayLocal::setLength(size_t length)
 {
     if(isDestroyed) {
          channelArrayRequester->setLengthDone(channelDestroyedStatus,getPtrSelf());
@@ -1069,17 +1067,6 @@ void ChannelArrayLocal::setLength(size_t length, size_t capacity)
     }
     pvRecord->lock();
     try {
-        if(capacity>=0 && !pvArray->isCapacityMutable()) {
-             Status status(
-                 Status::STATUSTYPE_ERROR,
-                "capacityImnutable");
-             channelArrayRequester->setLengthDone(status,getPtrSelf());
-             pvRecord->unlock();
-             return;
-        }
-        if(capacity>=0) {
-            if(pvArray->getCapacity()!=capacity) pvArray->setCapacity(capacity);
-        }
         if(length>=0) {
             if(pvArray->getLength()!=length) pvArray->setLength(length);
         }
