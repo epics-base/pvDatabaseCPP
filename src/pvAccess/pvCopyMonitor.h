@@ -58,7 +58,8 @@ public:
         epics::pvData::PVCopyPtr const & pvCopy);
     virtual ~PVCopyMonitor();
     virtual void destroy();
-    void startMonitoring();
+    void startMonitoring(
+         epics::pvData::MonitorElementPtr const & monitorElement);
     void stopMonitoring();
     // following are PVListener methods
     virtual void detach(PVRecordPtr const & pvRecord);
@@ -89,6 +90,7 @@ private:
     bool isGroupPut;
     bool dataChanged;
     bool isMonitoring;
+    bool isDestroyed;
     epics::pvData::Mutex mutex;
     std::list<PVCopyMonitorFieldNodePtr> monitorFieldNodeList;
 };

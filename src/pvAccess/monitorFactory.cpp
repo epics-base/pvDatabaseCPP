@@ -75,10 +75,8 @@ private:
     bool isDestroyed;
     bool firstMonitor;
     PVCopyPtr pvCopy;
-//    MultipleElementQueuePtr queue;
     MonitorElementQueuePtr queue;
     MonitorElementPtr activeElement;
-    bool queueIsFull;
     PVCopyMonitorPtr pvCopyMonitor;
     Mutex mutex;
 };
@@ -112,8 +110,6 @@ void MonitorLocal::destroy()
         if(isDestroyed) return;
         isDestroyed = true;
     }
-    unlisten();
-    stop();
     pvCopyMonitor->destroy();
     pvCopy->destroy();
     pvCopyMonitor.reset();
@@ -127,15 +123,16 @@ Status MonitorLocal::start()
     {
         cout << "MonitorLocal::start() "  << endl;
     }
-    Lock xx(mutex);
     if(isDestroyed) return wasDestroyedStatus;
-    firstMonitor = true;
-    queue->clear();
-    queueIsFull = false;
-    activeElement = queue->getFree();
-    activeElement->changedBitSet->clear();
-    activeElement->overrunBitSet->clear();
-    pvCopyMonitor->startMonitoring();
+    {
+        Lock xx(mutex);
+        firstMonitor = true;
+        queue->clear();
+        activeElement = queue->getFree();
+        activeElement->changedBitSet->clear();
+        activeElement->overrunBitSet->clear();
+    }
+    pvCopyMonitor->startMonitoring(activeElement);
     return Status::Ok;
 }
 
@@ -144,7 +141,7 @@ Status MonitorLocal::stop()
     if(pvRecord->getTraceLevel()>0){
         cout << "MonitorLocal::stop() "  << endl;
     }
-    Lock xx(mutex);
+    if(isDestroyed) return  Status::Ok;
     pvCopyMonitor->stopMonitoring();
     return Status::Ok;
 }
@@ -155,10 +152,8 @@ MonitorElementPtr MonitorLocal::poll()
     {
         cout << "MonitorLocal::poll() "  << endl;
     }
+    if(isDestroyed) return NULLMonitorElement;
     Lock xx(mutex);
-    if(isDestroyed) {
-        return NULLMonitorElement;
-    }
     return queue->getUsed();
 }
 
@@ -168,43 +163,39 @@ void MonitorLocal::release(MonitorElementPtr const & monitorElement)
     {
         cout << "MonitorLocal::release() "  << endl;
     }
+    if(isDestroyed) return;
     Lock xx(mutex);
-    if(isDestroyed) {
-        return;
-    }
     queue->releaseUsed(monitorElement);
-    queueIsFull = false;
 }
 
 
 MonitorElementPtr MonitorLocal::getActiveElement()
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "MonitorLocal::getActiveElement() "  << endl;
     }
+    if(isDestroyed) return activeElement;
     Lock xx(mutex);
     return activeElement;
 }
 
 MonitorElementPtr MonitorLocal::releaseActiveElement()
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "MonitorLocal::releaseActiveElement() "  << endl;
     }
+    if(isDestroyed) return activeElement;
     {
         Lock xx(mutex);
-        if(queueIsFull) return activeElement;
+        MonitorElementPtr newActive = queue->getFree();
+        if(newActive==NULL) return activeElement;
         pvCopy->updateCopyFromBitSet(activeElement->pvStructurePtr,activeElement->changedBitSet);
         BitSetUtil::compress(activeElement->changedBitSet,activeElement->pvStructurePtr);
         BitSetUtil::compress(activeElement->overrunBitSet,activeElement->pvStructurePtr);
         queue->setUsed(activeElement);
-        activeElement = queue->getFree();
-        if(activeElement==NULL) {
-            throw  std::logic_error("MultipleLocal::releaseActiveElement logic error");
-        }
-        if(queue->getNumberFree()==0) queueIsFull = true;
+        activeElement = newActive;
         activeElement->changedBitSet->clear();
         activeElement->overrunBitSet->clear();
     }

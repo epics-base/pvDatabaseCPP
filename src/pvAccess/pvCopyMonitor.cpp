@@ -58,7 +58,8 @@ PVCopyMonitor::PVCopyMonitor(
   pvCopyMonitorRequester(pvCopyMonitorRequester),
   isGroupPut(false),
   dataChanged(false),
-  isMonitoring(false)
+  isMonitoring(false),
+  isDestroyed(false)
 {
 }
 
@@ -117,17 +118,22 @@ void PVCopyMonitor::destroy()
     {
         cout << "PVCopyMonitor::destroy()" << endl;
     }
+    if(isDestroyed) return;
+    Lock xx(mutex);
+    isDestroyed = true;
     stopMonitoring();
     pvCopyMonitorRequester.reset();
     pvCopy.reset();
 }
  
-void PVCopyMonitor::startMonitoring()
+void PVCopyMonitor::startMonitoring(MonitorElementPtr const & startElement)
 {
     if(pvRecord->getTraceLevel()>0)
     {
         cout << "PVCopyMonitor::startMonitoring()" << endl;
     }
+    if(isDestroyed) return;
+    monitorElement = startElement;
     Lock xx(mutex);
     if(isMonitoring) return;
     isMonitoring = true;
@@ -137,13 +143,9 @@ void PVCopyMonitor::startMonitoring()
     {
        (*iter)->monitorPlugin->startMonitoring();
     }
-    monitorElement = pvCopyMonitorRequester->getActiveElement();
-    if(monitorElement==NULL) {
-        throw std::logic_error("getActiveElement should not return null");
-    }
+    pvRecord->addListener(getPtrSelf());
     pvRecord->lock();
     try {
-        pvRecord->addListener(getPtrSelf());
         pvCopy->traverseMaster(getPtrSelf());
         monitorElement->changedBitSet->clear();
         monitorElement->overrunBitSet->clear();
@@ -166,15 +168,16 @@ void PVCopyMonitor::stopMonitoring()
     {
         cout << "PVCopyMonitor::stopMonitoring()" << endl;
     }
-    Lock xx(mutex);
+    if(isDestroyed) return;
     if(!isMonitoring) return;
+    pvRecord->removeListener(getPtrSelf());
+    Lock xx(mutex);
     std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
     for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
     {
        (*iter)->monitorPlugin->stopMonitoring();
     }
     isMonitoring = false;
-    pvRecord->removeListener(getPtrSelf());
 }
 
 
@@ -193,6 +196,7 @@ void PVCopyMonitor::dataPut(PVRecordFieldPtr const & pvRecordField)
     {
         cout << "PVCopyMonitor::dataPut(pvRecordField)" << endl;
     }
+    if(isDestroyed) return;
     bool causeMonitor = true;
     {
         Lock xx(mutex);
@@ -227,6 +231,7 @@ void PVCopyMonitor::dataPut(
     {
         cout << "PVCopyMonitor::dataPut(requested,pvRecordField)" << endl;
     }
+    if(isDestroyed) return;
     bool causeMonitor = true;
     {
         Lock xx(mutex);
@@ -259,10 +264,11 @@ void PVCopyMonitor::dataPut(
 
 void PVCopyMonitor::beginGroupPut(PVRecordPtr const & pvRecord)
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "PVCopyMonitor::beginGroupPut()" << endl;
     }
+    if(isDestroyed) return;
     {
         Lock xx(mutex);
         isGroupPut = true;
@@ -279,10 +285,11 @@ void PVCopyMonitor::beginGroupPut(PVRecordPtr const & pvRecord)
 
 void PVCopyMonitor::endGroupPut(PVRecordPtr const & pvRecord)
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "PVCopyMonitor::endGroupPut() dataChanged " << dataChanged << endl;
     }
+    if(isDestroyed) return;
     std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
     for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
     {
@@ -300,6 +307,11 @@ void PVCopyMonitor::endGroupPut(PVRecordPtr const & pvRecord)
 
 void PVCopyMonitor::unlisten(PVRecordPtr const & pvRecord)
 {
+    if(pvRecord->getTraceLevel()>1)
+    {
+        cout << "PVCopyMonitor::unlisten\n";
+    }
+    if(isDestroyed) return;
     pvCopyMonitorRequester->unlisten();
 }
 
