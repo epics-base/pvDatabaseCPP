@@ -182,14 +182,18 @@ void ArrayPerformanceThread::run()
             nSinceLastReport = 0;
         }
         ++nSinceLastReport;
-        shared_vector<int64> xxx(arrayPerformance->size,value++);
-        shared_vector<const int64> data(freeze(xxx));
         arrayPerformance->lock();
         try {
-            arrayPerformance->beginGroupPut();
-            arrayPerformance->pvValue->replace(data);
-            arrayPerformance->process();
-            arrayPerformance->endGroupPut();
+            if(arrayPerformance->getTraceLevel()>1) {
+                 cout << "arrayPerformance size " << arrayPerformance->size;
+                 cout << " value " << value +1 << endl;
+            }
+            shared_vector<int64> xxx(arrayPerformance->size,value++);
+            shared_vector<const int64> data(freeze(xxx));
+                arrayPerformance->beginGroupPut();
+                arrayPerformance->pvValue->replace(data);
+                arrayPerformance->process();
+                arrayPerformance->endGroupPut();
         } catch(...) {
            arrayPerformance->unlock();
            throw;

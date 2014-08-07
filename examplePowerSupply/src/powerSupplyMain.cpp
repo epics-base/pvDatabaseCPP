@@ -20,6 +20,7 @@
 
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
+#include <pv/recordList.h>
 #include <pv/powerSupply.h>
 #include <pv/traceRecord.h>
 #include <pv/channelProviderLocal.h>
@@ -48,7 +49,10 @@ int main(int argc,char *argv[])
     pvRecord = TraceRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    pvRecord.reset();
+    recordName = "laptoprecordListPGRPC";
+    pvRecord = RecordListRecord::create(recordName);
+    result = master->addRecord(pvRecord);
+    if(!result) cout<< "record " << recordName << " not added" << endl;
     ServerContext::shared_pointer pvaServer = 
         startPVAServer(PVACCESS_ALL_PROVIDERS,0,true,true);
     cout << "powerSupply\n";

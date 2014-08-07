@@ -48,7 +48,7 @@ int main(int argc,char *argv[])
     pvRecord = TraceRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
-    recordName = "recordListPGRPC";
+    recordName = "laptoprecordListPGRPC";
     pvRecord = RecordListRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;

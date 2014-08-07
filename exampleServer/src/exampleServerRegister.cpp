@@ -33,6 +33,7 @@
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
+#include <pv/recordList.h>
 #include <pv/exampleServer.h>
 
 using namespace epics::pvData;
@@ -50,10 +51,19 @@ static const iocshFuncDef exampleServerFuncDef = {
     "exampleServerCreateRecord", 1, testArgs};
 static void exampleServerCallFunc(const iocshArgBuf *args)
 {
+    PVDatabasePtr master = PVDatabase::getMaster();
     char *recordName = args[0].sval;
     ExampleServerPtr record = ExampleServer::create(recordName);
-    bool result = PVDatabase::getMaster()->addRecord(record);
+    bool result = master->addRecord(record);
     if(!result) cout << "recordname" << " not added" << endl;
+    PVRecordPtr pvRecord = RecordListRecord::create(
+        "laptoprecordListPGRPC");
+    if(pvRecord==NULL) {
+          cout << "RecordListRecord::create failed" << endl;
+    } else {
+        result = master->addRecord(pvRecord);
+        if(!result) cout<< "record " << recordName << " not added" << endl;
+    }
 }
 
 static void exampleServerRegister(void)

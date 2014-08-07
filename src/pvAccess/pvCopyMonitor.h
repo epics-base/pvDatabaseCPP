@@ -60,8 +60,6 @@ public:
     virtual void destroy();
     void startMonitoring();
     void stopMonitoring();
-    void setMonitorElement(epics::pvData::MonitorElementPtr const &monitorElement);
-    void monitorDone(epics::pvData::MonitorElementPtr const &monitorElement);
     // following are PVListener methods
     virtual void detach(PVRecordPtr const & pvRecord);
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField);
@@ -100,7 +98,8 @@ class epicsShareClass PVCopyMonitorRequester
 public:
     POINTER_DEFINITIONS(PVCopyMonitorRequester);
     virtual ~PVCopyMonitorRequester() {}
-    virtual void dataChanged() = 0;
+    virtual epics::pvData::MonitorElementPtr getActiveElement() = 0;
+    virtual epics::pvData::MonitorElementPtr releaseActiveElement() = 0;
     virtual void unlisten() = 0;
 };
 

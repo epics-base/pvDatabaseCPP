@@ -137,6 +137,10 @@ void PVCopyMonitor::startMonitoring()
     {
        (*iter)->monitorPlugin->startMonitoring();
     }
+    monitorElement = pvCopyMonitorRequester->getActiveElement();
+    if(monitorElement==NULL) {
+        throw std::logic_error("getActiveElement should not return null");
+    }
     pvRecord->lock();
     try {
         pvRecord->addListener(getPtrSelf());
@@ -144,7 +148,7 @@ void PVCopyMonitor::startMonitoring()
         monitorElement->changedBitSet->clear();
         monitorElement->overrunBitSet->clear();
         monitorElement->changedBitSet->set(0);
-        pvCopyMonitorRequester->dataChanged();
+        monitorElement = pvCopyMonitorRequester->releaseActiveElement();
         pvRecord->unlock();
     } catch(...) {
         pvRecord->unlock();
@@ -174,29 +178,6 @@ void PVCopyMonitor::stopMonitoring()
 }
 
 
-void PVCopyMonitor::setMonitorElement(MonitorElementPtr const &xxx)
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "PVCopyMonitor::setMonitorElement()" << endl;
-    }
-    monitorElement = xxx;
-}
-
-void PVCopyMonitor::monitorDone(MonitorElementPtr const &monitorElement)
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "PVCopyMonitor::monitorDone()" << endl;
-    }
-    std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
-    for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
-    {
-        PVCopyMonitorFieldNodePtr fieldNode = *iter;
-        MonitorPluginPtr monitorPlugin = fieldNode->monitorPlugin;
-        monitorPlugin->monitorDone(monitorElement);
-    }
-}
 
 void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)
 {
@@ -208,27 +189,33 @@ void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)
 
 void PVCopyMonitor::dataPut(PVRecordFieldPtr const & pvRecordField)
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "PVCopyMonitor::dataPut(pvRecordField)" << endl;
     }
-    size_t offset = pvCopy->getCopyOffset(pvRecordField->getPVField());
-    BitSetPtr const &changedBitSet = monitorElement->changedBitSet;
-    BitSetPtr const &overrunBitSet = monitorElement->overrunBitSet;
-    bool isSet = changedBitSet->get(offset);
-    changedBitSet->set(offset);
-    if(isSet) overrunBitSet->set(offset);
-    MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offset);
     bool causeMonitor = true;
-    if(monitorPlugin!=NULL) {
-        causeMonitor = monitorPlugin->causeMonitor(
-           pvRecordField->getPVField(),
-           pvRecord->getPVRecordStructure()->getPVStructure(),
-           monitorElement);
+    {
+        Lock xx(mutex);
+        size_t offset = pvCopy->getCopyOffset(pvRecordField->getPVField());
+        BitSetPtr const &changedBitSet = monitorElement->changedBitSet;
+        BitSetPtr const &overrunBitSet = monitorElement->overrunBitSet;
+        bool isSet = changedBitSet->get(offset);
+        changedBitSet->set(offset);
+        if(isSet) overrunBitSet->set(offset);
+        MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offset);
+        if(monitorPlugin!=NULL) {
+            causeMonitor = monitorPlugin->causeMonitor(
+               pvRecordField->getPVField(),
+               pvRecord->getPVRecordStructure()->getPVStructure(),
+               monitorElement);
+        }
+        if(causeMonitor) dataChanged = true;
     }
     if(causeMonitor) {
-        if(!isGroupPut) pvCopyMonitorRequester->dataChanged();
-        dataChanged = true;
+        if(!isGroupPut) {
+            monitorElement = pvCopyMonitorRequester->releaseActiveElement();
+            dataChanged = false;
+        }
     }
 }
 
@@ -236,31 +223,37 @@ void PVCopyMonitor::dataPut(
     PVRecordStructurePtr const & requested,
     PVRecordFieldPtr const & pvRecordField)
 {
-    if(pvRecord->getTraceLevel()>0)
+    if(pvRecord->getTraceLevel()>1)
     {
         cout << "PVCopyMonitor::dataPut(requested,pvRecordField)" << endl;
     }
-    BitSetPtr const &changedBitSet = monitorElement->changedBitSet;
-    BitSetPtr const &overrunBitSet = monitorElement->overrunBitSet;
-    size_t offsetCopyRequested = pvCopy->getCopyOffset(
-        requested->getPVField());
-    size_t offset = offsetCopyRequested
-         + (pvRecordField->getPVField()->getFieldOffset()
-             - requested->getPVField()->getFieldOffset());
-    bool isSet = changedBitSet->get(offset);
-    changedBitSet->set(offset);
-    if(isSet) overrunBitSet->set(offset);
-    MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offsetCopyRequested);
     bool causeMonitor = true;
-    if(monitorPlugin!=NULL) {
-        causeMonitor = monitorPlugin->causeMonitor(
-           requested->getPVField(),
-           pvRecord->getPVRecordStructure()->getPVStructure(),
-           monitorElement);
+    {
+        Lock xx(mutex);
+        BitSetPtr const &changedBitSet = monitorElement->changedBitSet;
+        BitSetPtr const &overrunBitSet = monitorElement->overrunBitSet;
+        size_t offsetCopyRequested = pvCopy->getCopyOffset(
+            requested->getPVField());
+        size_t offset = offsetCopyRequested
+             + (pvRecordField->getPVField()->getFieldOffset()
+                 - requested->getPVField()->getFieldOffset());
+        bool isSet = changedBitSet->get(offset);
+        changedBitSet->set(offset);
+        if(isSet) overrunBitSet->set(offset);
+        MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offsetCopyRequested);
+        if(monitorPlugin!=NULL) {
+            causeMonitor = monitorPlugin->causeMonitor(
+               requested->getPVField(),
+               pvRecord->getPVRecordStructure()->getPVStructure(),
+               monitorElement);
+        }
+        if(causeMonitor) dataChanged = true;
     }
     if(causeMonitor) {
-        if(!isGroupPut) pvCopyMonitorRequester->dataChanged();
-        dataChanged = true;
+        if(!isGroupPut) {
+            monitorElement = pvCopyMonitorRequester->releaseActiveElement();
+            dataChanged = false;
+        }
     }
 }
 
@@ -270,8 +263,11 @@ void PVCopyMonitor::beginGroupPut(PVRecordPtr const & pvRecord)
     {
         cout << "PVCopyMonitor::beginGroupPut()" << endl;
     }
-    isGroupPut = true;
-    dataChanged = false;
+    {
+        Lock xx(mutex);
+        isGroupPut = true;
+        dataChanged = false;
+    }
     std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
     for (iter = monitorFieldNodeList.begin();
     iter!=monitorFieldNodeList.end();
@@ -287,15 +283,18 @@ void PVCopyMonitor::endGroupPut(PVRecordPtr const & pvRecord)
     {
         cout << "PVCopyMonitor::endGroupPut() dataChanged " << dataChanged << endl;
     }
-    isGroupPut = false;
     std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
     for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
     {
        (*iter)->monitorPlugin->endGroupPut();
     }
+    {
+        Lock xx(mutex);
+        isGroupPut = false;
+    }
     if(dataChanged) {
-         dataChanged = false;
-         pvCopyMonitorRequester->dataChanged();
+        monitorElement = pvCopyMonitorRequester->releaseActiveElement();
+        dataChanged = false;
     }
 }
 
@@ -303,7 +302,5 @@ void PVCopyMonitor::unlisten(PVRecordPtr const & pvRecord)
 {
     pvCopyMonitorRequester->unlisten();
 }
-
-
 
 }}

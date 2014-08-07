@@ -147,6 +147,7 @@ void ExampleLink::channelGetConnect(
 {
     this->status = status;
     this->channelGet = channelGet;
+    getPVStructure = getPVDataCreate()->createPVStructure(structure);
     event.signal();
 }
 
@@ -157,7 +158,7 @@ void ExampleLink::getDone(
         BitSetPtr const & bitSet)
 {
     this->status = status;
-    getPVStructure = pvStructure;
+    convert->copyStructure(pvStructure,getPVStructure);
     this->bitSet = bitSet;
     event.signal();
 }

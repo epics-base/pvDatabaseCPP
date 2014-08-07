@@ -13,4 +13,4 @@ cd ${TOP}/iocBoot/${IOC}
 iocInit()
 startPVAClient
 startPVAServer
-exampleLinkCreateRecord exampleLinkRemote pvAccess doubleArray
+exampleLinkCreateRecord exampleLink pvAccess doubleArray

@@ -31,7 +31,7 @@ RecordListRecordPtr RecordListRecord::create(
             endNested()->
         addNestedStructure("result") ->
             add("status",pvString) ->
-            addArray("name",pvString) ->
+            addArray("names",pvString) ->
             endNested()->
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
@@ -68,13 +68,13 @@ bool RecordListRecord::init()
     if(regularExpression.get()==NULL) return false;
     status = pvStructure->getStringField("result.status");
     if(status.get()==NULL) return false;
-    PVFieldPtr pvField = pvStructure->getSubField("result.name");
+    PVFieldPtr pvField = pvStructure->getSubField("result.names");
     if(pvField.get()==NULL) {
-        std::cerr << "no result.name" << std::endl;
+        std::cerr << "no result.names" << std::endl;
         return false;
     }
     name = static_pointer_cast<PVStringArray>(
-         pvStructure->getScalarArrayField("result.name",pvString));
+         pvStructure->getScalarArrayField("result.names",pvString));
     if(name.get()==NULL) return false;
     return true;
 }
