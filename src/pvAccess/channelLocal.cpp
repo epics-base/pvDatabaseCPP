@@ -1295,7 +1295,7 @@ void ChannelLocal::printInfo()
 
 void ChannelLocal::printInfo(std::ostream& out)
 {
-    out << "ChannelLocal provides access to service";
+    out << "ChannelLocal provides access to a record in the local PVDatabase";
 }
 
 }}

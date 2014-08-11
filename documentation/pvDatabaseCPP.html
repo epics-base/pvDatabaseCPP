@@ -38,7 +38,7 @@
 <h1>pvDatabaseCPP</h1>
 <!-- Maturity: Working Draft or Request for Comments, or Recommendation, and date. -->
 
-<h2 class="nocount">EPICS v4 Working Group, Working Draft, 10-July-2014</h2>
+<h2 class="nocount">EPICS v4 Working Group, Working Draft, 11-August-2014</h2>
 <dl>
     <dt>Latest version:</dt>
     <dd><a
@@ -78,7 +78,7 @@ V4 control system programming environment:<br />
 
 <h2 class="nocount">Status of this Document</h2>
 
-<p>This is the 10-July-2014 version of of pvDatabaseCPP.</p>
+<p>This is the 11-August-2014 version of of pvDatabaseCPP.</p>
 </p>
 <p>This version is a complete implementation of what is described in this manual.
 </div>
@@ -98,6 +98,7 @@ A service can be run as a main process or can be part of a V3 IOC.
 Thus services can be developed that interact with V3 records, asynDriver,
 areaDetector, etc.
 </p>
+
 <p>A brief description of a pvDatabase is that it is a set of network accessible, smart,
 memory resident records.
 Each record has data composed of a top level PVStructure.
@@ -146,6 +147,8 @@ level PVStructure and the following three methods:</p>
   <dt>destroy</dt>
      <dd>This releases and resources used by the implementation.</dd>
 </dl>
+<p>Doxygen documentation is available at <a
+href="./html/index.html">doxygenDoc</a></p>
 <h3>Getting started</h3>
 <p>The first step is to build pvDatabaseCPP as described in the next section.</p>
 <p>One of the examples is exampleServer.
@@ -897,6 +900,174 @@ It provides access to PVRecords and is accessed by the server side of remote pvA
 It uses the copy and monitor facilities from pvDataCPP and connects
 them to a PVRecord.
 </p>
+<p>The implementation is a complete implementation of channelProvider
+and channel except for channelRPC, which is implement by pvAccess as a separate
+channel provider.</p>
+<p>The following provides a brief description of each channel method that
+is implemented.</p>
+<h3>channelProcessLocal</h3>
+<p>Needs to be described.</p>
+<h3>channelGetLocal</h3>
+<p>Needs to be described.</p>
+<h3>channelPutLocal</h3>
+<p>Needs to be described.</p>
+<h3>channelPutGetLocal</h3>
+<p>Needs to be described.</p>
+<h3>channelArrayLocal</h3>
+<p>Needs to be described.</p>
+<h3>MonitorLocal</h3>
+<p>This is the code that implements monitors on changes to fields of a PVRecord.
+Because it is called by pvAccess client (monitor methods) and by
+PVRecord (when postPut is called), it must be careful to prevent deadlocks.
+The implementation is via class MonitorLocal (implmented in monitorFactory.cpp)
+and PVCopyMonitor.
+MonitorLocal is the interface between pvAccess and PVCopyMonitor.
+PVCopyMonitor is the interface between MonitorLocal and PVRecord.
+MonitorLocal manages a MonitorElement queue.
+While monitoring is active (between start and stop) it keeps an active element
+for use by PVCopyMonitor.
+While monitoring is active PVCopyMonitor updates the active monitor element whenever
+a postPut is issued to any field being monitored.
+</p>
+<p>The following two sections provide a few more details about MonitorLocal
+and PVCopyMonitor.<p>
+<h4>MonitorLocal</h4>
+<p>MonitorLocal implements the following abstract base classes:</p>
+<dl>
+  <dt>Monitor</dt>
+     <dd>This is described by pvDataCPP.
+     It has methods start, stop, poll, and release.
+      These methods are called by the pvAccess client
+     </dd>
+  <dt>PVCopyMonitorRequester</dt>
+     <dd>This has methods releaseActiveElement and unlisten.
+      These methods are called by PVCopyMonitor.
+     </dd>
+</dl>
+MonitorLocal manages the following:
+<dl>
+  <dt>MonitorElementQueue</dt>
+    <dd>This is a queue of monitor elements.
+     A Queue is implemented by pvDataCPP and used by MonitorLocal.
+     It is a finite queue.
+     A monitor element is described by pvDataCPP.
+     It has fields pvStructure, changedBitSet, and overrunBitSet.
+     The pvStructure holds data for a subset of the fields in a PVRecord.
+     The changedBitSet and overrunBitSet describe changes between
+      monitor event.
+      MonitorLocal creates an instance of PVCopy (implemented by pvDataCPP),
+      which manages the interaction between the set of fields being
+      monitored and the fields in the top level PVStructure of the PVRecord.
+      pvCopy is also used to create the pvStructure for each monitor element.
+      </dd>
+  <dt>activeElement</dt>
+    <dd>Whenever monitoring is active monitorLocal
+     keeps an active element for use by pvCopyMonitor.
+     It changes the active element based on calls to poll (by the
+     client) and calls to releaseActiveElement (by pvCopyMonitor).
+     If there are no free element when releaseActiveElement is
+     called the current active element is returned.
+     If a free element is available the client is notified that a new
+      monitor element is available and the free element becomes the
+    active element.
+    </dd>
+</dl>
+<p>A brief description on each method in MonitorLocal is:</p>
+<dl>
+   <dt>start</dt>
+     <dd>
+        Called by client.
+        With a lock held it clears the monitorElement queue
+       and allocates an active element.
+      With no lock held calls pvCopyMonitor-&gt;startMonitoring(activeElement)
+     <dd>
+   <dt>stop</dt>
+      <dd>
+        Called by client.
+      With no lock held calls pvCopyMonitor-&gt;stopMonitoring(activeElement)
+      </dd>
+   <dt>poll</dt>
+      <dd>
+        Called by client.
+       With a lock held it calls queue-&gt;getUsed();
+      </dd>
+   <dt>release</dt>
+      <dd>
+        Called by client.
+       With a lock held it calls queue-&gt;releaseUsed();
+      </dd>
+   <dt>releaseActiveElement</dt>
+      <dd>
+       Called by PVCopyMonitor with no locks held.
+       With a lock held it tries to get a new free element.
+       If it can't it just returns the current active element.
+       Otherwise it does the following.
+       Using the activeElement it updates the pvStructure
+        and compresses the changed and overrun bitSet.
+       It then calls queue-&gt;setUsed(activeElement);
+       It then sets the active element to the new free element.
+        With no lock held it calls monitorRequester-&gt;monitorEvent(getPtrSelf())
+       and finally returns the new active element,
+      </dd>
+   <dt>unlisten</dt>
+      <dd>
+       With no lock held it calls monitorRequester-&gt;unlisten(getPtrSelf());
+      </dd>
+</dl>
+<h4>PVCopyMonitor</h4>
+<p>
+pvCopyMonitor is the code that manages changes to
+fields in the record.
+It is called by PVRecord whenever a postPut is issued to a field.
+pvCopyMonitor uses the active monitor element provided by monitorFactory.
+Note that this method is called with the record locked.
+It only modifies the changedBitSet and overrunBitSet of the
+active element but never modifies the pvStructure.
+</p>
+<p>A brief description of the pvCopyMonitor methods is:</p>
+<dl>
+  <dt>startMonitoring</dt>
+     <dd>With no lock held it sets its monitorElement to the
+     startElement pased by monitorLocal and calls pvRecord-&gt;addListener(getPtrSelf()).
+     It locks the pvRecord.
+      It calls calls addListener for every field in the record that is being
+      monitored.
+     It clears the overrun and changed bit sets.
+     It sets bit 0 of the changed bit set and calls
+     pvCopyMonitorRequester-&gt;releaseActiveElement();
+     Thus the client will get the initial values for every field being monitored.
+     The record is unlocked and the method returns to the caller.
+      </dd>
+  <dt>stopMonitoring</dt>
+     <dd>
+      With no lock held it calls pvRecord-&gt;removeListener(getPtrSelf());
+     </dd>
+  <dt>dataPut</dt>
+     <dd>
+      This is called because of a call to postPut.
+      It is called with the record locked.
+      It updates the changed and overrun bitSets.
+      It isGroupPut is false it calls
+      pvCopyMonitorRequester-&gt;releaseActiveElement().
+      Otherwise it sets dataChanged true.
+     </dd>
+  <dt>beginGroupPut</dt>
+     <dd>
+      With a lock held it
+      sets isGroupPut true and dataChanged false.
+     </dd>
+  <dt>endGroupPut</dt>
+     <dd>
+      With a lock held it sets isGroupPut false.
+      With no lock held and dataChanged true it calls
+      pvCopyMonitorRequester-&gt;releaseActiveElement()
+     </dd>
+  <dt>unlisten</dt>
+     <dd>
+      Just calls pvCopyMonitorRequester-&gt;unlisten();
+     </dd>
+</dl>
+
 <h2>special</h2>
 <p>This section provides two useful record support modules
 and one that is used for testing.</p>

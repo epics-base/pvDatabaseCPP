@@ -20,16 +20,39 @@ namespace epics { namespace pvDatabase {
 class RecordListRecord;
 typedef std::tr1::shared_ptr<RecordListRecord> RecordListRecordPtr;
 
+/**
+ * This is a record that provides a PVStringArray that
+ * has the record names of all records in the local PVDatabase.
+ * It is meant to be used by a channelPutGet request.
+ */
 class epicsShareClass RecordListRecord :
     public PVRecord
 {
 public:
     POINTER_DEFINITIONS(RecordListRecord);
+    /**
+     * Factory methods to create RecordListRecord.
+     * @param recordName The name for the RecordListRecord.
+     * @return A shared pointer to RecordListRecord..
+     */
     static RecordListRecordPtr create(
         std::string const & recordName);
+    /**
+     * destructor
+     */
     virtual ~RecordListRecord();
+    /**
+     * Clean up any resources used.
+     */
     virtual void destroy();
+    /**
+     * standard init method required by PVRecord
+     * @return true unless record name already exists.
+     */
     virtual bool init();
+    /* 
+     * Generated the list of record names.
+     */
     virtual void process();
 private:
     RecordListRecord(std::string const & recordName,

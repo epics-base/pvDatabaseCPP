@@ -6,16 +6,12 @@ monitorPlugin
 
 A debate is on-going about what semantics should be.
 
-
-memory leak
---------
-
-arrayPerformanceMain shows a slight memory leak at termination.
-
-channel destroy and recreate
+Must test record delete.
 -------------------
 
-longArrayGet and longArrayPut fail if the channel is destroyed and immediately recreated. If epicsThreadSleep(1.0) is called between destroy and recreate then they work. The current version of each does wait.
+Must test removing a record from the PVDatabase while a pvAccess client
+is attached. Also why do both unlisten and detach exists?
+
 
 create more regresion tests
 ----------------

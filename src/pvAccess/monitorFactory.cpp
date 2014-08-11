@@ -168,18 +168,6 @@ void MonitorLocal::release(MonitorElementPtr const & monitorElement)
     queue->releaseUsed(monitorElement);
 }
 
-
-MonitorElementPtr MonitorLocal::getActiveElement()
-{
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "MonitorLocal::getActiveElement() "  << endl;
-    }
-    if(isDestroyed) return activeElement;
-    Lock xx(mutex);
-    return activeElement;
-}
-
 MonitorElementPtr MonitorLocal::releaseActiveElement()
 {
     if(pvRecord->getTraceLevel()>1)

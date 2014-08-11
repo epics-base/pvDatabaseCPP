@@ -267,7 +267,6 @@ void LongArrayChannelPut::run()
             if(iterBetweenCreateChannel!=0) {
                 if(numChannelCreate>=iterBetweenCreateChannel) {
                     channel->destroy();
-                    epicsThreadSleep(1.0);
                     ChannelProvider::shared_pointer channelProvider =
                          getChannelProviderRegistry()->getProvider(providerName);
                     channel = channelProvider->createChannel(
