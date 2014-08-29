@@ -841,6 +841,10 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
         if(pvfs.size()!=1) break;
         pvField = pvfs[0];
     }
+    size_t indfield = fieldName.find_first_of("field.");
+    if(indfield==0) {
+         fieldName = fieldName.substr(6);
+    }
     pvField = pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(fieldName);
     if(pvField==NULL) {
         Status status(
