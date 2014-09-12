@@ -27,13 +27,13 @@
 #include <epicsThread.h>
 #include <iocsh.h>
 
-#include <epicsExport.h>
-
 #include <pv/pvIntrospect.h>
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 #include <pv/powerSupply.h>
+
+#include <epicsExport.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

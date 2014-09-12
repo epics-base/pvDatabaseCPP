@@ -27,12 +27,12 @@
 #include <iocsh.h>
 #include <shareLib.h>
 
-#include <epicsExport.h>
-
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-#define epicsExportSharedSymbols
+// this declared epicsExportSharedSymbols
+#include <epicsExport.h>
+
 #include <pv/channelProviderLocal.h>
 
 using std::cout;
