@@ -27,8 +27,9 @@
 #ifdef pvdatabaseEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
 #	undef pvdatabaseEpicsExportSharedSymbols
-#   include <shareLib.h>
 #endif
+
+#include <shareLib.h>
 
 
 namespace epics { namespace pvDatabase { 
