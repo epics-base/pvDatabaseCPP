@@ -27,6 +27,8 @@
 #include <pv/traceRecord.h>
 
 #include <pv/powerSupply.h>
+
+#define epicsExportSharedSymbols
 #include <pv/exampleDatabase.h>
 
 using namespace std;

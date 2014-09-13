@@ -34,9 +34,8 @@
 #include <pv/pvAccess.h>
 #include <pv/pvDatabase.h>
 
-#include <pv/exampleLink.h>
-
 #include <epicsExport.h>
+#include <pv/exampleLink.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

@@ -33,9 +33,8 @@
 #include <pv/pvDatabase.h>
 #include <pv/recordList.h>
 
-#include <pv/exampleServer.h>
-
 #include <epicsExport.h>
+#include <pv/exampleServer.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

@@ -17,7 +17,6 @@
 #   undef epicsExportSharedSymbols
 #endif
 
-#include <shareLib.h>
 #include <pv/event.h>
 #include <pv/lock.h>
 #include <pv/standardPVField.h>

@@ -9,9 +9,11 @@
  * @date 2013.08.02
  */
 
-#include <pv/exampleLink.h>
 #include <pv/standardPVField.h>
 #include <pv/convert.h>
+
+#define epicsExportSharedSymbols
+#include <pv/exampleLink.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
