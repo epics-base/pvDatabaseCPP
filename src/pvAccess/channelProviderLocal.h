@@ -22,8 +22,6 @@
 #include <memory>
 #include <set>
 
-#include <shareLib.h>
-
 #include <pv/lock.h>
 #include <pv/pvType.h>
 #include <pv/pvData.h>
@@ -36,6 +34,8 @@
 #   define epicsExportSharedSymbols
 #	undef channelProviderLocalEpicsExportSharedSymbols
 #endif
+
+#include <shareLib.h>
 
 #include <pv/pvDatabase.h>
 

@@ -21,8 +21,6 @@
 #include <memory>
 #include <list>
 
-#include <shareLib.h>
-
 #include <pv/monitorPlugin.h>
 #include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
@@ -31,6 +29,8 @@
 #   define epicsExportSharedSymbols
 #	undef pvCopyMonitorEpicsExportSharedSymbols
 #endif
+
+#include <shareLib.h>
 
 #include <pv/pvDatabase.h>
 
