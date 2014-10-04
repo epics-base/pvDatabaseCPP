@@ -63,11 +63,11 @@ href="http://epics-pvdata.sourceforge.net/LICENSE.html">EPICS open source licens
 <h2 class="nocount">Abstract</h2>
 
 <p>This document describes pvDatabaseCPP,
-which is a framework for implementing a network accessable database of smart memory resident
+which is a framework for implementing a network accessible database of smart memory resident
 records. Network access is via pvAccess. The data in each record is a top level PVStructure as defined by
 pvData. The framework includes a complete implementation of ChannelProvider as defined by pvAccess.
 The framework can be extended in order to create record instances that implements services.
-The minimum that an extenson must provide is a top level PVStructure and a process method.
+The minimum that an extension must provide is a top level PVStructure and a process method.
 </p>
 
 <p>EPICS version 4 is a set of related products in the EPICS
@@ -251,7 +251,7 @@ arrays. It is also described in a later section.</p>
 to learn how to implement a service.</p>
 
 <h3>Relationship with pvIOCJava.</h3>
-<p>This document descibes a C++ implementation of some of the components in pvIOCJava,
+<p>This document describes a C++ implementation of some of the components in pvIOCJava,
 which also implements a pvDatabase.
 PVDatabaseCPP implements the core components required to create a network accessible database of smart
 memory resident records.
@@ -266,7 +266,7 @@ Until a need is demonstrated this will remain true.
 The main user of a pvDatabase is pvAccess, and in particular, remote pvAccess.
 The server side of remote pvAccess creates two threads for each client and always accesses
 a record via these threads.
-It is expected that these threads will be sufficient to efficently handle all channel methods except
+It is expected that these threads will be sufficient to efficiently handle all channel methods except
 channelRPC. For channelRPC pvAccess provides (or will provide) a thread pool for channelRPC requests.
 If, in the future, a scanning facility is provided by pvDatabaseCPP or some other facility,
 then the scanning facility will have to provide some way of handling process requests that block.</p>
@@ -316,11 +316,11 @@ The rest of this  document discusses only the first phase.</p>
        The localChannelProvider accesses data from PVRecords.
      It implements all channel methods except channelRPC, which is implemented by pvAccessCPP.</dd>
 </dl>
-<h3>Minumum Features Required for pvRecord</h3>
+<h3>Minimum Features Required for pvRecord</h3>
 <p>The first phase will only implement record processing, i. e.
 the process method has to do everything itself without any generic field support.
 This will be sufficient for implementing many services.
-The following are the minimium features required</p>
+The following are the minimum features required</p>
 <dl>
   <dt>PVDatabase</dt>
       <dd>This holds a set of PVRecords. It has methods to find, add, and remove records.</dd>
@@ -501,7 +501,7 @@ It describes the following classes:</p>
      <dd>These wrap PVField and PVStructure so that pvCopy and monitor
         can be implemented.</dd>
    <dt>PVRecordClient</dt>
-      <dd>This is called by anything that acceses PVRecord.</dd>
+      <dd>This is called by anything that accesses PVRecord.</dd>
    <dt>PVListener</dt>
       <dd>This is implemented by anything that wants to trap calls to PVRecord::message.</dd>
    <dt>PVDatabase</dt>
@@ -645,7 +645,7 @@ private:
         must have the record locked.</dd>
    <dt>tryLock</dt>
       <dd>If true then just like lock.
-       If falseclient can not access record.
+       If false client can not access record.
        A client can try to simultaneously hold the lock for more than two records
        by calling this method. But must be willing to accept failure.
        </dd>
@@ -919,7 +919,7 @@ is implemented.</p>
 <p>This is the code that implements monitors on changes to fields of a PVRecord.
 Because it is called by pvAccess client (monitor methods) and by
 PVRecord (when postPut is called), it must be careful to prevent deadlocks.
-The implementation is via class MonitorLocal (implmented in monitorFactory.cpp)
+The implementation is via class MonitorLocal (implemented in monitorFactory.cpp)
 and PVCopyMonitor.
 MonitorLocal is the interface between pvAccess and PVCopyMonitor.
 PVCopyMonitor is the interface between MonitorLocal and PVRecord.
@@ -1028,7 +1028,7 @@ active element but never modifies the pvStructure.
 <dl>
   <dt>startMonitoring</dt>
      <dd>With no lock held it sets its monitorElement to the
-     startElement pased by monitorLocal and calls pvRecord-&gt;addListener(getPtrSelf()).
+     startElement passed by monitorLocal and calls pvRecord-&gt;addListener(getPtrSelf()).
      It locks the pvRecord.
       It calls calls addListener for every field in the record that is being
       monitored.
@@ -1096,7 +1096,7 @@ where:
            <dd>Lifecycle messages will be generated.
             This all channel create and destroy instances will be shown.</dd>
           <dt>2</dt>
-            <dd>In addition to lifecycle messages a message will be generted
+            <dd>In addition to lifecycle messages a message will be generated
              for each get and put request.</dd>
           <dt>&gt;2</dt>
             <dd>Currently no definition</dd>
@@ -1134,7 +1134,7 @@ traceRecord
 where:
 <dl>
    <dt>database</dt>
-     <dd>The name of the datbase. The default is "master"</dd>
+     <dd>The name of the database. The default is "master"</dd>
    <dt>regularExpression</dt>
      <dd>For now this is ignored and the complete list of names is always
      returned.</dd>
@@ -1538,7 +1538,7 @@ and 2) gives a brief description of an example that gets data for an array of do
 </dl>
 <h4>Data synchronization</h4>
 <p>If pvAccess is used then it handles data synchronization.
-This is done by making a copy of the data that is transfered between the two pvRecords.
+This is done by making a copy of the data that is transferred between the two pvRecords.
 This is true if either remote or local pvAccess is used.
 Each get, put, etc request results in data being copied between the two records.</p>
 <p>
@@ -1781,7 +1781,7 @@ or some other memory check program.
    <dt>arrayPerformanceMain</dt>
      <dd>This is server and also a configurable number of longArrayMonitor clients.
      The clients can use either the local or
-    remote providers. The moitor code is the same code that is used by longArrayMonitorMain.
+    remote providers. The monitor code is the same code that is used by longArrayMonitorMain.
      </dd>
    <dt>longArrayMonitorMain</dt>
      <dd>Remote client that monitors the array served by arrayPerformanceMain.</dd>
@@ -1817,7 +1817,7 @@ longArrayPutMain arrayPerformance 10 0 0 1
 mrk&gt; 
 </pre>
 <h3>Example output</h3>
-<p><b>Note:</b> These may fail if run on a platform that does not have sufficent memory,</p>
+<p><b>Note:</b> These may fail if run on a platform that does not have sufficient memory,</p>
 <p>To see an example just execute the following commands in four different terminal windows:</p>
 <pre>
 bin/linux/&lt;arch&gt;/arrayPerformanceMain
@@ -1825,7 +1825,7 @@ bin/linux/&lt;arch&gt;/longArrayMonitorMain
 bin/linux/&lt;arch&gt;/longArrayGetMain
 bin/linux/&lt;arch&gt;/longArrayPutMain
 </pre>
-<p>Each program generates a report every second when it has somthing to report.
+<p>Each program generates a report every second when it has something to report.
 Examples are:
 <pre>
 mrk&gt; bin/linux-x86_64/arrayPerformanceMain
@@ -1906,7 +1906,7 @@ until the record is destroyed executing the following algorithm:</p>
     </dd>
   <dt>create array</dt>
      <dd>A new shared_vector is created and each element is set equal
-      to the interation count.</dd>
+      to the iteration count.</dd>
   <dt>lock</dt>
      <dd>The arrayPerformance record is locked.</dd>
   <dt>Begin group put</dt>
@@ -1927,7 +1927,7 @@ until the record is destroyed executing the following algorithm:</p>
 <h3>longArrayMonitor</h3>
 <p>This is a pvAccess client that monitors an arrayPerformance record.
 It generates a report every second showing how many elements has received.
-For every monitor it also checks that the number of alements is &gt;0 and the
+For every monitor it also checks that the number of elements is &gt;0 and the
 the first element equals the last element. It reports an error if either
 of these conditions is not true.</p>
 <p>The arguments for longArrayMonitorMain are:</p>
@@ -1958,7 +1958,7 @@ Every second it produces a report.</p>
       A value of 0 means never destroy and recreate.
       </dd>
   <dt>delayTime</dt>
-     <dd>The time to dalay between gets.</dd>
+     <dd>The time to delay between gets.</dd>
 </dl>
 <h3>longArrayPut</h3>
 <p>This is a pvAccess client that uses channelPut to access an arrayPerformance record.
@@ -1979,7 +1979,7 @@ Every second it produces a report.</p>
       A value of 0 means never destroy and recreate.
       </dd>
   <dt>delayTime</dt>
-     <dd>The time to dalay between gets.</dd>
+     <dd>The time to delay between gets.</dd>
 </dl>
 
 <h3>Some results</h3>
@@ -2014,7 +2014,7 @@ mr&gt; pwd
 /home/hg/pvDatabaseCPP-md
 mrk&gt; bin/linux-x86_64/longArrayMonitorMain
 </pre>
-<p>The performance drops to about 25 interations per second and 250 million elements per second.
+<p>The performance drops to about 25 iterations per second and 250 million elements per second.
 The next section has an example that demonstrates what happens.
 Note that if the array size is small enough to fit in the local cache then running longArrayMonitor
 has almost no effect of arrayPerforance.
