@@ -17,6 +17,7 @@
 #endif
 
 #include <pv/pvDatabase.h>
+#include <pv/monitorPlugin.h>
 
 #ifdef examplemonitorPluginEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -25,7 +26,6 @@
 
 #include <shareLib.h>
 
-#include <pv/monitorPlugin.h>
 
 namespace epics { namespace pvDatabase { 
 
