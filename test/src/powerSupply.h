@@ -38,7 +38,7 @@ epicsShareExtern epics::pvData::PVStructurePtr createPowerSupply();
 class PowerSupply;
 typedef std::tr1::shared_ptr<PowerSupply> PowerSupplyPtr;
 
-class PowerSupply :
+class epicsShareClass PowerSupply :
     public PVRecord
 {
 public:
