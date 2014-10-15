@@ -11,11 +11,22 @@
 #ifndef EXAMPLECOUNTER_H
 #define EXAMPLECOUNTER_H
 
-#include <shareLib.h>
+#ifdef epicsExportSharedSymbols
+#   define exampleServerEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
 
 #include <pv/pvDatabase.h>
 #include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
+
+#ifdef exampleServerEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef exampleServerEpicsExportSharedSymbols
+#endif
+
+#include <shareLib.h>
+
 
 namespace epics { namespace exampleServer { 
 

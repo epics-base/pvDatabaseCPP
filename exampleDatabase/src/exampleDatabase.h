@@ -16,14 +16,14 @@
 #   undef epicsExportSharedSymbols
 #endif
 
-#include <shareLib.h>
 #include <pv/pvDatabase.h>
 
 #ifdef exampledatabaseEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
 #	undef exampledatabaseEpicsExportSharedSymbols
-#   include <shareLib.h>
 #endif
+
+#include <shareLib.h>
 
 namespace epics { namespace pvDatabase { 
 

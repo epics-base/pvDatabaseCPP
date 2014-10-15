@@ -11,6 +11,8 @@
 
 #include <pv/convert.h>
 #include <pv/monitorPlugin.h>
+
+#define epicsExportSharedSymbols
 #include <pv/exampleMonitorPlugin.h>
 
 using namespace epics::pvData;

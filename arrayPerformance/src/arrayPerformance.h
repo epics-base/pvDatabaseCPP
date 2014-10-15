@@ -17,7 +17,6 @@
 #   undef epicsExportSharedSymbols
 #endif
 
-#include <shareLib.h>
 #include <epicsThread.h>
 #include <pv/standardPVField.h>
 #include <pv/timeStamp.h>

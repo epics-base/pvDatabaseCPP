@@ -10,6 +10,8 @@
  */
 
 #include <pv/standardField.h>
+
+#define epicsExportSharedSymbols
 #include <pv/exampleServer.h>
 
 using namespace epics::pvData;

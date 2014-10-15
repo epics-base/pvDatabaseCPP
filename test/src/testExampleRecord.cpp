@@ -23,13 +23,13 @@
 #include <epicsEvent.h>
 #include <epicsThread.h>
 
-#include <epicsExport.h>
-
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
 #include "powerSupply.h"
+
+#include <epicsExport.h>
 
 using namespace std;
 using std::tr1::static_pointer_cast;
