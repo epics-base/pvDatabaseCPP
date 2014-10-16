@@ -150,7 +150,7 @@ void ExampleDatabase::create()
     recordName = "examplePowerSupply";
     PVStructurePtr pvStructure = createPowerSupply();
     PowerSupplyPtr psr = PowerSupply::create(recordName,pvStructure);
-    if(psr==NULL) {
+    if(!psr) {
           cout << "PowerSupply::create failed" << endl;
     } else {
         result = master->addRecord(psr);
@@ -158,7 +158,7 @@ void ExampleDatabase::create()
     }
     recordName = "laptoprecordListPGRPC";
     pvRecord = RecordListRecord::create(recordName);
-    if(pvRecord==NULL) {
+    if(!pvRecord) {
           cout << "RecordListRecord::create failed" << endl;
     } else {
         result = master->addRecord(pvRecord);

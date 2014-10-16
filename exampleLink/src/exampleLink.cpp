@@ -65,12 +65,12 @@ bool ExampleLink::init()
     pvAlarm.attach(pvStructure->getSubField("alarm"));
     pvValue = static_pointer_cast<PVDoubleArray>(
         pvStructure->getScalarArrayField("value",pvDouble));
-    if(pvValue==NULL) {
+    if(!pvValue) {
         return false;
     }
     ChannelProvider::shared_pointer provider =
         getChannelProviderRegistry()->getProvider(providerName);
-    if(provider==NULL) {
+    if(!provider) {
          cout << getRecordName() << " provider "
               << providerName << " does not exist" << endl;
         return false;
@@ -97,7 +97,7 @@ bool ExampleLink::init()
     }
     getPVValue = static_pointer_cast<PVDoubleArray>(
         getPVStructure->getScalarArrayField("value",pvDouble));
-    if(getPVValue==NULL) {
+    if(!getPVValue) {
         cout << getRecordName() << " get value not  PVDoubleArray" << endl;
         return false;
     }

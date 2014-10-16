@@ -81,7 +81,7 @@ bool PowerSupply::init()
     PVFieldPtr pvField;
     bool result;
     pvField = pvStructure->getSubField("timeStamp");
-    if(pvField==NULL) {
+    if(!pvField) {
         cerr << "no timeStamp" << endl;
         return false;
     }
@@ -91,7 +91,7 @@ bool PowerSupply::init()
         return false;
     }
     pvField = pvStructure->getSubField("alarm");
-    if(pvField==NULL) {
+    if(!pvField) {
         cerr << "no alarm" << endl;
         return false;
     }
@@ -101,17 +101,17 @@ bool PowerSupply::init()
         return false;
     }
     pvCurrent = pvStructure->getSubField<PVDouble>("current.value");
-    if(pvCurrent==NULL) {
+    if(!pvCurrent) {
         cerr << "no current\n";
         return false;
     }
     pvVoltage = pvStructure->getSubField<PVDouble>("voltage.value");
-    if(pvVoltage==NULL) {
+    if(!pvVoltage) {
         cerr << "no current\n";
         return false;
     }
     pvPower = pvStructure->getSubField<PVDouble>("power.value");
-    if(pvPower==NULL) {
+    if(!pvPower) {
         cerr << "no powert\n";
         return false;
     }

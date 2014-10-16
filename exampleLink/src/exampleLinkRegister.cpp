@@ -70,8 +70,8 @@ static void exampleLinkCallFunc(const iocshArgBuf *args)
     char *providerName = args[1].sval;
     char *channelName = args[2].sval;
     ExampleLinkPtr record = ExampleLink::create(recordName,providerName,channelName);
-    if(record!=NULL) 
-    result = master->addRecord(record);
+    if(record) 
+        result = master->addRecord(record);
     if(!result) cout << "recordname" << " not added" << endl;
 }
 

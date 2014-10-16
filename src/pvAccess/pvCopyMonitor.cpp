@@ -77,17 +77,17 @@ void PVCopyMonitor::init(PVFieldPtr const &pvField)
     size_t offset = pvCopy->getCopyOffset(pvField);
     if(offset==string::npos) return;
     PVStructurePtr pvOptions = pvCopy->getOptions(offset);
-    if(pvOptions!=NULL) {
+    if(pvOptions) {
         PVStringPtr pvName = pvOptions->getSubField<PVString>("plugin");
-        if(pvName!=NULL) {
+        if(pvName) {
             string pluginName = pvName->get();
             MonitorPluginManagerPtr manager = MonitorPluginManager::get();
             MonitorPluginCreatorPtr pluginCreator = manager->findPlugin(pluginName);
-            if(pluginCreator!=NULL) {
+            if(pluginCreator) {
                 StructureConstPtr top = pvCopy->getStructure();
                 FieldConstPtr field = pvField->getField();
                 MonitorPluginPtr monitorPlugin = pluginCreator->create(field,top,pvOptions);
-                if(monitorPlugin!=NULL) {
+                if(monitorPlugin) {
                      PVCopyMonitorFieldNodePtr fieldNode(new PVCopyMonitorFieldNode());
                      fieldNode->monitorPlugin = monitorPlugin;
                      fieldNode->offset = offset;
@@ -207,7 +207,7 @@ void PVCopyMonitor::dataPut(PVRecordFieldPtr const & pvRecordField)
         changedBitSet->set(offset);
         if(isSet) overrunBitSet->set(offset);
         MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offset);
-        if(monitorPlugin!=NULL) {
+        if(monitorPlugin) {
             causeMonitor = monitorPlugin->causeMonitor(
                pvRecordField->getPVField(),
                pvRecord->getPVRecordStructure()->getPVStructure(),
@@ -246,7 +246,7 @@ void PVCopyMonitor::dataPut(
         changedBitSet->set(offset);
         if(isSet) overrunBitSet->set(offset);
         MonitorPluginPtr  monitorPlugin = getMonitorPlugin(offsetCopyRequested);
-        if(monitorPlugin!=NULL) {
+        if(monitorPlugin) {
             causeMonitor = monitorPlugin->causeMonitor(
                requested->getPVField(),
                pvRecord->getPVRecordStructure()->getPVStructure(),

@@ -371,7 +371,7 @@ void PVRecordField::init()
 {
     fullFieldName = pvField->getFieldName();
     PVRecordStructurePtr pvParent = parent;
-    while(pvParent.get()!= NULL) {
+    while(pvParent) {
         string parentName = pvParent->getPVField()->getFieldName();
         if(parentName.size()>0) {
             fullFieldName = pvParent->getPVField()->getFieldName()
@@ -434,7 +434,7 @@ void PVRecordField::removeListener(PVListenerPtr const & pvListener)
 
 void PVRecordField::postPut()
 {
-    if(parent!=NULL) {
+    if(parent) {
         parent->postParent(getPtrSelf());
     }
     postSubField();
@@ -448,7 +448,7 @@ void PVRecordField::postParent(PVRecordFieldPtr const & subField)
     {
         (*iter)->dataPut(pvrs,subField);
     }
-    if(parent!=NULL) parent->postParent(subField);
+    if(parent) parent->postParent(subField);
 }
 
 void PVRecordField::postSubField()
