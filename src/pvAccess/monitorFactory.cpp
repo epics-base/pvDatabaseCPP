@@ -178,7 +178,7 @@ MonitorElementPtr MonitorLocal::releaseActiveElement()
     {
         Lock xx(mutex);
         MonitorElementPtr newActive = queue->getFree();
-        if(newActive==NULL) return activeElement;
+        if(!newActive) return activeElement;
         pvCopy->updateCopyFromBitSet(activeElement->pvStructurePtr,activeElement->changedBitSet);
         BitSetUtil::compress(activeElement->changedBitSet,activeElement->pvStructurePtr);
         BitSetUtil::compress(activeElement->overrunBitSet,activeElement->pvStructurePtr);

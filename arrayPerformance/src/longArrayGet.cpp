@@ -266,9 +266,9 @@ void LongArrayChannelGet::channelGetConnect(
     bool structureOK(true);
     PVStructurePtr pvStructure = getPVDataCreate()->createPVStructure(structure);
     PVFieldPtr pvField = pvStructure->getSubField("timeStamp");
-    if(pvField==NULL) structureOK = false;
+    if(!pvField) structureOK = false;
     pvField = pvStructure->getSubField("value");
-    if(pvField==NULL) {
+    if(!pvField) {
          structureOK = false;
     } else {
         FieldConstPtr field = pvField->getField();
@@ -292,7 +292,7 @@ bool LongArrayChannelGet::init()
 {
     ChannelProvider::shared_pointer channelProvider =
         getChannelProviderRegistry()->getProvider(providerName);
-    if(channelProvider==NULL) {
+    if(!channelProvider) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
     }
@@ -305,7 +305,7 @@ bool LongArrayChannelGet::init()
     if(!status.isOK()) return false;
     CreateRequest::shared_pointer createRequest = CreateRequest::create();
     PVStructurePtr pvRequest = createRequest->createRequest(request);
-    if(pvRequest==NULL) {
+    if(!pvRequest) {
         cout << "request logic error " << createRequest->getMessage() << endl;
         return false;
     }
@@ -334,10 +334,10 @@ void LongArrayChannelGet::destroy()
         if(runReturned) break;
         epicsThreadSleep(.01);
     }
-    if(longArrayChannelRequester!=NULL) {
+    if(longArrayChannelRequester) {
         longArrayChannelRequester->destroy();
     }
-    if(longArrayChannelGetRequester!=NULL) {
+    if(longArrayChannelGetRequester) {
         longArrayChannelGetRequester->destroy();
     }
     thread->exitWait();
@@ -433,7 +433,7 @@ void LongArrayChannelGet::run()
                      CreateRequest::create();
                  PVStructurePtr pvRequest =
                      createRequest->createRequest(request);
-                 if(pvRequest==NULL) {
+                 if(!pvRequest) {
                      cout << "request logic error " << createRequest->getMessage() << endl;
                      return ;
                  }

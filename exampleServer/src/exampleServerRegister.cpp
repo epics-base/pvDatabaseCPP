@@ -58,7 +58,7 @@ static void exampleServerCallFunc(const iocshArgBuf *args)
     if(!result) cout << "recordname" << " not added" << endl;
     PVRecordPtr pvRecord = RecordListRecord::create(
         "laptoprecordListPGRPC");
-    if(pvRecord==NULL) {
+    if(!pvRecord) {
           cout << "RecordListRecord::create failed" << endl;
     } else {
         result = master->addRecord(pvRecord);

@@ -70,7 +70,7 @@ typedef std::tr1::shared_ptr<ChannelArrayLocal> ChannelArrayLocalPtr;
 static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
 {
     PVFieldPtr pvField = pvRequest->getSubField("record._options.process");
-    if(pvField==NULL || pvField->getField()->getType()!=scalar) {
+    if(!pvField || pvField->getField()->getType()!=scalar) {
         return processDefault;
     }
     ScalarConstPtr scalar = static_pointer_cast<const Scalar>(
@@ -146,13 +146,13 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
     PVFieldPtr pvField;
     PVStructurePtr pvOptions;
     int nProcess = 1;
-    if(pvRequest!=NULL) pvField = pvRequest->getSubField("record._options");
-    if(pvField.get()!=NULL) {
+    if(pvRequest) pvField = pvRequest->getSubField("record._options");
+    if(pvField) {
         pvOptions = static_pointer_cast<PVStructure>(pvField);
         pvField = pvOptions->getSubField("nProcess");
-        if(pvField.get()!=NULL) {
+        if(pvField) {
             PVStringPtr pvString = pvOptions->getStringField("nProcess");
-            if(pvString.get()!=NULL) {
+            if(pvString) {
                 int size;
                 std::stringstream ss;
                 ss << pvString->get();
@@ -291,7 +291,7 @@ ChannelGetLocalPtr ChannelGetLocal::create(
         pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "");
-    if(pvCopy==NULL) {
+    if(!pvCopy) {
         Status status(
             Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -442,7 +442,7 @@ ChannelPutLocalPtr ChannelPutLocal::create(
         pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "");
-    if(pvCopy==NULL) {
+    if(!pvCopy) {
         Status status(
             Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -624,7 +624,7 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
         pvRecord->getPVRecordStructure()->getPVStructure(),
         pvRequest,
         "getField");
-    if(pvPutCopy==NULL || pvGetCopy==NULL) {
+    if(!pvPutCopy || !pvGetCopy) {
         Status status(
             Status::STATUSTYPE_ERROR,
             "invalid pvRequest");
@@ -846,7 +846,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
          fieldName = fieldName.substr(6);
     }
     pvField = pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(fieldName);
-    if(pvField==NULL) {
+    if(!pvField) {
         Status status(
             Status::STATUSTYPE_ERROR,fieldName +" not found");
         ChannelArrayLocalPtr channelArray;
@@ -1190,7 +1190,7 @@ void ChannelLocal::getField(GetFieldRequester::shared_pointer const &requester,
     } 
     PVFieldPtr pvField = 
         pvRecord->getPVRecordStructure()->getPVStructure()->getSubField(subField);
-    if(pvField.get()!=NULL) {
+    if(pvField) {
         requester->getDone(Status::Ok,pvField->getField());
         return;
     }

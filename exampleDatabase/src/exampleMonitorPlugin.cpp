@@ -42,10 +42,10 @@ public:
    {
         pvField = getPVDataCreate()->createPVField(field);
         raiseMonitor = true;
-        if(pvFieldOptions!=NULL) {
+        if(pvFieldOptions) {
             PVStringPtr pvString =
                 pvFieldOptions->getSubField<PVString>("raiseMonitor");
-                if(pvString!=NULL) {
+                if(pvString) {
                     string value = pvString->get();
                     if(value.compare("false")==0) raiseMonitor = false;
                 }
@@ -90,7 +90,7 @@ void ExampleMonitorPlugin::create()
     static OnChangePluginCreatorPtr plugin;
     static Mutex mutex;
     Lock xx(mutex);
-    if(plugin==NULL) {
+    if(!plugin) {
         plugin = OnChangePluginCreatorPtr(new OnChangePluginCreator());
         MonitorPluginManager::get()->addPlugin(pluginName,plugin);
     }

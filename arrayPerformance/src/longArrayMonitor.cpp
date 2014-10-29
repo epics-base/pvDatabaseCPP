@@ -138,9 +138,9 @@ void LAMMonitorRequester::monitorConnect(Status const & status,
     }
     bool structureOK(true);
     FieldConstPtr field = structure->getField("timeStamp");
-    if(field==NULL) structureOK = false;
+    if(!field) structureOK = false;
     field = structure->getField("value");
-    if(field==NULL) {
+    if(!field) {
          structureOK = false;
     } else {
         if(field->getType()!=scalarArray) {
@@ -179,9 +179,9 @@ void LAMMonitorRequester::run()
             {
                  Lock xx(mutex);
                  monitorElement = longArrayMonitor->monitor->poll();
-                 if(monitorElement!=NULL) pvStructure = monitorElement->pvStructurePtr;
+                 if(monitorElement) pvStructure = monitorElement->pvStructurePtr;
             }
-            if(monitorElement==NULL) break;
+            if(!monitorElement) break;
             if(waitTime>0.0) epicsThreadSleep(waitTime);
             pvTimeStamp.attach(pvStructure->getSubField("timeStamp"));
             pvTimeStamp.get(timeStamp);
@@ -268,7 +268,7 @@ bool LongArrayMonitor::init(
     monitorRequester->init();
     ChannelProvider::shared_pointer channelProvider =
        getChannelProviderRegistry()->getProvider(providerName);
-    if(channelProvider==NULL) {
+    if(!channelProvider) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
     }
@@ -282,7 +282,7 @@ bool LongArrayMonitor::init(
     request += "]field(value,timeStamp,alarm)";
     CreateRequest::shared_pointer createRequest = CreateRequest::create();
     PVStructurePtr pvRequest = createRequest->createRequest(request);
-    if(pvRequest==NULL) {
+    if(!pvRequest) {
         cout << "request logic error " << createRequest->getMessage() << endl;
         return false;
     }

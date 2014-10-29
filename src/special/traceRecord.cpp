@@ -63,11 +63,11 @@ bool TraceRecord::init()
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
     pvRecordName = pvStructure->getStringField("argument.recordName");
-    if(pvRecordName==NULL) return false;
+    if(!pvRecordName) return false;
     pvLevel = pvStructure->getIntField("argument.level");
-    if(pvLevel==NULL) return false;
+    if(!pvLevel) return false;
     pvResult = pvStructure->getStringField("result.status");
-    if(pvResult==NULL) return false;
+    if(!pvResult) return false;
     return true;
 }
 
@@ -75,7 +75,7 @@ void TraceRecord::process()
 {
     string name = pvRecordName->get();
     PVRecordPtr pvRecord = pvDatabase->findRecord(name);
-    if(pvRecord==NULL) {
+    if(!pvRecord) {
         pvResult->put(name + " not found");
         return;
     }

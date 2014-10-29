@@ -110,7 +110,7 @@ private:
 bool LongArrayChannelPut::init()
 {
     ChannelProvider::shared_pointer channelProvider = getChannelProviderRegistry()->getProvider(providerName);
-    if(channelProvider==NULL) {
+    if(!channelProvider) {
         cout << "provider " << providerName << " not found" << endl;
         return false;
     }
@@ -119,7 +119,7 @@ bool LongArrayChannelPut::init()
     if(!status.isOK()) return false;
     CreateRequest::shared_pointer createRequest = CreateRequest::create();
     PVStructurePtr pvRequest = createRequest->createRequest(request);
-    if(pvRequest==NULL) {
+    if(!pvRequest) {
         cout << "request logic error " << createRequest->getMessage() << endl;
         return false;
     }
@@ -187,7 +187,7 @@ void LongArrayChannelPut::channelPutConnect(
     bitSet = BitSetPtr(new BitSet(pvStructure->getNumberFields()));
     bool structureOK(true);
     PVFieldPtr pvField = pvStructure->getSubField("value");
-    if(pvField==NULL) {
+    if(!pvField) {
          structureOK = false;
     } else {
         FieldConstPtr field = pvField->getField();
@@ -294,7 +294,7 @@ void LongArrayChannelPut::run()
                  channelPut->destroy();
                  CreateRequest::shared_pointer createRequest = CreateRequest::create();
                  PVStructurePtr pvRequest = createRequest->createRequest(request);
-                 if(pvRequest==NULL) {
+                 if(!pvRequest) {
                      cout << "request logic error " << createRequest->getMessage() << endl;
                      return ;
                  }
