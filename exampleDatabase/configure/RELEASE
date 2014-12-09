@@ -30,8 +30,8 @@
 PVDATABASETEST = $(TOP)/../test
 PVDATABASE = $(TOP)/..
 
--include $(TOP)/../configure/RELEASE.local
 -include $(TOP)/../../RELEASE.local
+-include $(TOP)/../configure/RELEASE.local
 
 # If you copied this example from pvDatabaseCPP to be built as a
 # standalone TOP, adjust and use the following definitions:
