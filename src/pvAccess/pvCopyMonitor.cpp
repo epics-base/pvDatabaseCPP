@@ -134,18 +134,21 @@ void PVCopyMonitor::startMonitoring(MonitorElementPtr const & startElement)
     }
     if(isDestroyed) return;
     monitorElement = startElement;
-    Lock xx(mutex);
-    if(isMonitoring) return;
-    isMonitoring = true;
-    isGroupPut = false;
-    std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
-    for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
     {
-       (*iter)->monitorPlugin->startMonitoring();
+        Lock xx(mutex);
+        if(isMonitoring) return;
+        isMonitoring = true;
+        isGroupPut = false;
+        std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
+        for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
+        {
+           (*iter)->monitorPlugin->startMonitoring();
+        }
     }
     pvRecord->addListener(getPtrSelf());
     pvRecord->lock();
     try {
+        Lock xx(mutex);
         pvCopy->traverseMaster(getPtrSelf());
         monitorElement->changedBitSet->clear();
         monitorElement->overrunBitSet->clear();
