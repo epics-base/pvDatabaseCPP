@@ -57,7 +57,9 @@ typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
 
 epicsShareExtern MonitorFactoryPtr getMonitorFactory();
 
-/** MonitorFactory
+/**
+ * @brief MonitorFactory
+ *
  * This class provides a static method to create a monitor for a PVRecord
  */
 class epicsShareClass MonitorFactory 
@@ -99,6 +101,8 @@ private:
 epicsShareExtern ChannelProviderLocalPtr getChannelProviderLocal();
 
 /**
+ * @brief ChannelProvider for PVDatabase.
+ *
  * An implementation of channelProvider that provides access to records in PVDatabase.
  */
 class epicsShareClass ChannelProviderLocal :
@@ -191,6 +195,8 @@ private:
 };
 
 /**
+ * @brief Channel for accessing a PVRecord.
+ *
  * A Channel for accessing a record in the PVDatabase.
  * It is a complete implementation of Channel
  */

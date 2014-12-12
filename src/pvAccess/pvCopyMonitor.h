@@ -46,7 +46,8 @@ typedef std::tr1::shared_ptr<PVCopyMonitorFieldNode> PVCopyMonitorFieldNodePtr;
 
 
 /** 
- * PVCopyMonitor
+ * @brief Monitor changes to a PVRecord.
+ *
  * This class manages changes to fields being monitored in a PVRecord.
  */
 class epicsShareClass PVCopyMonitor :
@@ -154,12 +155,31 @@ private:
     std::list<PVCopyMonitorFieldNodePtr> monitorFieldNodeList;
 };
 
+/** 
+ * @brief Class implemented by monitorFactory
+ *
+ * This is not of interest to users.
+ * It is for communication between monitorfactory and pvCopyMonitor.
+ *
+ */
 class epicsShareClass PVCopyMonitorRequester
 {
 public:
     POINTER_DEFINITIONS(PVCopyMonitorRequester);
+    /**
+     * 
+     * Destructor
+     */
     virtual ~PVCopyMonitorRequester() {}
+    /**
+     * Release active element and return a new element.
+     * @return  new element to use.
+     */
     virtual epics::pvData::MonitorElementPtr releaseActiveElement() = 0;
+    /**
+     * 
+     * stop listening for changes.
+     */
     virtual void unlisten() = 0;
 };
 

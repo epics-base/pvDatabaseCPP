@@ -21,6 +21,10 @@ class RecordListRecord;
 typedef std::tr1::shared_ptr<RecordListRecord> RecordListRecordPtr;
 
 /**
+ * @brief List records in PVDatabase.
+ *
+ * @deprecated no longer needed because of pvlist command for pvAccess.
+ *
  * This is a record that provides a PVStringArray that
  * has the record names of all records in the local PVDatabase.
  * It is meant to be used by a channelPutGet request.
