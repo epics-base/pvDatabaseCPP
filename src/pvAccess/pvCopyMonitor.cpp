@@ -118,10 +118,13 @@ void PVCopyMonitor::destroy()
     {
         cout << "PVCopyMonitor::destroy()" << endl;
     }
-    if(isDestroyed) return;
+    {
+        Lock xx(mutex);
+        if(isDestroyed) return;
+    }
+    stopMonitoring();
     Lock xx(mutex);
     isDestroyed = true;
-    stopMonitoring();
     pvCopyMonitorRequester.reset();
     pvCopy.reset();
 }
@@ -132,11 +135,11 @@ void PVCopyMonitor::startMonitoring(MonitorElementPtr const & startElement)
     {
         cout << "PVCopyMonitor::startMonitoring()" << endl;
     }
-    if(isDestroyed) return;
-    monitorElement = startElement;
     {
         Lock xx(mutex);
+        if(isDestroyed) return;
         if(isMonitoring) return;
+        monitorElement = startElement;
         isMonitoring = true;
         isGroupPut = false;
         std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
@@ -171,18 +174,19 @@ void PVCopyMonitor::stopMonitoring()
     {
         cout << "PVCopyMonitor::stopMonitoring()" << endl;
     }
-    if(isDestroyed) return;
-    if(!isMonitoring) return;
-    pvRecord->removeListener(getPtrSelf());
-    Lock xx(mutex);
-    std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
-    for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
     {
-       (*iter)->monitorPlugin->stopMonitoring();
+        Lock xx(mutex);
+        if(isDestroyed) return;
+        if(!isMonitoring) return;
+        isMonitoring = false;
+        std::list<PVCopyMonitorFieldNodePtr>::iterator iter;
+        for (iter = monitorFieldNodeList.begin();iter!=monitorFieldNodeList.end();++iter)
+        {
+           (*iter)->monitorPlugin->stopMonitoring();
+        }
     }
-    isMonitoring = false;
+    pvRecord->removeListener(getPtrSelf());
 }
-
 
 
 void PVCopyMonitor::detach(PVRecordPtr const & pvRecord)
