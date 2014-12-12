@@ -34,6 +34,8 @@ namespace epics { namespace pvDatabase {
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
 static Status wasDestroyedStatus(Status::STATUSTYPE_ERROR,"was destroyed");
+static Status alreadyStartedStatus(Status::STATUSTYPE_ERROR,"already started");
+static Status notStartedStatus(Status::STATUSTYPE_ERROR,"not started");
 
 static ConvertPtr convert = getConvert();
 
@@ -48,6 +50,7 @@ class MonitorLocal :
     public PVCopyMonitorRequester,
     public std::tr1::enable_shared_from_this<MonitorLocal>
 {
+    enum MonitorState {idle,active, destroyed};
 public:
     POINTER_DEFINITIONS(MonitorLocal);
     virtual ~MonitorLocal();
@@ -72,7 +75,7 @@ private:
     }
     MonitorRequester::shared_pointer monitorRequester;
     PVRecordPtr pvRecord;
-    bool isDestroyed;
+    MonitorState state;
     bool firstMonitor;
     PVCopyPtr pvCopy;
     MonitorElementQueuePtr queue;
@@ -86,7 +89,7 @@ MonitorLocal::MonitorLocal(
     PVRecordPtr const &pvRecord)
 : monitorRequester(channelMonitorRequester),
   pvRecord(pvRecord),
-  isDestroyed(false),
+  state(idle),
   firstMonitor(true)
 {
 }
@@ -103,12 +106,12 @@ void MonitorLocal::destroy()
 {
     if(pvRecord->getTraceLevel()>0)
     {
-        cout << "MonitorLocal::destroy " << isDestroyed << endl;
+        cout << "MonitorLocal::destroy state " << state << endl;
     }
     {
         Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
+        if(state==destroyed) return;
+        state = destroyed;
     }
     pvCopyMonitor->destroy();
     pvCopy->destroy();
@@ -123,9 +126,11 @@ Status MonitorLocal::start()
     {
         cout << "MonitorLocal::start() "  << endl;
     }
-    if(isDestroyed) return wasDestroyedStatus;
     {
         Lock xx(mutex);
+        if(state==destroyed) return wasDestroyedStatus;
+        if(state==active) return alreadyStartedStatus;
+        state = active;
         firstMonitor = true;
         queue->clear();
         activeElement = queue->getFree();
@@ -141,7 +146,10 @@ Status MonitorLocal::stop()
     if(pvRecord->getTraceLevel()>0){
         cout << "MonitorLocal::stop() "  << endl;
     }
-    if(isDestroyed) return  Status::Ok;
+    Lock xx(mutex);
+    if(state==destroyed) return wasDestroyedStatus;
+    if(state==idle) return notStartedStatus;
+    state = idle;
     pvCopyMonitor->stopMonitoring();
     return Status::Ok;
 }
@@ -152,8 +160,8 @@ MonitorElementPtr MonitorLocal::poll()
     {
         cout << "MonitorLocal::poll() "  << endl;
     }
-    if(isDestroyed) return NULLMonitorElement;
     Lock xx(mutex);
+    if(state!=active) return NULLMonitorElement;
     return queue->getUsed();
 }
 
@@ -163,8 +171,8 @@ void MonitorLocal::release(MonitorElementPtr const & monitorElement)
     {
         cout << "MonitorLocal::release() "  << endl;
     }
-    if(isDestroyed) return;
     Lock xx(mutex);
+    if(state!=active) return;
     queue->releaseUsed(monitorElement);
 }
 
@@ -174,9 +182,9 @@ MonitorElementPtr MonitorLocal::releaseActiveElement()
     {
         cout << "MonitorLocal::releaseActiveElement() "  << endl;
     }
-    if(isDestroyed) return activeElement;
     {
         Lock xx(mutex);
+        if(state!=active) return NULLMonitorElement;
         MonitorElementPtr newActive = queue->getFree();
         if(!newActive) return activeElement;
         pvCopy->updateCopyFromBitSet(activeElement->pvStructurePtr,activeElement->changedBitSet);
