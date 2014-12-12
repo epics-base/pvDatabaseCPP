@@ -146,10 +146,12 @@ Status MonitorLocal::stop()
     if(pvRecord->getTraceLevel()>0){
         cout << "MonitorLocal::stop() "  << endl;
     }
-    Lock xx(mutex);
-    if(state==destroyed) return wasDestroyedStatus;
-    if(state==idle) return notStartedStatus;
-    state = idle;
+    {
+        Lock xx(mutex);
+        if(state==destroyed) return wasDestroyedStatus;
+        if(state==idle) return notStartedStatus;
+        state = idle;
+   }
     pvCopyMonitor->stopMonitoring();
     return Status::Ok;
 }
