@@ -59,7 +59,7 @@ doxygen
 ###########################################
 # Create distribution
 
-tar -czf pvDatabaseCPP.CB-dist.tar.gz lib include dbd COPYRIGHT LICENSE
+tar -czf pvDatabase.CB-dist.tar.gz lib include dbd COPYRIGHT LICENSE
 
 ###########################################
 # Publish documentation
