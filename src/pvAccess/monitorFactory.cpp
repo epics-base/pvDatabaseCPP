@@ -37,7 +37,6 @@ static Status wasDestroyedStatus(Status::STATUSTYPE_ERROR,"was destroyed");
 static Status alreadyStartedStatus(Status::STATUSTYPE_ERROR,"already started");
 static Status notStartedStatus(Status::STATUSTYPE_ERROR,"not started");
 
-static ConvertPtr convert = getConvert();
 
 
 typedef Queue<MonitorElement> MonitorElementQueue;

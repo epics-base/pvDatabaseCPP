@@ -13,7 +13,6 @@
 
 #include <epicsThread.h>
 #include <pv/timeStamp.h>
-#include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
 
 #define epicsExportSharedSymbols
@@ -30,7 +29,6 @@ using std::string;
 
 namespace epics { namespace pvDatabase { 
 
-static ConvertPtr convert = getConvert();
 static StructureConstPtr nullStructure;
 static PVStructurePtr nullPVStructure;
 static BitSetPtr nullBitSet;

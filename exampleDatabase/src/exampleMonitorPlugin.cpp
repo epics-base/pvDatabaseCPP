@@ -9,7 +9,6 @@
  * @date 2014.04.16
  */
 
-#include <pv/convert.h>
 #include <pv/monitorPlugin.h>
 
 #define epicsExportSharedSymbols
@@ -23,7 +22,6 @@ using std::string;
 namespace epics { namespace pvDatabase { 
 
 static string pluginName("onChange");
-static ConvertPtr convert(getConvert());
 
 class OnChangePlugin;
 typedef std::tr1::shared_ptr<OnChangePlugin> OnChangePluginPtr;
@@ -58,9 +56,9 @@ public:
         PVStructurePtr const &pvTop,
         MonitorElementPtr const &monitorElement)
    {
-       bool isSame = convert->equals(pvNew,pvField);
+       bool isSame = (*pvNew == *pvField);
        if(isSame) return false;
-       convert->copy(pvNew,pvField);
+       pvField->copyUnchecked(*pvNew);
        return raiseMonitor;
    }
 private:

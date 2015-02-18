@@ -39,7 +39,6 @@ PVRecord::PVRecord(
     PVStructurePtr const & pvStructure)
 : recordName(recordName),
   pvStructure(pvStructure),
-  convert(getConvert()),
   depthGroupPut(0),
   traceLevel(0),
   isDestroyed(false),
@@ -98,7 +97,6 @@ void PVRecord::destroy()
         }
         pvRecordStructure->destroy();
         pvRecordStructure.reset();
-        convert.reset();
         pvStructure.reset();
         unlock();
     } catch(...) {

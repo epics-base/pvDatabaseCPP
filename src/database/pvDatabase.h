@@ -22,7 +22,6 @@
 
 #include <pv/pvData.h>
 #include <pv/pvCopy.h>
-#include <pv/convert.h>
 #include <pv/pvTimeStamp.h>
 
 #ifdef pvdatabaseEpicsExportSharedSymbols
@@ -237,7 +236,6 @@ private:
 
     std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
-    epics::pvData::ConvertPtr convert;
     PVRecordStructurePtr pvRecordStructure;
     std::list<PVListenerPtr> pvListenerList;
     std::list<PVRecordClientPtr> pvRecordClientList;
