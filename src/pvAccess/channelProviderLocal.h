@@ -25,7 +25,6 @@
 #include <pv/lock.h>
 #include <pv/pvType.h>
 #include <pv/pvData.h>
-#include <pv/monitorPlugin.h>
 #include <pv/pvCopy.h>
 #include <pv/pvAccess.h>
 #include <pv/status.h>
