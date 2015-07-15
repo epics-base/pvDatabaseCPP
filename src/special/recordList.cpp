@@ -61,20 +61,19 @@ bool RecordListRecord::init()
 {
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
-    database = pvStructure->getStringField("argument.database");
+    database = pvStructure->getSubField<PVString>("argument.database");
     if(database.get()==NULL) return false;
-    regularExpression = pvStructure->getStringField(
+    regularExpression = pvStructure->getSubField<PVString>(
         "argument.regularExpression");
     if(regularExpression.get()==NULL) return false;
-    status = pvStructure->getStringField("result.status");
+    status = pvStructure->getSubField<PVString>("result.status");
     if(status.get()==NULL) return false;
     PVFieldPtr pvField = pvStructure->getSubField("result.names");
     if(pvField.get()==NULL) {
         std::cerr << "no result.names" << std::endl;
         return false;
     }
-    name = static_pointer_cast<PVStringArray>(
-         pvStructure->getScalarArrayField("result.names",pvString));
+    name = pvStructure->getSubField<PVStringArray>("result.names");
     if(name.get()==NULL) return false;
     return true;
 }
