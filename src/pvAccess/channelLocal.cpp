@@ -149,7 +149,7 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
         pvOptions = static_pointer_cast<PVStructure>(pvField);
         pvField = pvOptions->getSubField("nProcess");
         if(pvField) {
-            PVStringPtr pvString = pvOptions->getStringField("nProcess");
+            PVStringPtr pvString = pvOptions->getSubField<PVString>("nProcess");
             if(pvString) {
                 int size;
                 std::stringstream ss;
