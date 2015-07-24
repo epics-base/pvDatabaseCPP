@@ -61,8 +61,7 @@ bool ExampleLink::init()
     PVStructurePtr pvStructure = getPVRecordStructure()->getPVStructure();
     pvTimeStamp.attach(pvStructure->getSubField("timeStamp"));
     pvAlarm.attach(pvStructure->getSubField("alarm"));
-    pvValue = static_pointer_cast<PVDoubleArray>(
-        pvStructure->getScalarArrayField("value",pvDouble));
+    pvValue = pvStructure->getSubField<PVDoubleArray>("value");
     if(!pvValue) {
         return false;
     }
@@ -93,8 +92,7 @@ bool ExampleLink::init()
              << status.getMessage() << endl;
         return false;
     }
-    getPVValue = static_pointer_cast<PVDoubleArray>(
-        getPVStructure->getScalarArrayField("value",pvDouble));
+    getPVValue = getPVStructure->getSubField<PVDoubleArray>("value");
     if(!getPVValue) {
         cout << getRecordName() << " get value not  PVDoubleArray" << endl;
         return false;
