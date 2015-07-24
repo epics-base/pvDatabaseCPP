@@ -144,7 +144,6 @@ static void testPVScalar(
 }
 
 static void testPVScalarArray(
-    ScalarType scalarType,
     string const & valueNameRecord,
     string const & valueNameCopy,
     PVRecordPtr const & pvRecord,
@@ -277,21 +276,21 @@ static void arrayTest()
     cout << "request " << request << endl << "pvRequest" << *pvRequest << endl ;
     pvCopy = PVCopy::create(pvRecord->getPVRecordStructure()->getPVStructure(),pvRequest,"");
     valueNameCopy = "value";
-    testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    testPVScalarArray(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "";
     valueNameRecord = "value";
     pvRequest = createRequest->createRequest(request);
     cout << "request " << request << endl << "pvRequest" << *pvRequest << endl ;
     pvCopy = PVCopy::create(pvRecord->getPVRecordStructure()->getPVStructure(),pvRequest,"");
     valueNameCopy = "value";
-    testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    testPVScalarArray(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     request = "alarm,timeStamp,value";
     valueNameRecord = "value";
     pvRequest = createRequest->createRequest(request);
     cout << "request " << request << endl << "pvRequest" << *pvRequest << endl ;
     pvCopy = PVCopy::create(pvRecord->getPVRecordStructure()->getPVStructure(),pvRequest,"");
     valueNameCopy = "value";
-    testPVScalarArray(pvDouble,valueNameRecord,valueNameCopy,pvRecord,pvCopy);
+    testPVScalarArray(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
     pvRecord->destroy();
 }
 
