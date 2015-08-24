@@ -28,7 +28,7 @@ cd ${STUFF}
 
 wget -nv https://openepics.ci.cloudbees.com/job/Base-${BASE}_Build/lastSuccessfulBuild/artifact/base-${BASE}.CB-dist.tar.gz
 wget -nv https://openepics.ci.cloudbees.com/job/pvDataCPP_Release-4.0-Build/BASE=${BASE},USE_MB=MB_NO/lastSuccessfulBuild/artifact/pvData.CB-dist.tar.gz
-wget -nv https://openepics.ci.cloudbees.com/job/pvAccessCPP_Release-4.0-Build/BASE=${BASE},USE_MB=MB_YES/lastSuccessfulBuild/artifact/pvAccess.CB-dist.tar.gz
+wget -nv https://openepics.ci.cloudbees.com/job/pvAccessCPP_Release-4.0-Build/BASE=${BASE},USE_MB=MB_NO/lastSuccessfulBuild/artifact/pvAccess.CB-dist.tar.gz
 wget -nv https://openepics.ci.cloudbees.com/job/pvaSrvCPP_Release-0.10-Build/BASE=${BASE},USE_MB=MB_YES/lastSuccessfulBuild/artifact/pvaSrv.CB-dist.tar.gz
 tar -xzf base-${BASE}.CB-dist.tar.gz
 tar -xzf pvData.CB-dist.tar.gz
