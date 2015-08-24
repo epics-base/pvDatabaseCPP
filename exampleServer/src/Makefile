@@ -18,7 +18,7 @@ LIBRARY_IOC += exampleServer
 exampleServer_SRCS += exampleServer.cpp
 exampleServer_SRCS += exampleServerRegister.cpp
 exampleServer_LIBS += pvDatabase
-exampleServer_LIBS += pvAccess
+exampleServer_LIBS += pvAccess pvMB
 exampleServer_LIBS += pvData
 exampleServer_LIBS += Com
 exampleServer_LIBS += $(EPICS_BASE_IOC_LIBS)
@@ -27,7 +27,7 @@ PROD_HOST += exampleServerMain
 exampleServerMain_SRCS += exampleServerMain.cpp
 exampleServerMain_LIBS += exampleServer
 exampleServerMain_LIBS += pvDatabase
-exampleServerMain_LIBS += pvAccess
+exampleServerMain_LIBS += pvAccess pvMB
 exampleServerMain_LIBS += pvData
 exampleServerMain_LIBS += Com
 
