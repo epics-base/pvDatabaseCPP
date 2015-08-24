@@ -29,7 +29,7 @@ powerSupply_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary
 powerSupply_LIBS += powerSupply
 powerSupply_LIBS += pvDatabase
 powerSupply_LIBS += pvaSrv
-powerSupply_LIBS += pvAccess
+powerSupply_LIBS += pvAccess pvMB
 powerSupply_LIBS += pvData
 powerSupply_LIBS += $(EPICS_BASE_IOC_LIBS)
 
