@@ -13,7 +13,6 @@
 #include <string>
 #include <iostream>
 
-#include <pv/recordList.h>
 #include <pv/powerSupply.h>
 #include <pv/traceRecord.h>
 #include <pv/channelProviderLocal.h>
@@ -40,11 +39,6 @@ int main(int argc,char *argv[])
 
     recordName = "traceRecordPGRPC";
     pvRecord = TraceRecord::create(recordName);
-    result = master->addRecord(pvRecord);
-    if (!result) cout<< "record " << recordName << " not added" << endl;
-
-    recordName = "laptoprecordListPGRPC";
-    pvRecord = RecordListRecord::create(recordName);
     result = master->addRecord(pvRecord);
     if (!result) cout<< "record " << recordName << " not added" << endl;
 

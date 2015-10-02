@@ -15,7 +15,6 @@
 
 #include <pv/exampleServer.h>
 #include <pv/traceRecord.h>
-#include <pv/recordList.h>
 #include <pv/channelProviderLocal.h>
 
 using namespace std;
@@ -41,12 +40,7 @@ int main(int argc,char *argv[])
     result = master->addRecord(pvRecord);
     if(!result) cout<< "record " << recordName << " not added" << endl;
 
-    recordName = "laptoprecordListPGRPC";
-    pvRecord = RecordListRecord::create(recordName);
-    result = master->addRecord(pvRecord);
-    if(!result) cout<< "record " << recordName << " not added" << endl;
-
-
+  
     ContextLocal::shared_pointer contextLocal = ContextLocal::create();
     contextLocal->start();
 

@@ -1,3 +1,14 @@
+EPICS V4 release 4.5
+====================
+
+This releaase is one component of EPICS V4 release 4.5.
+
+The main change since release 4.0 is:
+
+* recordList has been removed since pvAccess has the pvlist shell command.
+
+
+
 Release 4.0 IN DEVELOPMENT
 ===========
 
