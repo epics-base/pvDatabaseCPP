@@ -231,7 +231,7 @@ public:
     virtual void destroy();
     /** 
      * Get the requester name.
-     * @param returns the name of the channel requester.
+     * @return returns the name of the channel requester.
      */
     virtual std::string getRequesterName();
     /** 
@@ -279,7 +279,7 @@ public:
      * Get the introspection interface for subField.
      * The introspection interface is given via GetFieldRequester::getDone.
      * @param requester The client callback.
-     * @param The subField of the record.
+     * @param subField The subField of the record.
      * If an empty string then the interface for the top level structure of
      * the record is provided.
      */
@@ -384,7 +384,7 @@ public:
     /** 
      * This is called when a record is being removed from the database.
      * Calls destroy.
-     * @record The record being destroyed.
+     * @param pvRecord The record being destroyed.
      */
     virtual void detach(PVRecordPtr const &pvRecord);
 protected:

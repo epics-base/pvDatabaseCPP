@@ -269,7 +269,8 @@ public:
     /**
      * Constructor.
      * @param pvField The field from the top level structure.
-     * @param The parent.
+     * @param parent The parent.
+     * @param pvRecord The PVRecord.
      */
     PVRecordField(
         epics::pvData::PVFieldPtr const & pvField,

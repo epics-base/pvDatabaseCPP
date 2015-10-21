@@ -33,6 +33,6 @@ For example:
 Status
 ------
 
-* The API is for release 4.5.0-pre1
+* The API is for EPICS Version 4 release 4.5.0
 
 
