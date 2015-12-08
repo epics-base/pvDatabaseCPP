@@ -756,167 +756,85 @@ class ChannelRPCLocal :
     public RPCResponseCallback,
     public std::tr1::enable_shared_from_this<ChannelRPCLocal>
 {
-    private:
-    Channel::shared_pointer m_channel;
-    ChannelRPCRequester::shared_pointer m_channelRPCRequester;
-    Service::shared_pointer m_rpcService;
-    AtomicBoolean m_lastRequest;
-
-    public:
-
+public:
+    POINTER_DEFINITIONS(ChannelRPCLocal);
     static ChannelRPCLocalPtr create(
-        ChannelLocalPtr const &channelLocal,
+        ChannelLocalPtr const & channelLocal,
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
         PVStructurePtr const & pvRequest,
-        PVRecordPtr const &pvRecord);
+        PVRecordPtr const & pvRecord);
 
     ChannelRPCLocal(
-        Channel::shared_pointer const & channel,
+        ChannelLocalPtr const & channelLocal,
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
-        Service::shared_pointer const & rpcService) :
-        m_channel(channel),
-        m_channelRPCRequester(channelRPCRequester),
-        m_rpcService(rpcService),
-        m_lastRequest()
+        Service::shared_pointer const & service,
+        PVRecordPtr const & pvRecord) :
+        isDestroyed(),
+        channelLocal(channelLocal),
+        channelRPCRequester(channelRPCRequester),
+        service(service),
+        pvRecord(pvRecord),
+        isLastRequest()
     {
     }
 
     virtual ~ChannelRPCLocal()
     {
+        if(pvRecord->getTraceLevel()>0)
+        {
+           cout << "~ChannelRPCLocal()" << endl;
+        }
         destroy();
     }
 
     void processRequest(RPCService::shared_pointer const & service,
-                        PVStructure::shared_pointer const & pvArgument)
+                        PVStructurePtr const & pvArgument);
+
+    virtual void requestDone(Status const & status,
+        PVStructurePtr const & result)
     {
-        PVStructure::shared_pointer result;
-        Status status = Status::Ok;
-        bool ok = true;
-        try
-        {
-            result = service->request(pvArgument);
-        }
-        catch (RPCRequestException& rre)
-        {
-            status = Status(rre.getStatus(), rre.what());
-            ok = false;
-        }
-        catch (std::exception& ex)
-        {
-            status = Status(Status::STATUSTYPE_FATAL, ex.what());
-            ok = false;
-        }
-        catch (...)
-        {
-            // handle user unexpected errors
-            status = Status(Status::STATUSTYPE_FATAL, "Unexpected exception caught while calling RPCService.request(PVStructure).");
-            ok = false;
-        }
-    
-        // check null result
-        if (ok && result.get() == 0)
-        {
-            status = Status(Status::STATUSTYPE_FATAL, "RPCService.request(PVStructure) returned null.");
-        }
-        
-        m_channelRPCRequester->requestDone(status, shared_from_this(), result);
-        
-        if (m_lastRequest.get())
-            destroy();
+        channelRPCRequester->requestDone(status, getPtrSelf(), result);
 
-    }
-
-    virtual void requestDone(
-        Status const & status,
-        PVStructure::shared_pointer const & result
-    )
-    {
-        m_channelRPCRequester->requestDone(status, shared_from_this(), result);
-
-        if (m_lastRequest.get())
+        if (isLastRequest.get())
             destroy();
     }
 
     void processRequest(RPCServiceAsync::shared_pointer const & service,
-                        PVStructure::shared_pointer const & pvArgument)
-    {
-        try
-        {
-            service->request(pvArgument, shared_from_this());
-        }
-        catch (std::exception& ex)
-        {
-            // handle user unexpected errors
-            Status errorStatus(Status::STATUSTYPE_FATAL, ex.what());
+                        PVStructurePtr const & pvArgument);
 
-            m_channelRPCRequester->requestDone(errorStatus, shared_from_this(), PVStructure::shared_pointer());
-
-            if (m_lastRequest.get())
-                destroy();
-        }
-        catch (...)
-        {
-            // handle user unexpected errors
-            Status errorStatus(Status::STATUSTYPE_FATAL,
-                               "Unexpected exception caught while calling RPCServiceAsync.request(PVStructure, RPCResponseCallback).");
-
-            m_channelRPCRequester->requestDone(errorStatus, shared_from_this(), PVStructure::shared_pointer());
-
-            if (m_lastRequest.get())
-                destroy();
-        }
-
-        // we wait for callback to be called
-    }
-
-    virtual void request(PVStructure::shared_pointer const & pvArgument)
-    {
-        RPCService::shared_pointer rpcService =
-                std::tr1::dynamic_pointer_cast<RPCService>(m_rpcService);
-        if (rpcService)
-        {
-            processRequest(rpcService, pvArgument);
-            return;
-        }
-
-        RPCServiceAsync::shared_pointer rpcServiceAsync =
-                std::tr1::dynamic_pointer_cast<RPCServiceAsync>(m_rpcService);
-        if (rpcServiceAsync)
-        {
-            processRequest(rpcServiceAsync, pvArgument);
-            return;
-        }
-    }
+    virtual void request(PVStructurePtr const & pvArgument);
 
     void lastRequest()
     {
-        m_lastRequest.set();
+        isLastRequest.set();
     }
     
     virtual Channel::shared_pointer getChannel()
     {
-        return m_channel;
+        return channelLocal;
     }
 
-    virtual void cancel()
+    virtual void cancel() {}
+
+    virtual void destroy();
+
+    virtual void lock() {}
+
+    virtual void unlock() {}
+
+private:
+
+    shared_pointer getPtrSelf()
     {
-        // noop
+        return shared_from_this();
     }
 
-    virtual void destroy()
-    {
-        // noop
-    }
-
-    virtual void lock()
-    {
-        // noop
-    }
-
-    virtual void unlock()
-    {
-        // noop
-    }
+    AtomicBoolean isDestroyed;
+    ChannelLocalPtr channelLocal;
+    ChannelRPCRequester::shared_pointer channelRPCRequester;
+    Service::shared_pointer service;
+    PVRecordPtr pvRecord;
+    AtomicBoolean isLastRequest;
 };
 
 ChannelRPCLocalPtr ChannelRPCLocal::create(
@@ -936,13 +854,126 @@ ChannelRPCLocalPtr ChannelRPCLocal::create(
 
     if (channelRPCRequester.get() == 0)
         throw std::invalid_argument("channelRPCRequester == null");
-        
+
     // TODO use std::make_shared
     ChannelRPCLocalPtr rpc(
-        new ChannelRPCLocal(channelLocal, channelRPCRequester, service)
+        new ChannelRPCLocal(channelLocal, channelRPCRequester, service, pvRecord)
     );
     channelRPCRequester->channelRPCConnect(Status::Ok, rpc);
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelRPCLocal::create";
+        cout << " recordName " << pvRecord->getRecordName() << endl;
+    }
     return rpc;
+}
+
+void ChannelRPCLocal::processRequest(
+    RPCService::shared_pointer const & service,
+    PVStructurePtr const & pvArgument)
+{
+    PVStructurePtr result;
+    Status status = Status::Ok;
+    bool ok = true;
+    try
+    {
+        result = service->request(pvArgument);
+    }
+    catch (RPCRequestException& rre)
+    {
+        status = Status(rre.getStatus(), rre.what());
+        ok = false;
+    }
+    catch (std::exception& ex)
+    {
+        status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        ok = false;
+    }
+    catch (...)
+    {
+        // handle user unexpected errors
+        status = Status(Status::STATUSTYPE_FATAL, "Unexpected exception caught while calling RPCService.request(PVStructure).");
+        ok = false;
+    }
+    
+    // check null result
+    if (ok && result.get() == 0)
+    {
+        status = Status(Status::STATUSTYPE_FATAL, "RPCService.request(PVStructure) returned null.");
+    }
+        
+    channelRPCRequester->requestDone(status, getPtrSelf(), result);
+        
+    if (isLastRequest.get())
+        destroy();
+}
+
+void ChannelRPCLocal::processRequest(
+    RPCServiceAsync::shared_pointer const & service,
+    PVStructurePtr const & pvArgument)
+{
+    try
+    {
+        service->request(pvArgument, getPtrSelf());
+    }
+    catch (std::exception& ex)
+    {
+        // handle user unexpected errors
+        Status errorStatus(Status::STATUSTYPE_FATAL, ex.what());
+
+        channelRPCRequester->requestDone(errorStatus, getPtrSelf(), PVStructurePtr());
+
+        if (isLastRequest.get())
+            destroy();
+    }
+    catch (...)
+    {
+        // handle user unexpected errors
+        Status errorStatus(Status::STATUSTYPE_FATAL,
+                           "Unexpected exception caught while calling RPCServiceAsync.request(PVStructure, RPCResponseCallback).");
+
+        channelRPCRequester->requestDone(errorStatus, shared_from_this(), PVStructurePtr());
+
+        if (isLastRequest.get())
+            destroy();
+    }
+
+    // we wait for callback to be called
+}
+
+
+void ChannelRPCLocal::request(PVStructurePtr const & pvArgument)
+{
+    if(pvRecord->getTraceLevel()>1)
+    {
+        cout << "ChannelRPCLocal::request" << endl;
+    }
+    RPCService::shared_pointer rpcService =
+            std::tr1::dynamic_pointer_cast<RPCService>(service);
+    if (rpcService)
+    {
+        processRequest(rpcService, pvArgument);
+        return;
+    }
+
+    RPCServiceAsync::shared_pointer rpcServiceAsync =
+            std::tr1::dynamic_pointer_cast<RPCServiceAsync>(service);
+    if (rpcServiceAsync)
+    {
+         processRequest(rpcServiceAsync, pvArgument);
+         return;
+    }
+}
+
+
+void ChannelRPCLocal::destroy()
+{
+    if(pvRecord->getTraceLevel()>0)
+    {
+        cout << "ChannelRPCLocal::destroy";
+        cout << " destroyed " << isDestroyed.get() << endl;
+    }
+    isDestroyed.set();
 }
 
 
