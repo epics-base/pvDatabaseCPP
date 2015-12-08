@@ -90,10 +90,11 @@ void PVRecord::destroy()
         while(true) {
             listenerIter = pvListenerList.begin();
             if(listenerIter==pvListenerList.end()) break;
-            pvListenerList.erase(listenerIter);
-            unlock();
+             unlock();
             (*listenerIter)->unlisten(getPtrSelf());
             lock();
+            pvListenerList.erase(listenerIter);
+           
         }
         pvRecordStructure->destroy();
         pvRecordStructure.reset();
