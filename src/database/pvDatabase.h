@@ -23,6 +23,7 @@
 #include <pv/pvData.h>
 #include <pv/pvCopy.h>
 #include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
 
 #ifdef pvdatabaseEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -189,6 +190,17 @@ public:
     bool removeListener(
         PVListenerPtr const & pvListener,
         epics::pvData::PVCopyPtr const & pvCopy);
+    /**
+     * Return a service corresponding to the specified request PVStructure.
+     * @param pvRequest The request PVStructure 
+     * @return The corresponding service
+     */
+    virtual epics::pvAccess::Service::shared_pointer getService(
+        epics::pvData::PVStructurePtr const & pvRequest)
+    {
+        return epics::pvAccess::Service::shared_pointer();
+    }
+
     /**
      * Begins a group of puts.
      */
