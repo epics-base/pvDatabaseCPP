@@ -41,6 +41,7 @@ static Status notStartedStatus(Status::STATUSTYPE_ERROR,"not started");
 
 typedef Queue<MonitorElement> MonitorElementQueue;
 typedef std::tr1::shared_ptr<MonitorElementQueue> MonitorElementQueuePtr;
+typedef std::tr1::shared_ptr<MonitorRequester> MonitorRequesterPtr;
 
 
     
@@ -78,7 +79,7 @@ private:
     {
         return shared_from_this();
     }
-    MonitorRequester::shared_pointer monitorRequester;
+    MonitorRequester::weak_pointer monitorRequester;
     PVRecordPtr pvRecord;
     MonitorState state;
     PVCopyPtr pvCopy;
@@ -221,7 +222,9 @@ void MonitorLocal::releaseActiveElement()
         activeElement->changedBitSet->clear();
         activeElement->overrunBitSet->clear();
     }
-    monitorRequester->monitorEvent(getPtrSelf());
+    MonitorRequesterPtr requester = monitorRequester.lock();
+    if(!requester.get()) return;
+    requester->monitorEvent(getPtrSelf());
     return;
 }
 
@@ -323,6 +326,8 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
     PVFieldPtr pvField;
     size_t queueSize = 2;
     PVStructurePtr pvOptions = pvRequest->getSubField<PVStructure>("record._options");
+    MonitorRequesterPtr requester = monitorRequester.lock();
+    if(!requester.get()) return false;
     if(pvOptions) {
         PVStringPtr pvString  = pvOptions->getSubField<PVString>("queueSize");
         if(pvString) {
@@ -333,7 +338,7 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
                 ss >> size;
                 queueSize = size;
             } catch (...) {
-                 monitorRequester->message("queueSize " +pvString->get() + " illegal",errorMessage);
+                 requester->message("queueSize " +pvString->get() + " illegal",errorMessage);
                  return false;
             }
         }
@@ -344,19 +349,19 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
             pvRecord->getPVRecordStructure()->getPVStructure(),
             pvRequest,"");
         if(!pvCopy) {
-            monitorRequester->message("illegal pvRequest",errorMessage);
+            requester->message("illegal pvRequest",errorMessage);
             return false;
         }
     } else {
         if(pvField->getField()->getType()!=structure) {
-            monitorRequester->message("illegal pvRequest",errorMessage);
+            requester->message("illegal pvRequest",errorMessage);
             return false;
         }
         pvCopy = PVCopy::create(
             pvRecord->getPVRecordStructure()->getPVStructure(),
             pvRequest,"field");
         if(!pvCopy) {
-            monitorRequester->message("illegal pvRequest",errorMessage);
+            requester->message("illegal pvRequest",errorMessage);
             return false;
         }
     }
@@ -370,7 +375,7 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
          monitorElementArray.push_back(monitorElement);
     }
     queue = MonitorElementQueuePtr(new MonitorElementQueue(monitorElementArray));
-    monitorRequester->monitorConnect(
+    requester->monitorConnect(
         Status::Ok,
         getPtrSelf(),
         pvCopy->getStructure());

@@ -13,6 +13,7 @@
 #include <iostream>
 
 using namespace epics::pvData;
+using namespace std;
 
 
 static StructureConstPtr makeDeviceStructure()
@@ -77,6 +78,14 @@ int main (int argc, char *argv[])
     if ((argc % 2) != 1)
     {
         std::cerr << APP_NAME << " requires an even number of arguments."
+                  << std::endl;
+        usage();
+        return 1;
+    }
+
+    if(argc<2)
+    {
+       std::cerr << APP_NAME << " requires at least 2 arguments."
                   << std::endl;
         usage();
         return 1;

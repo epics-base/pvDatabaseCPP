@@ -394,7 +394,7 @@ protected:
     }
 private:
     ChannelProviderLocalPtr provider;
-    epics::pvAccess::ChannelRequester::shared_pointer requester;
+    epics::pvAccess::ChannelRequester::weak_pointer requester;
     PVRecordPtr pvRecord;
     bool beingDestroyed;
     epics::pvData::Mutex mutex;

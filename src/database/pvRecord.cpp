@@ -77,22 +77,28 @@ void PVRecord::destroy()
         isDestroyed = true;
         pvTimeStamp.detach();
     
-        std::list<PVRecordClientPtr>::iterator clientIter;
+        std::list<PVRecordClientWPtr>::iterator clientIter;
         while(true) {
             clientIter = pvRecordClientList.begin();
             if(clientIter==pvRecordClientList.end()) break;
+            PVRecordClientPtr client = clientIter->lock();
+            if(client.get()) {
+                unlock();
+                client->detach(getPtrSelf());
+                lock();
+            }
             pvRecordClientList.erase(clientIter);
-            unlock();
-            (*clientIter)->detach(getPtrSelf());
-            lock();
         }
-        std::list<PVListenerPtr>::iterator listenerIter;
+        std::list<PVListenerWPtr>::iterator listenerIter;
         while(true) {
             listenerIter = pvListenerList.begin();
             if(listenerIter==pvListenerList.end()) break;
-             unlock();
-            (*listenerIter)->unlisten(getPtrSelf());
-            lock();
+            PVListenerPtr listener = listenerIter->lock();
+            if(listener.get()) {
+                unlock();
+                listener->unlisten(getPtrSelf());
+                lock();
+            }
             pvListenerList.erase(listenerIter);
            
         }
@@ -200,12 +206,14 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
             unlock();
             return false;
         }
-        std::list<PVRecordClientPtr>::iterator iter;
+        std::list<PVRecordClientWPtr>::iterator iter;
         for (iter = pvRecordClientList.begin();
         iter!=pvRecordClientList.end();
         iter++ )
         {
-            if((*iter).get()==pvRecordClient.get()) {
+            PVRecordClientPtr client = iter->lock();
+            if(!client.get()) continue;
+            if(client.get()==pvRecordClient.get()) {
                 unlock();
                 return false;
             }
@@ -230,12 +238,14 @@ bool PVRecord::removePVRecordClient(PVRecordClientPtr const & pvRecordClient)
             unlock();
             return false;
         }
-        std::list<PVRecordClientPtr>::iterator iter;
+        std::list<PVRecordClientWPtr>::iterator iter;
         for (iter = pvRecordClientList.begin();
         iter!=pvRecordClientList.end();
         iter++ )
         {
-            if((*iter).get()==pvRecordClient.get()) {
+            PVRecordClientPtr client = iter->lock();
+            if(!client.get()) continue;
+            if(client.get()==pvRecordClient.get()) {
                 pvRecordClientList.erase(iter);
                 unlock();
                 return true;
@@ -260,13 +270,15 @@ void PVRecord::detachClients()
             unlock();
             return;
         }
-        std::list<PVRecordClientPtr>::iterator iter;
+        std::list<PVRecordClientWPtr>::iterator iter;
         for (iter = pvRecordClientList.begin();
         iter!=pvRecordClientList.end();
         iter++ )
         {
+            PVRecordClientPtr client = iter->lock();
+            if(!client.get()) continue;
             unlock();
-            (*iter)->detach(getPtrSelf());
+            client->detach(getPtrSelf());
             lock();
         }
         pvRecordClientList.clear();
@@ -290,10 +302,12 @@ bool PVRecord::addListener(
             unlock();
             return false;
         }
-        std::list<PVListenerPtr>::iterator iter;
+        std::list<PVListenerWPtr>::iterator iter;
         for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ )
         {
-            if((*iter).get()==pvListener.get()) {
+            PVListenerPtr listener = iter->lock();
+            if(!listener.get()) continue;
+            if(listener.get()==pvListener.get()) {
                 unlock();
                 return false;
             }
@@ -314,10 +328,12 @@ bool PVRecord::addListener(
 void PVRecord::nextMasterPVField(PVFieldPtr const & pvField)
 {
      PVRecordFieldPtr pvRecordField = findPVRecordField(pvField);
-     if(isAddListener) {
-         pvRecordField->addListener(pvListener);
+     PVListenerPtr listener = pvListener.lock();
+     if(!listener.get()) return;
+     if(isAddListener) {         
+         pvRecordField->addListener(listener);
      } else {
-         pvRecordField->removeListener(pvListener);
+         pvRecordField->removeListener(listener);
      }
 }
 
@@ -334,15 +350,17 @@ bool PVRecord::removeListener(
             unlock();
             return false;
         }
-        std::list<PVListenerPtr>::iterator iter;
+        std::list<PVListenerWPtr>::iterator iter;
         for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ )
         {
-            if((*iter).get()==pvListener.get()) {
+            PVListenerPtr listener = iter->lock();
+            if(!listener.get()) continue;
+            if(listener.get()==pvListener.get()) {
                 pvListenerList.erase(iter);
                 this->pvListener = pvListener;
                 isAddListener = false;
                 pvCopy->traverseMaster(getPtrSelf());
-                this->pvListener = PVListenerPtr();;
+                this->pvListener = PVListenerPtr();
                 unlock();
                 return true;
             }
@@ -361,10 +379,12 @@ void PVRecord::beginGroupPut()
     if(traceLevel>2) {
         cout << "PVRecord::beginGroupPut() " << recordName << endl;
     }
-   std::list<PVListenerPtr>::iterator iter;
+   std::list<PVListenerWPtr>::iterator iter;
    for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++)
    {
-       (*iter).get()->beginGroupPut(getPtrSelf());
+       PVListenerPtr listener = iter->lock();
+       if(!listener.get()) continue;
+       listener->beginGroupPut(getPtrSelf());
    }
 }
 
@@ -374,10 +394,12 @@ void PVRecord::endGroupPut()
     if(traceLevel>2) {
         cout << "PVRecord::endGroupPut() " << recordName << endl;
     }
-   std::list<PVListenerPtr>::iterator iter;
+   std::list<PVListenerWPtr>::iterator iter;
    for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++)
    {
-       (*iter).get()->endGroupPut(getPtrSelf());
+       PVListenerPtr listener = iter->lock();
+       if(!listener.get()) continue;
+       listener->endGroupPut(getPtrSelf());
    }
 }
 
@@ -449,9 +471,11 @@ bool PVRecordField::addListener(PVListenerPtr const & pvListener)
     if(pvRecord->getTraceLevel()>1) {
          cout << "PVRecordField::addListener() " << getFullName() << endl;
     }
-    std::list<PVListenerPtr>::iterator iter;
+    std::list<PVListenerWPtr>::iterator iter;
     for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ ) {
-        if((*iter).get()==pvListener.get()) {
+        PVListenerPtr listener = iter->lock();
+        if(!listener.get()) continue;
+        if(listener.get()==pvListener.get()) {
             return false;
         }
     }
@@ -464,9 +488,11 @@ void PVRecordField::removeListener(PVListenerPtr const & pvListener)
     if(pvRecord->getTraceLevel()>1) {
          cout << "PVRecordField::removeListener() " << getFullName() << endl;
     }
-    std::list<PVListenerPtr>::iterator iter;
+    std::list<PVListenerWPtr>::iterator iter;
     for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ ) {
-        if((*iter).get()==pvListener.get()) {
+        PVListenerPtr listener = iter->lock();
+        if(!listener.get()) continue;
+        if(listener.get()==pvListener.get()) {
             pvListenerList.erase(iter);
             return;
         }
@@ -484,10 +510,12 @@ void PVRecordField::postPut()
 void PVRecordField::postParent(PVRecordFieldPtr const & subField)
 {
     PVRecordStructurePtr pvrs = static_pointer_cast<PVRecordStructure>(getPtrSelf());
-    std::list<PVListenerPtr>::iterator iter;
+    std::list<PVListenerWPtr>::iterator iter;
     for(iter = pvListenerList.begin(); iter != pvListenerList.end(); ++iter)
     {
-        (*iter)->dataPut(pvrs,subField);
+        PVListenerPtr listener = iter->lock();
+        if(!listener.get()) continue;
+        listener->dataPut(pvrs,subField);
     }
     if(parent) parent->postParent(subField);
 }
@@ -507,9 +535,11 @@ void PVRecordField::postSubField()
 
 void PVRecordField::callListener()
 {
-    std::list<PVListenerPtr>::iterator iter;
+    std::list<PVListenerWPtr>::iterator iter;
     for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ ) {
-        (*iter)->dataPut(getPtrSelf());
+        PVListenerPtr listener = iter->lock();
+        if(!listener.get()) continue;
+        listener->dataPut(getPtrSelf());
     }
 }
 

@@ -129,7 +129,7 @@ private:
     }
     bool isDestroyed;
     ChannelLocalPtr channelLocal;
-    ChannelProcessRequester::shared_pointer channelProcessRequester;
+    ChannelProcessRequester::weak_pointer channelProcessRequester;
     PVRecordPtr pvRecord;
     int nProcess;
     Mutex mutex;
@@ -192,8 +192,10 @@ void ChannelProcessLocal::destroy()
 
 void ChannelProcessLocal::process()
 {
+    ChannelProcessRequester::shared_pointer requester = channelProcessRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelProcessRequester->processDone(channelDestroyedStatus,getPtrSelf());
+         requester->processDone(channelDestroyedStatus,getPtrSelf());
          return;
     } 
     if(pvRecord->getTraceLevel()>1)
@@ -213,7 +215,7 @@ void ChannelProcessLocal::process()
         }
         pvRecord->unlock();
     }
-    channelProcessRequester->processDone(Status::Ok,getPtrSelf());
+    requester->processDone(Status::Ok,getPtrSelf());
 }
 
 class ChannelGetLocal :
@@ -271,7 +273,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelGetRequester::shared_pointer channelGetRequester;
+    ChannelGetRequester::weak_pointer channelGetRequester;
     PVCopyPtr pvCopy;
     PVStructurePtr pvStructure;
     BitSetPtr bitSet;
@@ -339,8 +341,10 @@ void ChannelGetLocal::destroy()
 
 void ChannelGetLocal::get()
 {
+    ChannelGetRequester::shared_pointer requester = channelGetRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelGetRequester->getDone(
+         requester->getDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
@@ -363,7 +367,7 @@ void ChannelGetLocal::get()
         bitSet->set(0);
         firstTime = false;
     } 
-    channelGetRequester->getDone(
+    requester->getDone(
         Status::Ok,
         getPtrSelf(),
         pvStructure,
@@ -424,7 +428,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelPutRequester::shared_pointer channelPutRequester;
+    ChannelPutRequester::weak_pointer channelPutRequester;
     PVCopyPtr pvCopy;
     PVRecordPtr pvRecord;
     Mutex mutex;
@@ -487,8 +491,10 @@ void ChannelPutLocal::destroy()
 
 void ChannelPutLocal::get()
 {
+    ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelPutRequester->getDone(
+         requester->getDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     }
@@ -504,7 +510,7 @@ void ChannelPutLocal::get()
         throw;
     }
     pvRecord->unlock();
-    channelPutRequester->getDone(
+    requester->getDone(
        Status::Ok,getPtrSelf(),pvStructure,bitSet);
     if(pvRecord->getTraceLevel()>1)
     {
@@ -515,8 +521,10 @@ void ChannelPutLocal::get()
 void ChannelPutLocal::put(
     PVStructurePtr const &pvStructure,BitSetPtr const &bitSet)
 {
+    ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelPutRequester->putDone(channelDestroyedStatus,getPtrSelf());
+         requester->putDone(channelDestroyedStatus,getPtrSelf());
          return;
     }
     pvRecord->lock();
@@ -532,7 +540,7 @@ void ChannelPutLocal::put(
         throw;
     }
     pvRecord->unlock();
-    channelPutRequester->putDone(Status::Ok,getPtrSelf());
+    requester->putDone(Status::Ok,getPtrSelf());
     if(pvRecord->getTraceLevel()>1)
     {
         cout << "ChannelPutLocal::put" << endl;
@@ -578,7 +586,7 @@ private:
     ChannelPutGetLocal(
         bool callProcess,
         ChannelLocalPtr const &channelLocal,
-        ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
+        ChannelPutGetRequester::weak_pointer const & channelPutGetRequester,
         PVCopyPtr const &pvPutCopy,
         PVCopyPtr const &pvGetCopy,
         PVStructurePtr const&pvGetStructure,
@@ -599,7 +607,7 @@ private:
     bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
-    ChannelPutGetRequester::shared_pointer channelPutGetRequester;
+    ChannelPutGetRequester::weak_pointer channelPutGetRequester;
     PVCopyPtr pvPutCopy;
     PVCopyPtr pvGetCopy;
     PVStructurePtr pvGetStructure;
@@ -675,8 +683,10 @@ void ChannelPutGetLocal::destroy()
 void ChannelPutGetLocal::putGet(
     PVStructurePtr const &pvPutStructure,BitSetPtr const &putBitSet)
 {
+    ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelPutGetRequester->putGetDone(
+         requester->putGetDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
@@ -693,7 +703,7 @@ void ChannelPutGetLocal::putGet(
         throw;
     }
     pvRecord->unlock();
-    channelPutGetRequester->putGetDone(
+    requester->putGetDone(
         Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
     if(pvRecord->getTraceLevel()>1)
     {
@@ -703,8 +713,10 @@ void ChannelPutGetLocal::putGet(
 
 void ChannelPutGetLocal::getPut()
 {
+    ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelPutGetRequester->getPutDone(
+         requester->getPutDone(
               channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
@@ -718,7 +730,7 @@ void ChannelPutGetLocal::getPut()
         throw;
     }
     pvRecord->unlock();
-    channelPutGetRequester->getPutDone(
+    requester->getPutDone(
         Status::Ok,getPtrSelf(),pvPutStructure,putBitSet);
     if(pvRecord->getTraceLevel()>1)
     {
@@ -728,8 +740,10 @@ void ChannelPutGetLocal::getPut()
 
 void ChannelPutGetLocal::getGet()
 {
+    ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelPutGetRequester->getGetDone(
+         requester->getGetDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
@@ -742,7 +756,7 @@ void ChannelPutGetLocal::getGet()
         throw;
     }
     pvRecord->unlock();
-    channelPutGetRequester->getGetDone(
+    requester->getGetDone(
         Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
     if(pvRecord->getTraceLevel()>1)
     {
@@ -793,7 +807,9 @@ public:
     virtual void requestDone(Status const & status,
         PVStructurePtr const & result)
     {
-        channelRPCRequester->requestDone(status, getPtrSelf(), result);
+        ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
+        if(!requester.get()) return;
+        requester->requestDone(status, getPtrSelf(), result);
 
         if (isLastRequest.get())
             destroy();
@@ -831,7 +847,7 @@ private:
 
     AtomicBoolean isDestroyed;
     ChannelLocalPtr channelLocal;
-    ChannelRPCRequester::shared_pointer channelRPCRequester;
+    ChannelRPCRequester::weak_pointer channelRPCRequester;
     Service::shared_pointer service;
     PVRecordPtr pvRecord;
     AtomicBoolean isLastRequest;
@@ -901,8 +917,8 @@ void ChannelRPCLocal::processRequest(
     {
         status = Status(Status::STATUSTYPE_FATAL, "RPCService.request(PVStructure) returned null.");
     }
-        
-    channelRPCRequester->requestDone(status, getPtrSelf(), result);
+    ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
+    if(requester.get()) requester->requestDone(status, getPtrSelf(), result);
         
     if (isLastRequest.get())
         destroy();
@@ -920,9 +936,8 @@ void ChannelRPCLocal::processRequest(
     {
         // handle user unexpected errors
         Status errorStatus(Status::STATUSTYPE_FATAL, ex.what());
-
-        channelRPCRequester->requestDone(errorStatus, getPtrSelf(), PVStructurePtr());
-
+        ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
+        if(requester.get()) requester->requestDone(errorStatus, getPtrSelf(), PVStructurePtr());
         if (isLastRequest.get())
             destroy();
     }
@@ -931,8 +946,8 @@ void ChannelRPCLocal::processRequest(
         // handle user unexpected errors
         Status errorStatus(Status::STATUSTYPE_FATAL,
                            "Unexpected exception caught while calling RPCServiceAsync.request(PVStructure, RPCResponseCallback).");
-
-        channelRPCRequester->requestDone(errorStatus, shared_from_this(), PVStructurePtr());
+        ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
+        if(requester.get()) requester->requestDone(errorStatus, shared_from_this(), PVStructurePtr());
 
         if (isLastRequest.get())
             destroy();
@@ -1032,7 +1047,7 @@ private:
     }
     bool isDestroyed;
     ChannelLocalPtr channelLocal;
-    ChannelArrayRequester::shared_pointer channelArrayRequester;
+    ChannelArrayRequester::weak_pointer channelArrayRequester;
     PVArrayPtr pvArray;
     PVArrayPtr pvCopy;
     PVRecordPtr pvRecord;
@@ -1141,8 +1156,10 @@ void ChannelArrayLocal::destroy()
 
 void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
 {
+    ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelArrayRequester->getArrayDone(channelDestroyedStatus,getPtrSelf(),pvCopy);
+         requester->getArrayDone(channelDestroyedStatus,getPtrSelf(),pvCopy);
          return;
     }
     if(pvRecord->getTraceLevel()>1)
@@ -1150,11 +1167,11 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
        cout << "ChannelArrayLocal::getArray" << endl;
     }
     if(offset<0) {
-         channelArrayRequester->getArrayDone(illegalOffsetStatus,getPtrSelf(),pvCopy);
+         requester->getArrayDone(illegalOffsetStatus,getPtrSelf(),pvCopy);
          return;
     }
     if(stride<0) {
-         channelArrayRequester->getArrayDone(illegalStrideStatus,getPtrSelf(),pvCopy);
+         requester->getArrayDone(illegalStrideStatus,getPtrSelf(),pvCopy);
          return;
     }
     const char *exceptionMessage = NULL;
@@ -1186,14 +1203,16 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
     if(exceptionMessage!=NULL) {
       status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
-    channelArrayRequester->getArrayDone(status,getPtrSelf(),pvCopy);
+    requester->getArrayDone(status,getPtrSelf(),pvCopy);
 }
 
 void ChannelArrayLocal::putArray(
      PVArrayPtr const & pvArray, size_t offset, size_t count, size_t stride)
 {
+    ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelArrayRequester->putArrayDone(channelDestroyedStatus,getPtrSelf());
+         requester->putArrayDone(channelDestroyedStatus,getPtrSelf());
          return;
     }
     if(pvRecord->getTraceLevel()>1)
@@ -1201,15 +1220,15 @@ void ChannelArrayLocal::putArray(
        cout << "ChannelArrayLocal::putArray" << endl;
     }
     if(offset<0) {
-         channelArrayRequester->putArrayDone(illegalOffsetStatus,getPtrSelf());
+         requester->putArrayDone(illegalOffsetStatus,getPtrSelf());
          return;
     }
     if(count<0) {
-         channelArrayRequester->putArrayDone(illegalCountStatus,getPtrSelf());
+         requester->putArrayDone(illegalCountStatus,getPtrSelf());
          return;
     }
     if(stride<0) {
-         channelArrayRequester->putArrayDone(illegalStrideStatus,getPtrSelf());
+         requester->putArrayDone(illegalStrideStatus,getPtrSelf());
          return;
     }
     size_t newLength = offset + count*stride;
@@ -1226,11 +1245,13 @@ void ChannelArrayLocal::putArray(
     if(exceptionMessage!=NULL) {
         status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
-    channelArrayRequester->putArrayDone(status,getPtrSelf());
+    requester->putArrayDone(status,getPtrSelf());
 }
 
 void ChannelArrayLocal::getLength()
 {
+    ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
+    if(!requester.get()) return;
     size_t length = 0;
     const char *exceptionMessage = NULL;
     pvRecord->lock();
@@ -1244,13 +1265,15 @@ void ChannelArrayLocal::getLength()
     if(exceptionMessage!=NULL) {
         status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
     }
-    channelArrayRequester->getLengthDone(status,getPtrSelf(),length);
+    requester->getLengthDone(status,getPtrSelf(),length);
 }
 
 void ChannelArrayLocal::setLength(size_t length)
 {
+    ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
+    if(!requester.get()) return;
     if(isDestroyed) {
-         channelArrayRequester->setLengthDone(channelDestroyedStatus,getPtrSelf());
+         requester->setLengthDone(channelDestroyedStatus,getPtrSelf());
          return;
     }
     if(pvRecord->getTraceLevel()>1)
@@ -1267,7 +1290,7 @@ void ChannelArrayLocal::setLength(size_t length)
         throw;
     }
     pvRecord->unlock();
-    channelArrayRequester->setLengthDone(Status::Ok,getPtrSelf());
+    requester->setLengthDone(Status::Ok,getPtrSelf());
 }
 
 
@@ -1315,14 +1338,18 @@ void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 
 string ChannelLocal::getRequesterName()
 {
-    return requester->getRequesterName();
+    ChannelRequester::shared_pointer req = requester.lock();
+    if(!req.get()) return string();
+    return req->getRequesterName();
 }
 
 void ChannelLocal::message(
         string const &message,
         MessageType messageType)
 {
-    requester->message(message,messageType);
+    ChannelRequester::shared_pointer req = requester.lock();
+    if(!req.get()) return;
+    req->message(message,messageType);
 }
 
 string ChannelLocal::getRemoteAddress()
@@ -1344,7 +1371,7 @@ string ChannelLocal::getChannelName()
 
 ChannelRequester::shared_pointer ChannelLocal::getChannelRequester()
 {
-    return requester;
+    return requester.lock();
 }
 
 bool ChannelLocal::isConnected()
