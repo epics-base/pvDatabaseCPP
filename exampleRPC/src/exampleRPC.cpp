@@ -23,6 +23,7 @@ using namespace epics::pvData;
 using namespace epics::pvDatabase;
 using std::tr1::static_pointer_cast;
 using std::string;
+using namespace std;
 
 namespace epics { namespace exampleRPC { 
 
@@ -31,6 +32,7 @@ PVStructurePtr ExampleRPCService::request(
     PVStructure::shared_pointer const & args
 ) throw (epics::pvAccess::RPCRequestException)
 {
+
     bool haveControl = pvRecord->takeControl();
     if (!haveControl)
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
@@ -40,22 +42,28 @@ PVStructurePtr ExampleRPCService::request(
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
 
     PVStructureArrayPtr valueField = args->getSubField<PVStructureArray>("value");
-    if (valueField.get() == 0)
+    if (valueField.get() == 0) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "No structure array value field");
+    }
 
     StructureConstPtr valueFieldStructure = valueField->
         getStructureArray()->getStructure();
 
     ScalarConstPtr xField = valueFieldStructure->getField<Scalar>("x");
-    if (xField.get() == 0 || xField->getScalarType() != pvDouble)
+    if (xField.get() == 0 || xField->getScalarType() != pvDouble) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "value field's structure has no double field x");
+    }
 
     ScalarConstPtr yField = valueFieldStructure->getField<Scalar>("y");
-    if (xField.get() == 0 || xField->getScalarType() != pvDouble)
+    if (xField.get() == 0 || xField->getScalarType() != pvDouble) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "value field's structure has no double field y");
+    }
 
     PVStructureArray::const_svector vals = valueField->view();
 
@@ -89,22 +97,28 @@ void ExampleRPCServiceAsync::request(
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
 
     PVStructureArrayPtr valueField = args->getSubField<PVStructureArray>("value");
-    if (valueField.get() == 0)
+    if (valueField.get() == 0) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "No structure array value field");
+    }
 
     StructureConstPtr valueFieldStructure = valueField->
         getStructureArray()->getStructure();
 
     ScalarConstPtr xField = valueFieldStructure->getField<Scalar>("x");
-    if (xField.get() == 0 || xField->getScalarType() != pvDouble)
+    if (xField.get() == 0 || xField->getScalarType() != pvDouble) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "value field's structure has no double field x");
+    }
 
     ScalarConstPtr yField = valueFieldStructure->getField<Scalar>("y");
-    if (yField.get() == 0 || yField->getScalarType() != pvDouble)
+    if (yField.get() == 0 || yField->getScalarType() != pvDouble) {
+        pvRecord->releaseControl();
         throw pvAccess::RPCRequestException(Status::STATUSTYPE_ERROR,
             "value field's structure has no double field y");
+    }
 
     PVStructureArray::const_svector vals = valueField->view();
 

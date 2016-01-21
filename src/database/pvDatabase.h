@@ -49,9 +49,11 @@ typedef std::tr1::shared_ptr<PVRecordStructure> PVRecordStructurePtr;
 
 class PVRecordClient;
 typedef std::tr1::shared_ptr<PVRecordClient> PVRecordClientPtr;
+typedef std::tr1::weak_ptr<PVRecordClient> PVRecordClientWPtr;
 
 class PVListener;
 typedef std::tr1::shared_ptr<PVListener> PVListenerPtr;
+typedef std::tr1::weak_ptr<PVListener> PVListenerWPtr;
 
 class PVDatabase;
 typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
@@ -249,8 +251,8 @@ private:
     std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
     PVRecordStructurePtr pvRecordStructure;
-    std::list<PVListenerPtr> pvListenerList;
-    std::list<PVRecordClientPtr> pvRecordClientList;
+    std::list<PVListenerWPtr> pvListenerList;
+    std::list<PVRecordClientWPtr> pvRecordClientList;
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;
@@ -261,7 +263,7 @@ private:
 
     // following only valid while addListener or removeListener is active.
     bool isAddListener;
-    PVListenerPtr pvListener;
+    PVListenerWPtr pvListener;
 };
 
 epicsShareExtern std::ostream& operator<<(std::ostream& o, const PVRecord& record);
@@ -339,7 +341,7 @@ private:
     virtual void removeListener(PVListenerPtr const & pvListener);
     void callListener();
 
-    std::list<PVListenerPtr> pvListenerList;
+    std::list<PVListenerWPtr> pvListenerList;
     epics::pvData::PVFieldPtr pvField;
     bool isStructure;
     PVRecordStructurePtr parent;
