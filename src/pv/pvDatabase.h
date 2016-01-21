@@ -531,7 +531,7 @@ private:
 
 /** @page Overview Documentation
  *
- * <a href = "pvDatabaseCPP.html">pvDatabase.html</a>
+ * <a href = "../pvDatabaseCPP.html">pvDatabase.html</a>
  *
  */
 
