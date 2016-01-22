@@ -11,6 +11,7 @@
 
 #include <sstream>
 
+#include <epicsGuard.h>
 #include <pv/thread.h>
 #include <pv/bitSetUtil.h>
 #include <pv/queue.h>
@@ -144,21 +145,16 @@ Status MonitorLocal::start()
         if(state==active) return alreadyStartedStatus;
     }
     pvRecord->addListener(getPtrSelf(),pvCopy);
-    pvRecord->lock();
-    try {
-        Lock xx(mutex);
-        state = active;
-        queue->clear();
-        isGroupPut = false;
-        activeElement = queue->getFree();
-        activeElement->changedBitSet->clear();
-        activeElement->overrunBitSet->clear();
-        activeElement->changedBitSet->set(0);
-        releaseActiveElement();
-        pvRecord->unlock();
-    } catch(...) {
-        pvRecord->unlock();
-    }
+    epicsGuard <PVRecord> guard(*pvRecord);
+    Lock xx(mutex);
+    state = active;
+    queue->clear();
+    isGroupPut = false;
+    activeElement = queue->getFree();
+    activeElement->changedBitSet->clear();
+    activeElement->overrunBitSet->clear();
+    activeElement->changedBitSet->set(0);
+    releaseActiveElement();
     return Status::Ok;
 }
 
