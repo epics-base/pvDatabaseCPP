@@ -68,8 +68,13 @@ The minimum that an extension must provide is a top level PVStructure and a proc
 <h2>Introduction</h2>
 <h3>Overview</h3>
 <p>The main purpose of this project to make it easier to implement services that are accessed via pvAccess.
-This project supplies a complete implementation of the server side of pvAccess.
-All that a service has to provide is a top level PVStructure and a process method.
+</p>
+<p>
+This project supplies a complete implementation of the server side of pvAccess,
+which has the provider name <b>local</b>.
+</p>
+<p>
+A service must provide a top level PVStructure and a process method.
 A service can be run as a main process or can be part of a V3 IOC.
 Thus services can be developed that interact with V3 records, asynDriver,
 areaDetector, etc.
@@ -182,9 +187,34 @@ See it for examples.
 </dl>
 
 <h2>Building pvDatabaseCPP</h2>
-<p>To build pvDatabaseCPP You must provide a file RELEASE.local
-in directory configure.
-Thus do the following:</p>
+<p>
+If a proper <b>RELEASE.local</b> is present one directory level above <b>pvDatabaseCPP</b>.
+</p>
+<p>
+Just type:
+</p>
+<pre>
+make
+</pre>
+<p>
+An example of a proper <b>RELEASE.local</b> is:
+</p>
+<pre>
+EPICS4_DIR=/home/epicsv4/master
+EXAMPLE=${EPICS4_DIR}/exampleCPP
+PVDATABASE=${EPICS4_DIR}/pvDatabaseCPP
+PVACLIENT=${EPICS4_DIR}/pvaClientCPP
+PVASRV=${EPICS4_DIR}/pvaSrv
+PVACCESS=${EPICS4_DIR}/pvAccessCPP
+NORMATIVETYPES=${EPICS4_DIR}/normativeTypesCPP
+PVDATA=${EPICS4_DIR}/pvDataCPP
+PVCOMMON=${EPICS4_DIR}/pvCommonCPP
+
+EPICS_BASE=/home/install/epics/base
+</pre>
+
+<p>pvDatabaseCPP can also be built if a file RELEASE.local exists in directory configure.
+To create one do the following:</p>
 <pre>
 mrk&gt; pwd
 /home/hg/pvDatabaseCPP/configure
@@ -199,10 +229,6 @@ mrk&gt; pwd
 /home/epicsv4/master/pvDatabaseCPP
 mrk&gt; make
 </pre>
-<p>This builds pvDatabase and also test.</p>
-<p>test is a completely separate top,
-but is also built when  make is run in pvDatabaseCPP itself.</p>
-
 <h2>iocshell commands</h2>
 <p>Shell commands are made available via the standard DBD include mechanism
 provided by iocCore.
@@ -215,6 +241,10 @@ pvDatabaseCPP
 
 <p>pvDatabaseCPP provides the following iocshell command.</p>
 <dl>
+   <dt>registerChannelProviderLocal</dt>
+     <dd>Including <b>registerChannelProviderLocal.dbd</b> as a dbd file automatically starts provider local
+      and also creates the pvdbl shell command.
+     </dd>
    <dt>pvdbl</dt>
       <dd>Provides a list of all the pvRecords in database <b>master</b>
       </dd>
@@ -657,20 +687,21 @@ It uses the copy and monitor facilities from pvDataCPP and connects
 them to a PVRecord.
 </p>
 <p>The implementation is a complete implementation of channelProvider
-and channel except for channelRPC, which is implement by pvAccess as a separate
-channel provider.</p>
+and channel.</p>
 <p>The following provides a brief description of each channel method that
 is implemented.</p>
 <h3>channelProcessLocal</h3>
-<p>Needs to be described.</p>
+<p>Implements channelProcess.</p>
 <h3>channelGetLocal</h3>
-<p>Needs to be described.</p>
+<p>Implements channelGet.</p>
 <h3>channelPutLocal</h3>
-<p>Needs to be described.</p>
+<p>Implements channelPut.</p>
 <h3>channelPutGetLocal</h3>
-<p>Needs to be described.</p>
+<p>Implements channelPutGet.</p>
 <h3>channelArrayLocal</h3>
-<p>Needs to be described.</p>
+<p>Implements channelArray.</p>
+<h3>ChannelRPCLocal</h3>
+<p>Implements channelRPC.</p>
 <h3>MonitorLocal</h3>
 <p>This is the code that implements monitors on changes to fields of a PVRecord.
 Because it is called by pvAccess client (monitor methods) and by
@@ -825,11 +856,8 @@ active element but never modifies the pvStructure.
 </dl>
 
 <h2>special</h2>
-<p>This section provides two useful record support modules
-and one that is used for testing.</p>
-<h3>traceRecord</h3>
-<p>This implements a PVRecord that allows a client to set
-the trace level of a record. It follows the pattern of a channelPutGet
+<p>This section provides <b>traceRecord</b> which implements a PVRecord that allows a client to set
+the trace level of another PVRecord. It follows the pattern of a channelPutGet
 record:</p>
 <pre>
 traceRecord
