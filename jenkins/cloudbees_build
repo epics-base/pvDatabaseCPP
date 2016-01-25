@@ -21,7 +21,6 @@ USE_MB=${2:-"MB_NO"}
 PVCOMMON_BRANCH=""
 PVDATA_BRANCH=""
 PVACCESS_BRANCH=""
-PVASRV_BRANCH=""
 
 ###########################################
 # Fetch and unpack dependencies
@@ -39,7 +38,6 @@ wget -nv https://openepics.ci.cloudbees.com/job/pvaSrvCPP_${PVASRV_BRANCH}Build/
 tar -xzf base-${BASE}.CB-dist.tar.gz
 tar -xzf pvData.CB-dist.tar.gz
 tar -xzf pvAccess.CB-dist.tar.gz
-tar -xzf pvaSrv.CB-dist.tar.gz
 
 if [ "${USE_MB}" = "MB_YES" ]; then
     wget -nv https://openepics.ci.cloudbees.com/job/pvCommonCPP_${PVCOMMON_BRANCH}Build/BASE=${BASE},USE_MB=MB_YES/lastSuccessfulBuild/artifact/pvCommon.CB-dist.tar.gz
@@ -65,7 +63,7 @@ make distclean all
 ###########################################
 # Test
 
-# Currently no tests. See the file called README.
+make runtests
 
 ###########################################
 # Create distribution
