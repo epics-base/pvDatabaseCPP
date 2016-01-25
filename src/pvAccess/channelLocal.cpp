@@ -11,6 +11,7 @@
 
 #include <sstream>
 
+#include <epicsGuard.h>
 #include <epicsThread.h>
 #include <pv/timeStamp.h>
 #include <pv/pvSubArrayCopy.h>
@@ -204,16 +205,10 @@ void ChannelProcessLocal::process()
         cout << " nProcess " << nProcess << endl;
     }
     for(int i=0; i< nProcess; i++) {
-        pvRecord->lock();
-        try {
-            pvRecord->beginGroupPut();
-            pvRecord->process();
-            pvRecord->endGroupPut();
-        } catch(...) {
-            pvRecord->unlock();
-            throw;
-        }
-        pvRecord->unlock();
+        epicsGuard <PVRecord> guard(*pvRecord);
+        pvRecord->beginGroupPut();
+        pvRecord->process();
+        pvRecord->endGroupPut();
     }
     requester->processDone(Status::Ok,getPtrSelf());
 }
@@ -349,19 +344,15 @@ void ChannelGetLocal::get()
          return;
     } 
     bitSet->clear();
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         if(callProcess) {
             pvRecord->beginGroupPut();
             pvRecord->process();
             pvRecord->endGroupPut();
         }
         pvCopy->updateCopySetBitSet(pvStructure, bitSet);
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     if(firstTime) {
         bitSet->clear();
         bitSet->set(0);
@@ -502,14 +493,10 @@ void ChannelPutLocal::get()
     BitSetPtr bitSet(new BitSet(pvStructure->getNumberFields()));
     bitSet->clear();
     bitSet->set(0);
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         pvCopy->updateCopyFromBitSet(pvStructure, bitSet);
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->getDone(
        Status::Ok,getPtrSelf(),pvStructure,bitSet);
     if(pvRecord->getTraceLevel()>1)
@@ -527,19 +514,15 @@ void ChannelPutLocal::put(
          requester->putDone(channelDestroyedStatus,getPtrSelf());
          return;
     }
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         pvRecord->beginGroupPut();
         pvCopy->updateMaster(pvStructure, bitSet);
         if(callProcess) {
              pvRecord->process();
         }
         pvRecord->endGroupPut();
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->putDone(Status::Ok,getPtrSelf());
     if(pvRecord->getTraceLevel()>1)
     {
@@ -690,19 +673,15 @@ void ChannelPutGetLocal::putGet(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         pvRecord->beginGroupPut();
         pvPutCopy->updateMaster(pvPutStructure, putBitSet);
         if(callProcess) pvRecord->process();
         getBitSet->clear();
         pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
         pvRecord->endGroupPut();
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->putGetDone(
         Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
     if(pvRecord->getTraceLevel()>1)
@@ -722,14 +701,10 @@ void ChannelPutGetLocal::getPut()
     } 
     PVStructurePtr pvPutStructure = pvPutCopy->createPVStructure();
     BitSetPtr putBitSet(new BitSet(pvPutStructure->getNumberFields()));
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         pvPutCopy->initCopy(pvPutStructure, putBitSet);
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->getPutDone(
         Status::Ok,getPtrSelf(),pvPutStructure,putBitSet);
     if(pvRecord->getTraceLevel()>1)
@@ -748,14 +723,10 @@ void ChannelPutGetLocal::getGet()
          return;
     } 
     getBitSet->clear();
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->getGetDone(
         Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
     if(pvRecord->getTraceLevel()>1)
@@ -1175,9 +1146,9 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
          return;
     }
     const char *exceptionMessage = NULL;
-    pvRecord->lock();
     try {
         bool ok = false;
+        epicsGuard <PVRecord> guard(*pvRecord);
         while(true) {
             size_t length  = pvArray->getLength();
             if(length<=0) break;
@@ -1198,7 +1169,6 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
     } catch(std::exception e) {
         exceptionMessage = e.what();
     }
-    pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
       status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
@@ -1234,13 +1204,12 @@ void ChannelArrayLocal::putArray(
     size_t newLength = offset + count*stride;
     if(newLength<pvArray->getLength()) pvArray->setLength(newLength);
     const char *exceptionMessage = NULL;
-    pvRecord->lock();
     try {
+        epicsGuard <PVRecord> guard(*pvRecord);
         copy(pvArray,0,1,this->pvArray,offset,stride,count);
     } catch(std::exception e) {
         exceptionMessage = e.what();
     }
-    pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
         status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
@@ -1254,13 +1223,12 @@ void ChannelArrayLocal::getLength()
     if(!requester.get()) return;
     size_t length = 0;
     const char *exceptionMessage = NULL;
-    pvRecord->lock();
     try {
+        epicsGuard <PVRecord> guard(*pvRecord);
         length = pvArray->getLength();
     } catch(std::exception e) {
         exceptionMessage = e.what();
     }
-    pvRecord->unlock();
     Status status = Status::Ok;
     if(exceptionMessage!=NULL) {
         status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
@@ -1280,16 +1248,12 @@ void ChannelArrayLocal::setLength(size_t length)
     {
        cout << "ChannelArrayLocal::setLength" << endl;
     }
-    pvRecord->lock();
-    try {
+    {
+        epicsGuard <PVRecord> guard(*pvRecord);
         if(length>=0) {
             if(pvArray->getLength()!=length) pvArray->setLength(length);
         }
-    } catch(...) {
-        pvRecord->unlock();
-        throw;
     }
-    pvRecord->unlock();
     requester->setLengthDone(Status::Ok,getPtrSelf());
 }
 
