@@ -63,7 +63,7 @@ make distclean all
 ###########################################
 # Test
 
-#make runtests
+make runtests
 
 ###########################################
 # Create distribution
