@@ -529,9 +529,3 @@ private:
 
 #endif  /* PVDATABASE_H */
 
-/** @page Overview Documentation
- *
- * <a href = "../pvDatabaseCPP.html">pvDatabase.html</a>
- *
- */
-

@@ -204,13 +204,18 @@ void ChannelProcessLocal::process()
         cout << "ChannelProcessLocal::process";
         cout << " nProcess " << nProcess << endl;
     }
-    for(int i=0; i< nProcess; i++) {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvRecord->beginGroupPut();
-        pvRecord->process();
-        pvRecord->endGroupPut();
+    try {
+        for(int i=0; i< nProcess; i++) {
+            epicsGuard <PVRecord> guard(*pvRecord);
+            pvRecord->beginGroupPut();
+            pvRecord->process();
+            pvRecord->endGroupPut();
+        }
+        requester->processDone(Status::Ok,getPtrSelf());
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        requester->processDone(status,getPtrSelf());
     }
-    requester->processDone(Status::Ok,getPtrSelf());
 }
 
 class ChannelGetLocal :
@@ -343,30 +348,36 @@ void ChannelGetLocal::get()
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
-    bitSet->clear();
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        if(callProcess) {
-            pvRecord->beginGroupPut();
-            pvRecord->process();
-            pvRecord->endGroupPut();
-        }
-        pvCopy->updateCopySetBitSet(pvStructure, bitSet);
-    }
-    if(firstTime) {
+    try {
         bitSet->clear();
-        bitSet->set(0);
-        firstTime = false;
-    } 
-    requester->getDone(
-        Status::Ok,
-        getPtrSelf(),
-        pvStructure,
-        bitSet);
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelGetLocal::get" << endl;
+        {
+            epicsGuard <PVRecord> guard(*pvRecord);
+            if(callProcess) {
+                pvRecord->beginGroupPut();
+                pvRecord->process();
+                pvRecord->endGroupPut();
+            }
+            pvCopy->updateCopySetBitSet(pvStructure, bitSet);
+        }
+        if(firstTime) {
+            bitSet->clear();
+            bitSet->set(0);
+            firstTime = false;
+        } 
+        requester->getDone(
+            Status::Ok,
+            getPtrSelf(),
+            pvStructure,
+            bitSet);
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "ChannelGetLocal::get" << endl;
+        }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        requester->getDone(status,getPtrSelf(),pvStructure,bitSet);
     }
+
 }
 
 class ChannelPutLocal :
@@ -489,19 +500,26 @@ void ChannelPutLocal::get()
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     }
-    PVStructurePtr pvStructure = pvCopy->createPVStructure();
-    BitSetPtr bitSet(new BitSet(pvStructure->getNumberFields()));
-    bitSet->clear();
-    bitSet->set(0);
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvCopy->updateCopyFromBitSet(pvStructure, bitSet);
-    }
-    requester->getDone(
-       Status::Ok,getPtrSelf(),pvStructure,bitSet);
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelPutLocal::get" << endl;
+    try {
+        PVStructurePtr pvStructure = pvCopy->createPVStructure();
+         BitSetPtr bitSet(new BitSet(pvStructure->getNumberFields()));
+         bitSet->clear();
+         bitSet->set(0);
+         {
+             epicsGuard <PVRecord> guard(*pvRecord);
+             pvCopy->updateCopyFromBitSet(pvStructure, bitSet);
+         }
+         requester->getDone(
+            Status::Ok,getPtrSelf(),pvStructure,bitSet);
+         if(pvRecord->getTraceLevel()>1)
+         {
+             cout << "ChannelPutLocal::get" << endl;
+         }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        PVStructurePtr pvStructure;
+        BitSetPtr bitSet;
+        requester->getDone(status,getPtrSelf(),pvStructure,bitSet);
     }
 }
 
@@ -514,19 +532,24 @@ void ChannelPutLocal::put(
          requester->putDone(channelDestroyedStatus,getPtrSelf());
          return;
     }
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvRecord->beginGroupPut();
-        pvCopy->updateMaster(pvStructure, bitSet);
-        if(callProcess) {
-             pvRecord->process();
+    try {
+        {   
+            epicsGuard <PVRecord> guard(*pvRecord);
+            pvRecord->beginGroupPut();
+            pvCopy->updateMaster(pvStructure, bitSet);
+            if(callProcess) {
+                 pvRecord->process();
+            }
+            pvRecord->endGroupPut();
         }
-        pvRecord->endGroupPut();
-    }
-    requester->putDone(Status::Ok,getPtrSelf());
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelPutLocal::put" << endl;
+        requester->putDone(Status::Ok,getPtrSelf());
+        if(pvRecord->getTraceLevel()>1)
+        {   
+            cout << "ChannelPutLocal::put" << endl;
+        }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        requester->putDone(status,getPtrSelf());
     }
 }
 
@@ -673,20 +696,25 @@ void ChannelPutGetLocal::putGet(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvRecord->beginGroupPut();
-        pvPutCopy->updateMaster(pvPutStructure, putBitSet);
-        if(callProcess) pvRecord->process();
-        getBitSet->clear();
-        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
-        pvRecord->endGroupPut();
-    }
-    requester->putGetDone(
-        Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelPutGetLocal::putGet" << endl;
+    try {
+        {
+            epicsGuard <PVRecord> guard(*pvRecord);
+            pvRecord->beginGroupPut();
+            pvPutCopy->updateMaster(pvPutStructure, putBitSet);
+            if(callProcess) pvRecord->process();
+            getBitSet->clear();
+            pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
+            pvRecord->endGroupPut();
+        }
+        requester->putGetDone(
+            Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "ChannelPutGetLocal::putGet" << endl;
+        }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        requester->putGetDone(status,getPtrSelf(),pvGetStructure,getBitSet);
     }
 }
 
@@ -699,17 +727,24 @@ void ChannelPutGetLocal::getPut()
               channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
-    PVStructurePtr pvPutStructure = pvPutCopy->createPVStructure();
-    BitSetPtr putBitSet(new BitSet(pvPutStructure->getNumberFields()));
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvPutCopy->initCopy(pvPutStructure, putBitSet);
-    }
-    requester->getPutDone(
-        Status::Ok,getPtrSelf(),pvPutStructure,putBitSet);
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelPutGetLocal::getPut" << endl;
+    try {
+        PVStructurePtr pvPutStructure = pvPutCopy->createPVStructure();
+        BitSetPtr putBitSet(new BitSet(pvPutStructure->getNumberFields()));
+        {
+            epicsGuard <PVRecord> guard(*pvRecord);
+            pvPutCopy->initCopy(pvPutStructure, putBitSet);
+        }
+        requester->getPutDone(
+            Status::Ok,getPtrSelf(),pvPutStructure,putBitSet);
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "ChannelPutGetLocal::getPut" << endl;
+        }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        PVStructurePtr pvPutStructure;
+        BitSetPtr putBitSet;
+        requester->getPutDone(status,getPtrSelf(),pvGetStructure,getBitSet);
     }
 }
 
@@ -722,16 +757,23 @@ void ChannelPutGetLocal::getGet()
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
          return;
     } 
-    getBitSet->clear();
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
-    }
-    requester->getGetDone(
-        Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
-    if(pvRecord->getTraceLevel()>1)
-    {
-        cout << "ChannelPutGetLocal::getGet" << endl;
+    try {
+         getBitSet->clear();
+         {
+             epicsGuard <PVRecord> guard(*pvRecord);
+             pvGetCopy->updateCopySetBitSet(pvGetStructure, getBitSet);
+         }
+         requester->getGetDone(
+             Status::Ok,getPtrSelf(),pvGetStructure,getBitSet);
+         if(pvRecord->getTraceLevel()>1)
+         {
+             cout << "ChannelPutGetLocal::getGet" << endl;
+         }
+    } catch(std::exception& ex) {
+        Status status = Status(Status::STATUSTYPE_FATAL, ex.what());
+        PVStructurePtr pvPutStructure;
+        BitSetPtr putBitSet;
+        requester->getGetDone(status,getPtrSelf(),pvGetStructure,getBitSet);
     }
 }
 
@@ -1248,13 +1290,19 @@ void ChannelArrayLocal::setLength(size_t length)
     {
        cout << "ChannelArrayLocal::setLength" << endl;
     }
-    {
-        epicsGuard <PVRecord> guard(*pvRecord);
-        if(length>=0) {
-            if(pvArray->getLength()!=length) pvArray->setLength(length);
-        }
+    try {
+         {
+             epicsGuard <PVRecord> guard(*pvRecord);
+             if(length>=0) {
+                 if(pvArray->getLength()!=length) pvArray->setLength(length);
+             }
+         }
+         requester->setLengthDone(Status::Ok,getPtrSelf());
+    } catch(std::exception e) {
+        string exceptionMessage = e.what();
+        Status status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
+        requester->setLengthDone(status,getPtrSelf());
     }
-    requester->setLengthDone(Status::Ok,getPtrSelf());
 }
 
 
