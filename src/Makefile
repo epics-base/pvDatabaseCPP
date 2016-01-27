@@ -18,5 +18,9 @@ LIBRARY += pvDatabase
 pvDatabase_LIBS += pvAccess pvData Com
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+# shared library ABI version.
+SHRLIB_VERSION ?= 4.2
+
+
 include $(TOP)/configure/RULES
 
