@@ -65,7 +65,7 @@ private:
     epics::pvData::TimeStamp timeStamp;
 };
 
-epics::pvData::PVStructurePtr createPowerSupply()
+inline epics::pvData::PVStructurePtr createPowerSupply()
 {
     epics::pvData::FieldCreatePtr fieldCreate = epics::pvData::getFieldCreate();
     epics::pvData::StandardFieldPtr standardField = epics::pvData::getStandardField();
@@ -90,7 +90,7 @@ epics::pvData::PVStructurePtr createPowerSupply()
             createStructure());
 }
 
-PowerSupplyPtr PowerSupply::create(
+inline PowerSupplyPtr PowerSupply::create(
     std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 {
@@ -100,23 +100,23 @@ PowerSupplyPtr PowerSupply::create(
     return pvRecord;
 }
 
-PowerSupply::PowerSupply(
+inline PowerSupply::PowerSupply(
     std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure)
 {
 }
 
-PowerSupply::~PowerSupply()
+inline PowerSupply::~PowerSupply()
 {
 }
 
-void PowerSupply::destroy()
+inline void PowerSupply::destroy()
 {
     PVRecord::destroy();
 }
 
-bool PowerSupply::init()
+inline bool PowerSupply::init()
 {
     initPVRecord();
     epics::pvData::PVStructurePtr pvStructure = getPVStructure();
@@ -160,7 +160,7 @@ bool PowerSupply::init()
     return true;
 }
 
-void PowerSupply::process()
+inline void PowerSupply::process()
 {
     timeStamp.getCurrent();
     pvTimeStamp.set(timeStamp);
@@ -179,23 +179,23 @@ void PowerSupply::process()
     pvAlarm.set(alarm);
 }
 
-void PowerSupply::put(double power,double voltage)
+inline void PowerSupply::put(double power,double voltage)
 {
     pvPower->put(power);
     pvVoltage->put(voltage);
 }
 
-double PowerSupply::getPower()
+inline double PowerSupply::getPower()
 {
     return pvPower->get();
 }
 
-double PowerSupply::getVoltage()
+inline double PowerSupply::getVoltage()
 {
     return pvVoltage->get();
 }
 
-double PowerSupply::getCurrent()
+inline double PowerSupply::getCurrent()
 {
     return pvCurrent->get();
 }
