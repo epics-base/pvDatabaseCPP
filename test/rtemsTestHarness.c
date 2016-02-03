@@ -8,6 +8,8 @@
 #include <epicsExit.h>
 #include <osdTime.h>
 
+extern void pvDatabaseAllTests(void);
+
 rtems_task
 Init (rtems_task_argument ignored)
 {
@@ -31,7 +33,6 @@ Init (rtems_task_argument ignored)
   }
   osdTimeRegister();
   
-  extern void pvDataAllTests(void);
-  pvDataAllTests();
+  pvDatabaseAllTests();
   epicsExit(0);
 }

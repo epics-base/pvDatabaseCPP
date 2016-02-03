@@ -1,5 +1,5 @@
 /*
- * Run pvData tests as a batch.
+ * Run pvDatabase tests as a batch.
  *
  * Do *not* include performance measurements here, they don't help to
  * prove functionality (which is the point of this convenience routine).
