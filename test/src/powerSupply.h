@@ -37,7 +37,7 @@ namespace epics { namespace pvDatabase {
 class PowerSupply;
 typedef std::tr1::shared_ptr<PowerSupply> PowerSupplyPtr;
 
-class epicsShareClass PowerSupply :
+class PowerSupply :
     public PVRecord
 {
 public:

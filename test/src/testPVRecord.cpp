@@ -29,6 +29,7 @@
 #include <pv/standardPVField.h>
 #include <pv/pvData.h>
 #include <pv/pvCopy.h>
+#define epicsExportSharedSymbols
 #include "powerSupply.h"
 
 

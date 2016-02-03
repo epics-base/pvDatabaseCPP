@@ -30,6 +30,7 @@
 #include <pv/standardPVField.h>
 #include <pv/pvData.h>
 #include <pv/pvAccess.h>
+#define epicsExportSharedSymbols
 #include "powerSupply.h"
 
 #include <epicsExport.h>
