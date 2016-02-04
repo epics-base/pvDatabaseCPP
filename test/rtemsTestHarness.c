@@ -31,7 +31,6 @@ Init (rtems_task_argument ignored)
   }
   osdTimeRegister();
   
-  extern void pvDataAllTests(void);
   pvDatabaseAllTests();
   epicsExit(0);
 }
