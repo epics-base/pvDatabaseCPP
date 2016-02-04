@@ -29,6 +29,7 @@
 #include <pv/standardPVField.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
+#define epicsExportSharedSymbols
 #include "powerSupply.h"
 
 
