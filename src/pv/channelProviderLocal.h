@@ -400,44 +400,5 @@ private:
     epics::pvData::Mutex mutex;
 };
 
-
-/**
- * @brief A pvAccess server context that provides
- * remote access to a local channel providers (i.e. pvDatabase records).
- */
-class epicsShareClass ContextLocal
-{
-
-public:
-    POINTER_DEFINITIONS(ContextLocal);
-
-    static shared_pointer create();
-
-    /**
-     * Start the context thread.
-     * After this is called clients can connect to the server.
-     * @param waitForExit In true then waitForExit() method is called after the server is started.
-     */
-    void start(bool waitForExit = false);
-
-    /**
-     * Waits for "exit" to be entered on standard input and calls destroy() before returning.
-     */
-    void waitForExit();
-
-    /**
-     * This destroys the context.
-     * All clients will be disconnected.
-     */
-    void destroy();
-
-private:
-    ContextLocal();
-
-    ChannelProviderLocalPtr m_channelProvider;
-    epics::pvAccess::ServerContext::shared_pointer m_context;
-};
-
-
 }}
 #endif  /* CHANNELPROVIDERLOCAL_H */
