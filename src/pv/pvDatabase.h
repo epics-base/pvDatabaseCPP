@@ -266,7 +266,7 @@ private:
     PVListenerWPtr pvListener;
 };
 
-epicsShareExtern std::ostream& operator<<(std::ostream& o, const PVRecord& record);
+epicsShareFunc std::ostream& operator<<(std::ostream& o, const PVRecord& record);
 
 /**
  * @brief Interface for a field of a record.

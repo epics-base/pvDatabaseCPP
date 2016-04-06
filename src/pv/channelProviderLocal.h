@@ -55,7 +55,7 @@ typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
 class ChannelLocal;
 typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
 
-epicsShareExtern MonitorFactoryPtr getMonitorFactory();
+epicsShareFunc MonitorFactoryPtr getMonitorFactory();
 
 /**
  * @brief MonitorFactory
@@ -92,13 +92,13 @@ public:
 private:
     MonitorFactory();
     friend class MonitorLocal;
-    friend MonitorFactoryPtr getMonitorFactory();
+    friend epicsShareFunc MonitorFactoryPtr getMonitorFactory();
     bool isDestroyed;
     epics::pvData::Mutex mutex;
 };
 
 
-epicsShareExtern ChannelProviderLocalPtr getChannelProviderLocal();
+epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
 
 /**
  * @brief ChannelProvider for PVDatabase.
@@ -186,7 +186,7 @@ private:
         return shared_from_this();
     }
     ChannelProviderLocal();
-    friend ChannelProviderLocalPtr getChannelProviderLocal();
+    friend epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
     PVDatabasePtr pvDatabase;
     epics::pvData::Mutex mutex;
     bool beingDestroyed;
