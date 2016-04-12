@@ -30,7 +30,7 @@
 
 #include <shareLib.h>
 
-//epicsShareExtern epics::pvData::PVStructurePtr createPowerSupply();
+//epicsShareFunc epics::pvData::PVStructurePtr createPowerSupply();
 
 namespace epics { namespace pvDatabase { 
 
