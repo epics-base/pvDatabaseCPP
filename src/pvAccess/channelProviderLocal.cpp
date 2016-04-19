@@ -75,7 +75,8 @@ ChannelProviderLocalPtr getChannelProviderLocal()
             dynamic_pointer_cast<ChannelProvider>(channelProviderLocal);
         channelProviderLocal->channelFinder =
             SyncChannelFind::shared_pointer(new SyncChannelFind(xxx));
-        LocalChannelProviderFactory::create(channelProviderLocal);
+        LocalChannelProviderFactoryPtr factory(LocalChannelProviderFactory::create(channelProviderLocal));
+        registerChannelProviderFactory(factory);
     }
     return channelProviderLocal;
 }

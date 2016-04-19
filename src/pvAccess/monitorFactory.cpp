@@ -137,7 +137,7 @@ Status MonitorLocal::start()
 {
     if(pvRecord->getTraceLevel()>0)
     {
-        cout << "MonitorLocal::start() "  << endl;
+        cout << "MonitorLocal::start state " << state << endl;
     }
     {
         Lock xx(mutex);
@@ -161,7 +161,7 @@ Status MonitorLocal::start()
 Status MonitorLocal::stop()
 {
     if(pvRecord->getTraceLevel()>0){
-        cout << "MonitorLocal::stop() "  << endl;
+        cout << "MonitorLocal::stop state " << state << endl;
     }
     {
         Lock xx(mutex);
@@ -177,7 +177,7 @@ MonitorElementPtr MonitorLocal::poll()
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "MonitorLocal::poll() "  << endl;
+        cout << "MonitorLocal::poll state  " << state << endl;
     }
     {
         Lock xx(queueMutex);
@@ -190,7 +190,7 @@ void MonitorLocal::release(MonitorElementPtr const & monitorElement)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "MonitorLocal::release() "  << endl;
+        cout << "MonitorLocal::release state  " << state << endl;
     }
     {
         Lock xx(queueMutex);
@@ -203,7 +203,7 @@ void MonitorLocal::releaseActiveElement()
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "MonitorLocal::releaseActiveElement() "  << endl;
+        cout << "MonitorLocal::releaseActiveElement  state  " << state << endl;
     }
     {
         Lock xx(queueMutex);
@@ -294,7 +294,7 @@ void MonitorLocal::endGroupPut(PVRecordPtr const & pvRecord)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::endGroupPut() dataChanged " << dataChanged << endl;
+        cout << "PVCopyMonitor::endGroupPut dataChanged " << dataChanged << endl;
     }
     if(state!=active) return;
     {
