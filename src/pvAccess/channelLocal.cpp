@@ -79,7 +79,7 @@ static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
         return  pvString->get().compare("true")==0 ? true : false;
     } else if(scalar->getScalarType()==pvBoolean) {
         PVBooleanPtr pvBoolean = static_pointer_cast<PVBoolean>(pvField);
-       	return pvBoolean.get();
+       	return pvBoolean->get();
     }
     return processDefault;
 }
@@ -194,7 +194,7 @@ void ChannelProcessLocal::destroy()
 void ChannelProcessLocal::process()
 {
     ChannelProcessRequester::shared_pointer requester = channelProcessRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->processDone(channelDestroyedStatus,getPtrSelf());
          return;
@@ -342,7 +342,7 @@ void ChannelGetLocal::destroy()
 void ChannelGetLocal::get()
 {
     ChannelGetRequester::shared_pointer requester = channelGetRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->getDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
@@ -494,7 +494,7 @@ void ChannelPutLocal::destroy()
 void ChannelPutLocal::get()
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->getDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
@@ -527,7 +527,7 @@ void ChannelPutLocal::put(
     PVStructurePtr const &pvStructure,BitSetPtr const &bitSet)
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->putDone(channelDestroyedStatus,getPtrSelf());
          return;
@@ -690,7 +690,7 @@ void ChannelPutGetLocal::putGet(
     PVStructurePtr const &pvPutStructure,BitSetPtr const &putBitSet)
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->putGetDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
@@ -721,7 +721,7 @@ void ChannelPutGetLocal::putGet(
 void ChannelPutGetLocal::getPut()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->getPutDone(
               channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
@@ -751,7 +751,7 @@ void ChannelPutGetLocal::getPut()
 void ChannelPutGetLocal::getGet()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->getGetDone(
              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
@@ -821,7 +821,7 @@ public:
         PVStructurePtr const & result)
     {
         ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
-        if(!requester.get()) return;
+        if(!requester) return;
         requester->requestDone(status, getPtrSelf(), result);
 
         if (isLastRequest.get())
@@ -873,7 +873,7 @@ ChannelRPCLocalPtr ChannelRPCLocal::create(
     PVRecordPtr const &pvRecord)
 {
     Service::shared_pointer service = pvRecord->getService(pvRequest);
-    if (service.get() == 0)
+    if (!service)
     {
         Status status(Status::STATUSTYPE_ERROR,
             "ChannelRPC not supported");
@@ -881,7 +881,7 @@ ChannelRPCLocalPtr ChannelRPCLocal::create(
         return ChannelRPCLocalPtr();
     }
 
-    if (channelRPCRequester.get() == 0)
+    if (!channelRPCRequester)
         throw std::invalid_argument("channelRPCRequester == null");
 
     // TODO use std::make_shared
@@ -926,12 +926,12 @@ void ChannelRPCLocal::processRequest(
     }
     
     // check null result
-    if (ok && result.get() == 0)
+    if (ok && !result)
     {
         status = Status(Status::STATUSTYPE_FATAL, "RPCService.request(PVStructure) returned null.");
     }
     ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
-    if(requester.get()) requester->requestDone(status, getPtrSelf(), result);
+    if(requester) requester->requestDone(status, getPtrSelf(), result);
         
     if (isLastRequest.get())
         destroy();
@@ -950,7 +950,7 @@ void ChannelRPCLocal::processRequest(
         // handle user unexpected errors
         Status errorStatus(Status::STATUSTYPE_FATAL, ex.what());
         ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
-        if(requester.get()) requester->requestDone(errorStatus, getPtrSelf(), PVStructurePtr());
+        if(requester) requester->requestDone(errorStatus, getPtrSelf(), PVStructurePtr());
         if (isLastRequest.get())
             destroy();
     }
@@ -960,7 +960,7 @@ void ChannelRPCLocal::processRequest(
         Status errorStatus(Status::STATUSTYPE_FATAL,
                            "Unexpected exception caught while calling RPCServiceAsync.request(PVStructure, RPCResponseCallback).");
         ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
-        if(requester.get()) requester->requestDone(errorStatus, shared_from_this(), PVStructurePtr());
+        if(requester) requester->requestDone(errorStatus, shared_from_this(), PVStructurePtr());
 
         if (isLastRequest.get())
             destroy();
@@ -1170,7 +1170,7 @@ void ChannelArrayLocal::destroy()
 void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->getArrayDone(channelDestroyedStatus,getPtrSelf(),pvCopy);
          return;
@@ -1222,7 +1222,7 @@ void ChannelArrayLocal::putArray(
      PVArrayPtr const & pvArray, size_t offset, size_t count, size_t stride)
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->putArrayDone(channelDestroyedStatus,getPtrSelf());
          return;
@@ -1262,7 +1262,7 @@ void ChannelArrayLocal::putArray(
 void ChannelArrayLocal::getLength()
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     size_t length = 0;
     const char *exceptionMessage = NULL;
     try {
@@ -1281,7 +1281,7 @@ void ChannelArrayLocal::getLength()
 void ChannelArrayLocal::setLength(size_t length)
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     if(isDestroyed) {
          requester->setLengthDone(channelDestroyedStatus,getPtrSelf());
          return;
@@ -1351,7 +1351,7 @@ void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 string ChannelLocal::getRequesterName()
 {
     ChannelRequester::shared_pointer req = requester.lock();
-    if(!req.get()) return string();
+    if(!req) return string();
     return req->getRequesterName();
 }
 
@@ -1360,7 +1360,7 @@ void ChannelLocal::message(
         MessageType messageType)
 {
     ChannelRequester::shared_pointer req = requester.lock();
-    if(!req.get()) return;
+    if(!req) return;
     req->message(message,messageType);
 }
 

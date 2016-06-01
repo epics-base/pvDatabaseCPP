@@ -68,7 +68,7 @@ ChannelProviderLocalPtr getChannelProviderLocal()
     static ChannelProviderLocalPtr channelProviderLocal;
     static Mutex mutex;
     Lock xx(mutex);
-    if(channelProviderLocal.get()==NULL) {
+    if(!channelProviderLocal) {
         channelProviderLocal = ChannelProviderLocalPtr(
             new ChannelProviderLocal());
         ChannelProvider::shared_pointer xxx =
@@ -112,7 +112,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
 {
     Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
-    if(pvRecord.get()!=NULL) {
+    if(pvRecord) {
         channelFindRequester->channelFindResult(
             Status::Ok,
             channelFinder,
@@ -157,7 +157,7 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
 {
     Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
-    if(pvRecord.get()!=NULL) {
+    if(pvRecord) {
         ChannelLocalPtr channel(new ChannelLocal(
             getPtrSelf(),channelRequester,pvRecord));
         channelRequester->channelCreated(

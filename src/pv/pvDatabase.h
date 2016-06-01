@@ -37,6 +37,7 @@ namespace epics { namespace pvDatabase {
 
 class PVRecord;
 typedef std::tr1::shared_ptr<PVRecord> PVRecordPtr;
+typedef std::tr1::weak_ptr<PVRecord> PVRecordWPtr;
 typedef std::map<std::string,PVRecordPtr> PVRecordMap;
 
 class PVRecordField;
@@ -46,6 +47,7 @@ typedef std::tr1::shared_ptr<PVRecordFieldPtrArray> PVRecordFieldPtrArrayPtr;
 
 class PVRecordStructure;
 typedef std::tr1::shared_ptr<PVRecordStructure> PVRecordStructurePtr;
+typedef std::tr1::weak_ptr<PVRecordStructure> PVRecordStructureWPtr;
 
 class PVRecordClient;
 typedef std::tr1::shared_ptr<PVRecordClient> PVRecordClientPtr;
@@ -69,7 +71,10 @@ class epicsShareClass PVRecord :
 {
 public:
     POINTER_DEFINITIONS(PVRecord);
-
+    /**
+     * The Destructor.
+     */
+    virtual ~PVRecord();
     /**
      * Virtual initialization method.
      * Must be implemented by derived classes.
@@ -87,17 +92,19 @@ public:
      *  It is the method that makes a record smart.
      *  If it encounters errors it should raise alarms and/or
      *  call the <b>message</b> method provided by the base class.
+     *  If the pvStructure has a top level timeStamp,
+     *  the base class sets the timeStamp to the current time.
      */
     virtual void process();
     /**
      *  Destroy the PVRecord. Release any resources used and 
      *  get rid of listeners and requesters.
      *  If derived class overrides this then it must call PVRecord::destroy()
-     *  after it has destroyed rewsorces it uses.
+     *  after it has destroyed any resorces it uses.
      */
     virtual void destroy();
     /**
-     * Creates a <b>dump</b> record, i.e. a record where process does nothing. 
+     * Creates a <b>soft</b> record. 
      * @param recordName The name of the record, which is also the channelName.
      * @param pvStructure The top level structure.
      * @return A shared pointer to the newly created record.
@@ -106,16 +113,12 @@ public:
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     /**
-     * The Destructor. Must be virtual.
-     */
-    virtual ~PVRecord();
-    /**
      * Get the name of the record.
      * @return The name.
      */
     std::string getRecordName() const;
     /**
-     * Get the top level PVStructure.
+     * Get the top level PVRecordStructure.
      * @return The shared pointer.
      */
     PVRecordStructurePtr getPVRecordStructure() const;
@@ -217,7 +220,7 @@ public:
      */
     int getTraceLevel() {return traceLevel;}
     /**
-     * set trace level (0,1) means (lifetime,process)
+     * set trace level (0,1,2) means (nothing,lifetime,process)
      * @param level The level
      */
     void setTraceLevel(int level) {traceLevel = level;}
@@ -239,6 +242,9 @@ protected:
      * @return The shared pointer to the top level PVStructure.
      */
     epics::pvData::PVStructurePtr getPVStructure();
+    /** Get shared pointer to self
+     * @return The shared pointer.
+     */
     PVRecordPtr getPtrSelf()
     {
         return shared_from_this();
@@ -293,11 +299,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~PVRecordField();
-    /**
-     *   Release any resources used
-     */
-    virtual void destroy();
+    virtual ~PVRecordField() {}
     /**
      * Get the parent.
      * @return The parent.
@@ -329,10 +331,6 @@ public:
      */
     virtual void postPut();
 protected:
-    PVRecordFieldPtr getPtrSelf()
-    {
-        return shared_from_this();
-    }
     virtual void init();
     virtual void postParent(PVRecordFieldPtr const & subField);
     virtual void postSubField();
@@ -342,10 +340,10 @@ private:
     void callListener();
 
     std::list<PVListenerWPtr> pvListenerList;
-    epics::pvData::PVFieldPtr pvField;
+    epics::pvData::PVField::weak_pointer pvField;
     bool isStructure;
-    PVRecordStructurePtr parent;
-    PVRecordPtr pvRecord;
+    PVRecordStructureWPtr parent;
+    PVRecordWPtr pvRecord;
     std::string fullName;
     std::string fullFieldName;
     friend class PVRecordStructure;
@@ -374,11 +372,7 @@ public:
     /**
      * Destructor.
      */
-    virtual ~PVRecordStructure();
-    /**
-     *   Release any resources used
-     */
-    virtual void destroy();
+    virtual ~PVRecordStructure() {}
     /**
      * Get the sub fields.
      * @return the array of PVRecordFieldPtr.
@@ -400,8 +394,7 @@ protected:
     virtual void init();
 private:
     virtual void removeListener(PVListenerPtr const & pvListener);
-
-    epics::pvData::PVStructurePtr pvStructure;
+    epics::pvData::PVStructure::weak_pointer pvStructure;
     PVRecordFieldPtrArrayPtr pvRecordFields;
     friend class PVRecord;
 };
@@ -501,13 +494,13 @@ public:
     PVRecordPtr findRecord(std::string const& recordName);
     /**
      * Add a record.
-     * @param The record to add.
+     * @param record The record to add.
      * @return <b>true</b> if record was added.
      */
     bool addRecord(PVRecordPtr const & record);
     /**
      * Remove a record.
-     * @param The record to remove.
+     * @param record The record to remove.
      * @return <b>true</b> if record was removed.
      */
     bool removeRecord(PVRecordPtr const & record);
