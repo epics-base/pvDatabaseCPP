@@ -47,7 +47,7 @@ static bool debug = false;
 static int traceLevel = 0;
 
 
-void test()
+static void test()
 {
     StandardPVFieldPtr standardPVField = getStandardPVField();
     string properties;
