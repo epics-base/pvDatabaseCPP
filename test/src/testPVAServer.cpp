@@ -42,7 +42,7 @@ using namespace epics::pvDatabase;
 static bool debug = false;
 
 
-void test()
+static void test()
 {
     PVDatabasePtr master = PVDatabase::getMaster();
     ChannelProviderLocalPtr channelProvider = getChannelProviderLocal();
