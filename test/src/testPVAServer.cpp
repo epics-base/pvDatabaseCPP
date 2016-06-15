@@ -1,4 +1,4 @@
-/*testExampleServerMain.cpp */
+/*testPVAServerMain.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -70,7 +70,7 @@ void test()
     ctx->destroy();
 }
 
-MAIN(testExampleServer)
+MAIN(testPVAServer)
 {
     testPlan(1);
     test();
