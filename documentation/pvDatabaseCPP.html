@@ -36,7 +36,7 @@
 
 <div class="head">
 <h1>pvDatabaseCPP</h1>
-<h2 class="nocount">Release 4.2 - 2016.01.12</h2>
+<h2 class="nocount">Release 4.2-SNAPSHOT - 2016.06.02</h2>
 
 
 <h2 class="nocount">Abstract</h2>
@@ -370,6 +370,7 @@ public:
     void detachClients();
     bool addListener(PVListenerPtr const &amp; pvListener);
     bool removeListener(PVListenerPtr const &amp; pvListener);
+    ServicePtr getService(PVStructurePtr const &amp; pvRequest)
     void beginGroupPut();
     void endGroupPut();
     int getTraceLevel();
@@ -404,31 +405,44 @@ private:
    <dt>process</dt>
      <dd>Virtual method.
       Derived classes usually implement this method.
-       It implements the semantics for the record.
-      The base implementation does nothing.
+      It implements the semantics for the record.
+      <br />
+      If a top level timeStamp exists the base class set it equal
+       to the current time.
       </dd>
    <dt>destroy</dt>
-      <dd>Virtual method.
-       Optional method for derived class.
-       If the derived class implements this it
-       must call the base class destroy method after it
-      has released any resources it uses.</dd>   
+      <dd>
+      Destroy the PVRecord and any context.
+      <br />
+      Release any resources used and get rid of listeners and requesters.
+      If derived class overrides this then it must call this base class destroy()
+      after it has destroyed any resorces it uses.
+       <br />
+      It can be called for several reasons.
+      Some examples are:
+      <ul>
+         <li>By pvDatabase when it is destroyed.</li>
+         <li>By other code that wants to destroy the record</li>
+      </ul>
+      </dd>   
    <dt>create</dt>
-     <dd>Static method to create dumb records,
-      i.e. records with a process method that does nothing.
+     <dd>Static method to create a soft record.
+      A soft record implements process by setting an optional top level timeStamp
+       to the current time.
+      <br />
      A derived class should have it's own static create method.
      </dd>
    <dt>~PVRecord</dt>
-     <dd>The destructor which must be virtual. A derived class must also have
-       a virtual destructor.</dd>
+     <dd>
+      This calls destroy.
+     </dd>
    <dt>getRecordName</dt>
      <dd>Return the recordName.</dd>
    <dt>getPVRecordStructure</dt>
      <dd>Get the top level PVStructure.</dd>
    <dt>findPVRecordField</dt>
      <dd>Given a PVFieldPtr return the PVRecordFieldPtr for the field.</dd>
-   <dt>lock</dt>
-   <dt>unlock</dt>
+   <dt>lock and unlock</dt>
      <dd>Lock and Unlock the record.
         Any code accessing the data in the record or calling other PVRecord methods
         must have the record locked.</dd>
@@ -444,15 +458,35 @@ private:
         more then one record.
       </dd>
    <dt>addPVRecordClient</dt>
-     <dd>Every client that accesses the record must call this so that the client can be notified when the record is deleted.</dd>
+     <dd>
+      Every client that accesses the record must call this so that
+      the client can be notified when the record is deleted.
+     </dd>
    <dt>removePVRecordClient</dt>
-     <dd>Client is no longer accessing the record.</dd>
+     <dd>
+      Client is no longer accessing the record.
+     </dd>
    <dt>detachClients</dt>
-     <dd>Ask all clients to detach from the record</dd>
+     <dd>
+        Ask all clients to detach from the record
+      </dd>
    <dt>addListener</dt>
-     <dd>Add a PVListener. This must be called before calling pvRecordField.addListener.</dd>
+     <dd>
+       Add a PVListener.
+       This must be called before calling pvRecordField.addListener.
+     </dd>
    <dt>removeListener</dt>
-     <dd>Removes a listener. The listener will also be removed from all fields to which it is attached.</dd>
+     <dd>
+       Removes a listener.
+       The listener will also be removed from all fields to which it is attached.
+      </dd>
+   <dt>getService</dt>
+      <dd>
+      Virtual method.
+      A derived class implements this method if it supports channelRPC.
+       It implements the semantics for the channelRPC.
+      The base class returns null.
+      </dd>
    <dt>beginGroupPut</dt>
      <dd>Begin a group of puts.
      This results in all registered PVListeners being called</dd>
@@ -496,7 +530,7 @@ public:
     POINTER_DEFINITIONS(PVRecordField);
     PVRecordField(
         epics::pvData::PVFieldPtr const &amp; pvField,
-        PVRecordStructurePtr const &amp;parent,
+        PVRecordStructurePtr const &amp; parent,
         PVRecordPtr const &amp; pvRecord);
     virtual ~PVRecordField();
     virtual void destroy();
@@ -615,8 +649,8 @@ public:
     virtual ~PVListener();
     virtual void dataPut(PVRecordFieldPtr const &amp; pvRecordField) = 0;
     virtual void dataPut(
-        PVRecordStructurePtr const &amp;
-        requested,PVRecordFieldPtr const &amp; pvRecordField) = 0;
+        PVRecordStructurePtr const &amp; requested,
+        PVRecordFieldPtr const &amp; pvRecordField) = 0;
     virtual void beginGroupPut(PVRecordPtr const &amp; pvRecord) = 0;
     virtual void endGroupPut(PVRecordPtr const &amp; pvRecord) = 0;
     virtual void unlisten(PVRecordPtr const &amp; pvRecord);
@@ -633,8 +667,8 @@ public:
         PVRecordStructurePtr const &amp;
         requested,PVRecordFieldPtr const &amp; pvRecordField)</dt>
      <dd>pvField has been modified.
-         Requested is the field to which the requester issued a pvField-&amp;addListener.
-         This is called if the listener has called PVRecordField-&amp;addListener for requested.</dd>
+         Requested is the field to which the requester issued a pvField-&gt;addListener.
+         This is called if the listener has called PVRecordField-&gt;addListener for requested.</dd>
    <dt>beginGroupPut</dt>
      <dd>A related set of changes is being started.</dd>
    <dt>endGroupPut</dt>
@@ -651,7 +685,7 @@ public:
     static PVDatabasePtr getMaster();
     virtual ~PVDatabase();
     virtual void destroy();
-    PVRecordPtr findRecord(std::string const&amp; recordName);
+    PVRecordPtr findRecord(std::string const &amp; recordName);
     bool addRecord(PVRecordPtr const &amp; record);
     epics::pvData::PVStringArrayPtr getRecordNames();
     bool removeRecord(PVRecordPtr const &amp; record);
@@ -664,10 +698,14 @@ private:
    <dt>getMaster</dt>
      <dd>Get the master database. This is the database that localChannelProvider access.</dd>
    <dt>~PVDatabase</dt>
-     <dd>The destructor.</dd>
+     <dd>
+       The destructor.
+      </dd>
    <dt>destroy</dt>
-     <dd>This is called by remote channelAccess when process exits.
-       This destroys and removes all records in the PVDatabase.</dd>
+     <dd>
+       This is called by remote channelAccess when process exits.
+       This destroys and removes all records in the PVDatabase.
+      </dd>
    <dt>findRecord</dt>
      <dd>Find a record. An empty pointer is returned if the record is not in the database.</dd>
    <dt>addRecord</dt>

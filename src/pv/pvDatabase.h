@@ -483,6 +483,7 @@ public:
     virtual ~PVDatabase();
     /**
      *  Destroy the PVDatabase.
+     *  For each record in the database the record is removed and it's destroy method is called.
      */
     virtual void destroy();
     /**

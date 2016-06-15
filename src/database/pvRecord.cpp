@@ -82,6 +82,9 @@ void PVRecord::destroy()
     {
          PVRecordClientPtr client = iter->lock();
          if(client) {
+            if(traceLevel>1) {
+                 cout << "PVRecord::destroy() calling client->detach " << recordName << endl;
+            }
             epicsGuardRelease<epics::pvData::Mutex> unguard(guard);
             client->detach(shared_from_this());
         }
@@ -92,10 +95,15 @@ void PVRecord::destroy()
     {
          PVListenerPtr listener = iter->lock();
          if(listener) {
+             if(traceLevel>1) {
+                 cout << "PVRecord::destroy() calling listener->unlisten " << recordName << endl;
+            }
             epicsGuardRelease<epics::pvData::Mutex> unguard(guard);
             listener->unlisten(shared_from_this());
         }
     }
+    PVDatabasePtr pvDatabase(PVDatabase::getMaster());
+    if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
 }
 
 void PVRecord::process()
@@ -232,7 +240,7 @@ bool PVRecord::removePVRecordClient(PVRecordClientPtr const & pvRecordClient)
 void PVRecord::detachClients()
 {
     if(traceLevel>1) {
-        cout << "PVRecord::removePVRecordClient() " << recordName << endl;
+        cout << "PVRecord::detachClients() " << recordName << endl;
     }
     epicsGuard<epics::pvData::Mutex> guard(mutex);
     if(isDestroyed) {
@@ -244,8 +252,11 @@ void PVRecord::detachClients()
          iter++ )
     {
         PVRecordClientPtr client = iter->lock();
-        if(!client.get()) continue;
+        if(!client) continue;
         epicsGuardRelease <epics::pvData::Mutex> unguard(guard);
+        if(traceLevel>1) {
+            cout << "PVRecord::detachClients() calling client->detach " << recordName << endl;
+        }
         client->detach(shared_from_this());
     }
     pvRecordClientList.clear();
