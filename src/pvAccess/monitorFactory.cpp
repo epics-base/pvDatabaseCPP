@@ -219,7 +219,7 @@ void MonitorLocal::releaseActiveElement()
         activeElement->overrunBitSet->clear();
     }
     MonitorRequesterPtr requester = monitorRequester.lock();
-    if(!requester.get()) return;
+    if(!requester) return;
     requester->monitorEvent(getPtrSelf());
     return;
 }
@@ -323,7 +323,7 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
     size_t queueSize = 2;
     PVStructurePtr pvOptions = pvRequest->getSubField<PVStructure>("record._options");
     MonitorRequesterPtr requester = monitorRequester.lock();
-    if(!requester.get()) return false;
+    if(!requester) return false;
     if(pvOptions) {
         PVStringPtr pvString  = pvOptions->getSubField<PVString>("queueSize");
         if(pvString) {
@@ -429,7 +429,7 @@ MonitorFactoryPtr getMonitorFactory()
     static Mutex mutex;
     Lock xx(mutex);
 
-    if(monitorFactoryPtr.get()==NULL) {
+    if(!monitorFactoryPtr) {
         monitorFactoryPtr = MonitorFactoryPtr(
             new MonitorFactory());
     }

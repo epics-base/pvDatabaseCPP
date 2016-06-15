@@ -39,6 +39,7 @@ PVDatabase::PVDatabase()
 
 PVDatabase::~PVDatabase()
 {
+    destroy();
 }
 
 void PVDatabase::destroy()
@@ -54,7 +55,9 @@ void PVDatabase::destroy()
         if(iter==recordMap.end()) break;
         PVRecordPtr pvRecord = (*iter).second;
         recordMap.erase(iter);
-        if(pvRecord.get()!=NULL) pvRecord->destroy();
+        if(pvRecord) {
+             pvRecord->destroy();
+        }
     }
 }
 
