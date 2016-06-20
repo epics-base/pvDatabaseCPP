@@ -1384,6 +1384,10 @@ void ChannelLocal::message(
          << " requester exists " << (req ? "true" : "false")
          << endl;
     }
+    {
+        Lock xx(mutex);
+        if(beingDestroyed) return;
+    }
     if(req) {
         req->message(message,messageType);
         return;
