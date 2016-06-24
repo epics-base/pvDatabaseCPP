@@ -1329,7 +1329,6 @@ ChannelLocal::~ChannelLocal()
 
 void ChannelLocal::destroy()
 {
-    ChannelRequester::shared_pointer requester(this->requester.lock());
     if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::destroy()"
               << " recordName " << pvRecord->getRecordName()
@@ -1349,47 +1348,45 @@ void ChannelLocal::destroy()
 void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::detach() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
          << endl;
     }
-    destroy();
+    if(!requester) return;
+    requester->channelStateChange(shared_from_this(),Channel::DESTROYED);
 }
 
 
 string ChannelLocal::getRequesterName()
 {
-    ChannelRequester::shared_pointer req = requester.lock();
     if(pvRecord->getTraceLevel()>1) {
          cout << "ChannelLocal::getRequesterName() "
          << " recordName " << pvRecord->getRecordName()
-         << " requester exists " << (req ? "true" : "false")
+         << " requester exists " << (requester ? "true" : "false")
          << endl;
     }
     
-    if(!req) return string();
-    return req->getRequesterName();
+    if(!requester) return string();
+    return requester->getRequesterName();
 }
 
 void ChannelLocal::message(
         string const &message,
         MessageType messageType)
 {
-    ChannelRequester::shared_pointer req = requester.lock();
     if(pvRecord->getTraceLevel()>1) {
          cout << "ChannelLocal::message() "
          << " recordName " << pvRecord->getRecordName()
-         << " requester exists " << (req ? "true" : "false")
+         << " requester exists " << (requester ? "true" : "false")
          << endl;
     }
     {
         Lock xx(mutex);
         if(beingDestroyed) return;
     }
-    if(req) {
-        req->message(message,messageType);
+    if(requester) {
+        requester->message(message,messageType);
         return;
     }
     cout << pvRecord->getRecordName()
@@ -1417,7 +1414,7 @@ string ChannelLocal::getChannelName()
 
 ChannelRequester::shared_pointer ChannelLocal::getChannelRequester()
 {
-    return requester.lock();
+    return requester;
 }
 
 bool ChannelLocal::isConnected()
@@ -1458,7 +1455,6 @@ ChannelProcess::shared_pointer ChannelLocal::createChannelProcess(
         PVStructure::shared_pointer const & pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelProcess() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1478,7 +1474,6 @@ ChannelGet::shared_pointer ChannelLocal::createChannelGet(
         PVStructure::shared_pointer const &pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelGet() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1498,7 +1493,6 @@ ChannelPut::shared_pointer ChannelLocal::createChannelPut(
         PVStructure::shared_pointer const &pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelPut() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1519,7 +1513,6 @@ ChannelPutGet::shared_pointer ChannelLocal::createChannelPutGet(
         PVStructure::shared_pointer const &pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelPutGet() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1540,7 +1533,6 @@ ChannelRPC::shared_pointer ChannelLocal::createChannelRPC(
         PVStructure::shared_pointer const & pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelRPC() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1561,7 +1553,6 @@ Monitor::shared_pointer ChannelLocal::createMonitor(
         PVStructure::shared_pointer const &pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createMonitor() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")
@@ -1581,7 +1572,6 @@ ChannelArray::shared_pointer ChannelLocal::createChannelArray(
         PVStructure::shared_pointer const &pvRequest)
 {
     if(pvRecord->getTraceLevel()>0) {
-         ChannelRequester::shared_pointer requester(this->requester.lock());
          cout << "ChannelLocal::createChannelArray() "
          << " recordName " << pvRecord->getRecordName()
          << " requester exists " << (requester ? "true" : "false")

@@ -393,7 +393,7 @@ protected:
         return shared_from_this();
     }
 private:
-    epics::pvAccess::ChannelRequester::weak_pointer requester;
+    epics::pvAccess::ChannelRequester::shared_pointer requester;
     ChannelProviderLocalPtr provider;
     PVRecordPtr pvRecord;
     bool beingDestroyed;
