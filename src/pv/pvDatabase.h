@@ -51,7 +51,6 @@ typedef std::tr1::weak_ptr<PVRecordStructure> PVRecordStructureWPtr;
 
 class PVRecordClient;
 typedef std::tr1::shared_ptr<PVRecordClient> PVRecordClientPtr;
-typedef std::tr1::weak_ptr<PVRecordClient> PVRecordClientWPtr;
 
 class PVListener;
 typedef std::tr1::shared_ptr<PVListener> PVListenerPtr;
@@ -168,10 +167,6 @@ public:
      */
     bool removePVRecordClient(PVRecordClientPtr const & pvRecordClient);
     /**
-     * remove all attached clients.
-     */
-    void detachClients();
-    /**
      * Add a PVListener.
      * This must be called before calling pvRecordField.addListener.
      * @param pvListener The listener.
@@ -258,7 +253,7 @@ private:
     epics::pvData::PVStructurePtr pvStructure;
     PVRecordStructurePtr pvRecordStructure;
     std::list<PVListenerWPtr> pvListenerList;
-    std::list<PVRecordClientWPtr> pvRecordClientList;
+    std::list<PVRecordClientPtr> pvRecordClientList;
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;

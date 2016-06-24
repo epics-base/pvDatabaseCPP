@@ -313,6 +313,14 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
     {
         cout << "PVCopyMonitor::unlisten\n";
     }
+    MonitorRequesterPtr requester = monitorRequester.lock();
+    if(requester) {
+        if(pvRecord->getTraceLevel()>1)
+        {
+            cout << "PVCopyMonitor::unlisten calling requester->unlisten\n";
+        }
+        requester->unlisten(getPtrSelf());
+    }
     pvRecord->removeListener(getPtrSelf(),pvCopy);
 }
 
