@@ -66,11 +66,13 @@ void PVRecord::initPVRecord()
 
 void PVRecord::destroy()
 {
-    if(traceLevel>0) {
-        cout << "PVRecord::destroy() " << recordName << endl;
-    }
     {
         epicsGuard<epics::pvData::Mutex> guard(mutex);
+        if(traceLevel>0) {
+            cout << "PVRecord::destroy() " << recordName 
+                 << " isDestroyed " << (isDestroyed ? "true" : "false")
+                 << endl;
+        }
         if(isDestroyed) {
             return;
         }
@@ -78,7 +80,7 @@ void PVRecord::destroy()
     }
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
-    pvTimeStamp.detach();
+    pvTimeStamp.detach();     
     for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
          iter!=pvListenerList.end();
          iter++ )
@@ -91,9 +93,8 @@ void PVRecord::destroy()
         listener->unlisten(shared_from_this());
     }
     pvListenerList.clear();
-    std::list<PVRecordClientPtr>::iterator iter;
-    for (iter = pvRecordClientList.begin();
-         iter!=pvRecordClientList.end();
+    for (std::list<PVRecordClientPtr>::iterator iter = clientList.begin();
+         iter!=clientList.end();
          iter++ )
     {
         PVRecordClientPtr client = *iter;
@@ -103,7 +104,7 @@ void PVRecord::destroy()
         }
         client->detach(shared_from_this());
     }
-    pvRecordClientList.clear();
+    clientList.clear();
 }
 
 void PVRecord::process()
@@ -117,11 +118,6 @@ void PVRecord::process()
     }
 }
 
-string PVRecord::getRecordName() const {return recordName;}
-
-PVRecordStructurePtr PVRecord::getPVRecordStructure() const {return pvRecordStructure;}
-
-PVStructurePtr PVRecord::getPVStructure() {return pvStructure;}
 
 PVRecordFieldPtr PVRecord::findPVRecordField(PVFieldPtr const & pvField)
 {
@@ -199,8 +195,8 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
         return false;
     }
     std::list<PVRecordClientPtr>::iterator iter;
-    for (iter = pvRecordClientList.begin();
-         iter!=pvRecordClientList.end();
+    for (iter = clientList.begin();
+         iter!=clientList.end();
          iter++ )
     {
         PVRecordClientPtr client = *iter;
@@ -209,9 +205,9 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
         }
     }
     if(traceLevel>1) {
-        cout << "PVRecord::addPVRecordClient() calling pvRecordClientList.push_back(pvRecordClient)" << recordName << endl;
+        cout << "PVRecord::addPVRecordClient() calling clientList.push_back(pvRecordClient)" << recordName << endl;
     }
-    pvRecordClientList.push_back(pvRecordClient);
+    clientList.push_back(pvRecordClient);
     return true;
 }
 
@@ -225,14 +221,14 @@ bool PVRecord::removePVRecordClient(PVRecordClientPtr const & pvRecordClient)
         return false;
     }
     std::list<PVRecordClientPtr>::iterator iter;
-    for (iter = pvRecordClientList.begin();
-         iter!=pvRecordClientList.end();
+    for (iter = clientList.begin();
+         iter!=clientList.end();
          iter++ )
     {
         PVRecordClientPtr client = *iter;
         if(!client) continue;
         if(client==pvRecordClient) {
-            pvRecordClientList.erase(iter);
+            clientList.erase(iter);
             return true;
         }
     }
@@ -516,25 +512,5 @@ PVRecordFieldPtrArrayPtr PVRecordStructure::getPVRecordFields()
 }
 
 PVStructurePtr PVRecordStructure::getPVStructure() {return pvStructure.lock();}
-
-void PVRecordStructure::removeListener(PVListenerPtr const & pvListener)
-{
-    PVRecordField::removeListener(pvListener);
-    size_t numFields = pvRecordFields->size();
-    for(size_t i=0; i<numFields; i++) {
-         PVRecordFieldPtr pvRecordField = (*pvRecordFields.get())[i];
-         pvRecordField->removeListener(pvListener);
-    }
-}
-
-void PVRecordStructure::postPut()
-{
-    PVRecordField::postPut();
-    size_t numFields = pvRecordFields->size();
-    for(size_t i=0; i<numFields; i++) {
-         PVRecordFieldPtr pvRecordField = (*pvRecordFields.get())[i];
-         pvRecordField->callListener();
-    }
-}
 
 }}

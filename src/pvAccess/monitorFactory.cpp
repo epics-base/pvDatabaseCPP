@@ -109,6 +109,7 @@ MonitorLocal::~MonitorLocal()
     {
         cout << "MonitorLocal::~MonitorLocal()" << endl;
     }
+    destroy();
 }
 
 void MonitorLocal::destroy()
@@ -121,16 +122,11 @@ void MonitorLocal::destroy()
         Lock xx(mutex);
         if(state==destroyed) return;
     }
-    if(pvCopy) pvCopy->destroy();
+    if(state==active) stop();
     {
         Lock xx(mutex);
         state = destroyed;
     }
-    {
-         Lock xx(queueMutex);
-         queue.reset();
-    }
-    pvCopy.reset();
 }
 
 Status MonitorLocal::start()

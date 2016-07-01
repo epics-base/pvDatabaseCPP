@@ -66,7 +66,6 @@ private:
     epics::pvData::PVStringPtr pvRecordName;
     epics::pvData::PVIntPtr pvLevel;
     epics::pvData::PVStringPtr pvResult;
-    bool isDestroyed;
 };
 
 }}

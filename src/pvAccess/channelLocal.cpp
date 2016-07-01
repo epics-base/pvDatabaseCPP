@@ -1309,7 +1309,7 @@ ChannelLocal::ChannelLocal(
     requester(requester),
     provider(provider),
     pvRecord(pvRecord),
-    beingDestroyed(false)
+    isDestroyed(false)
 {
     if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::ChannelLocal()"
@@ -1325,6 +1325,7 @@ ChannelLocal::~ChannelLocal()
     {
         cout << "~ChannelLocal()" << endl;
     }
+    destroy();
 }
 
 void ChannelLocal::destroy()
@@ -1332,16 +1333,15 @@ void ChannelLocal::destroy()
     if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::destroy()"
               << " recordName " << pvRecord->getRecordName()
-              << " beingDestroyed " << beingDestroyed
+              << " isDestroyed " << isDestroyed
               << " requester exists " << (requester ? "true" : "false")
               << endl;
     }
     {
         Lock xx(mutex);
-        if(beingDestroyed) return;
-        beingDestroyed = true;
+        if(isDestroyed) return;
+        isDestroyed = true;
     }
-    message("being destroyed",fatalErrorMessage);
     pvRecord->removePVRecordClient(getPtrSelf());
 }
 
@@ -1383,7 +1383,7 @@ void ChannelLocal::message(
     }
     {
         Lock xx(mutex);
-        if(beingDestroyed) return;
+        if(isDestroyed) return;
     }
     if(requester) {
         requester->message(message,messageType);
@@ -1403,7 +1403,7 @@ string ChannelLocal::getRemoteAddress()
 Channel::ConnectionState ChannelLocal::getConnectionState()
 {
     Lock xx(mutex);
-    if(beingDestroyed) return Channel::DESTROYED;
+    if(isDestroyed) return Channel::DESTROYED;
     return Channel::CONNECTED;
 }
 
@@ -1420,7 +1420,7 @@ ChannelRequester::shared_pointer ChannelLocal::getChannelRequester()
 bool ChannelLocal::isConnected()
 {
     Lock xx(mutex);
-    if(beingDestroyed) return false;
+    if(isDestroyed) return false;
     return true;
 }
 

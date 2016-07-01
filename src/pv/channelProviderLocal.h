@@ -100,6 +100,7 @@ private:
 
 epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
 
+
 /**
  * @brief ChannelProvider for PVDatabase.
  *
@@ -229,6 +230,12 @@ public:
      * The remote pvAccess server does this cleanup.
      */
     virtual void destroy();
+    /** 
+     * This is called when a record is being removed from the database.
+     * Calls destroy.
+     * @param pvRecord The record being destroyed.
+     */
+    virtual void detach(PVRecordPtr const &pvRecord);
     /** 
      * Get the requester name.
      * @return returns the name of the channel requester.
@@ -381,12 +388,6 @@ public:
      * @param out the stream on which the message is displayed.
      */
     virtual void printInfo(std::ostream& out);
-    /** 
-     * This is called when a record is being removed from the database.
-     * Calls destroy.
-     * @param pvRecord The record being destroyed.
-     */
-    virtual void detach(PVRecordPtr const &pvRecord);
 protected:
     shared_pointer getPtrSelf()
     {
@@ -396,7 +397,7 @@ private:
     epics::pvAccess::ChannelRequester::shared_pointer requester;
     ChannelProviderLocalPtr provider;
     PVRecordPtr pvRecord;
-    bool beingDestroyed;
+    bool isDestroyed;
     epics::pvData::Mutex mutex;
 };
 

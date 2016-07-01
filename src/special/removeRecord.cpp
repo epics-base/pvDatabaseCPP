@@ -43,8 +43,7 @@ RemoveRecord::RemoveRecord(
     std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
 : PVRecord(recordName,pvStructure),
-  pvDatabase(PVDatabase::getMaster()),
-  isDestroyed(false)
+  pvDatabase(PVDatabase::getMaster())
 {
 }
 
