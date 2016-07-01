@@ -61,6 +61,7 @@ static void test()
     PVRecordPtr pvRecord(PVRecord::create(recordName,pvStructure));
     RecordClientPtr exampleRecordClient(RecordClient::create(pvRecord));
     ListenerPtr exampleListener(Listener::create(pvRecord));
+    if(debug) pvRecord->setTraceLevel(3);
     master->addRecord(pvRecord);
     pvRecord = master->findRecord("exampleDouble");
     testOk1(pvRecord.get()!=0);

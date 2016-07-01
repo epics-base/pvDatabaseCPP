@@ -115,12 +115,17 @@ public:
      * Get the name of the record.
      * @return The name.
      */
-    std::string getRecordName() const;
+    std::string getRecordName() const { return recordName;}
     /**
      * Get the top level PVRecordStructure.
      * @return The shared pointer.
      */
-    PVRecordStructurePtr getPVRecordStructure() const;
+    PVRecordStructurePtr getPVRecordStructure() const { return pvRecordStructure;}
+    /**
+     *  Convenience method for derived classes.
+     * @return The top level PVStructure.
+     */
+    epics::pvData::PVStructurePtr getPVStructure() const { return pvStructure;}
     /**
      * Find the PVRecordField for the PVField.
      * @param pvField The PVField.
@@ -232,11 +237,6 @@ protected:
      * Initializes the base class. Must be called by derived classes.
      */
     void initPVRecord();
-    /**
-     * Convience method for derived classes.
-     * @return The shared pointer to the top level PVStructure.
-     */
-    epics::pvData::PVStructurePtr getPVStructure();
     /** Get shared pointer to self
      * @return The shared pointer.
      */
@@ -253,7 +253,7 @@ private:
     epics::pvData::PVStructurePtr pvStructure;
     PVRecordStructurePtr pvRecordStructure;
     std::list<PVListenerWPtr> pvListenerList;
-    std::list<PVRecordClientPtr> pvRecordClientList;
+    std::list<PVRecordClientPtr> clientList;
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;
@@ -378,17 +378,12 @@ public:
      * @return The shared pointer.
      */
     epics::pvData::PVStructurePtr getPVStructure();
-    /**
-     * Called by implementation code of PVRecord.
-     */
-    virtual void postPut();
 protected:
     /**
      * Called by implementation code of PVRecord.
      */
     virtual void init();
 private:
-    virtual void removeListener(PVListenerPtr const & pvListener);
     epics::pvData::PVStructure::weak_pointer pvStructure;
     PVRecordFieldPtrArrayPtr pvRecordFields;
     friend class PVRecord;

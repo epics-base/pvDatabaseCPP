@@ -65,7 +65,6 @@ private:
     PVDatabasePtr pvDatabase;
     epics::pvData::PVStringPtr pvRecordName;
     epics::pvData::PVStringPtr pvResult;
-    bool isDestroyed;
 };
 
 }}
