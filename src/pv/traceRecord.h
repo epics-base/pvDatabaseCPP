@@ -35,27 +35,20 @@ class epicsShareClass TraceRecord :
 public:
     POINTER_DEFINITIONS(TraceRecord);
     /**
-     * Factory methods to create TraceRecord.
+     * @brief Factory method to create TraceRecord.
+     *
      * @param recordName The name for the TraceRecord.
      * @return A shared pointer to TraceRecord..
      */
     static TraceRecordPtr create(
         std::string const & recordName);
     /**
-     * destructor
-     */
-    virtual ~TraceRecord();
-    /**
-     * Clean up any resources used.
-     */
-    virtual void destroy();
-    /**
      * standard init method required by PVRecord
      * @return true unless record name already exists.
      */
     virtual bool init();
     /**
-     * Set the trace level.
+     * @brief Set the trace level for record specified by  recordName.
      */
     virtual void process();
 private:

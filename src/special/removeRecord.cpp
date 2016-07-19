@@ -47,15 +47,6 @@ RemoveRecord::RemoveRecord(
 {
 }
 
-RemoveRecord::~RemoveRecord()
-{
-}
-
-void RemoveRecord::destroy()
-{
-    PVRecord::destroy();
-}
-
 bool RemoveRecord::init()
 {
     initPVRecord();

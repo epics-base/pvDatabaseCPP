@@ -48,14 +48,6 @@ TraceRecord::TraceRecord(
 {
 }
 
-TraceRecord::~TraceRecord()
-{
-}
-
-void TraceRecord::destroy()
-{
-    PVRecord::destroy();
-}
 
 bool TraceRecord::init()
 {

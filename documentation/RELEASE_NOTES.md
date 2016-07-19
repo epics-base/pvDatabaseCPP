@@ -2,7 +2,9 @@
 EPICS V4 release 4.6
 ====================
 
-The examples are moved to exampleCPP
+* The examples are moved to exampleCPP
+* Support for channelRPC is now available.
+* removeRecord and traceRecord are now available.
 
 The test is now a regression test the can be ran via
 

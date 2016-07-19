@@ -42,20 +42,12 @@ public:
     static RemoveRecordPtr create(
         std::string const & recordName);
     /**
-     * destructor
-     */
-    virtual ~RemoveRecord();
-    /**
-     * Clean up any resources used.
-     */
-    virtual void destroy();
-    /**
      * standard init method required by PVRecord
      * @return true unless record name already exists.
      */
     virtual bool init();
     /**
-     * Set the trace level.
+     * @brief Remove the record specified by  recordName.
      */
     virtual void process();
 private:
