@@ -9,7 +9,7 @@ PVDATABASE_SRC = $(TOP)/src
 LIBRARY += pvDatabase
 
 # shared library ABI version.
-SHRLIB_VERSION ?= 4.2.0
+SHRLIB_VERSION ?= 4.2
 
 INC += pv/channelProviderLocal.h
 INC += pv/pvDatabase.h
