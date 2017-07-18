@@ -21,7 +21,7 @@ include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 
 
-pvDatabase_LIBS += pvAccess pvData Com
+pvDatabase_LIBS += pvAccess pvAccessIOC pvData Com
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 
