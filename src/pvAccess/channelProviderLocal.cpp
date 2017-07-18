@@ -44,7 +44,7 @@ public:
     {
         LocalChannelProviderFactoryPtr xxx(
             new LocalChannelProviderFactory(channelProvider));
-        ChannelProviderRegistry::servers()->add(xxx);
+        registerChannelProviderFactory(xxx);
         return xxx;
     }
     virtual  ChannelProvider::shared_pointer sharedInstance()
