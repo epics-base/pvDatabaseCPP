@@ -20,7 +20,6 @@ git clone --quiet --depth 5 --branch "${BRPVA:-master}" https://github.com/epics
 (cd epics-base && git log -n1 )
 (cd pvDataCPP && git log -n1 )
 (cd pvAccessCPP && git log -n1 )
-(cd normativeTypesCPP && git log -n1 )
 
 EPICS_HOST_ARCH=`sh epics-base/startup/EpicsHostArch`
 
