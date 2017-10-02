@@ -43,8 +43,7 @@ TraceRecordPtr TraceRecord::create(
 TraceRecord::TraceRecord(
     std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure)
-: PVRecord(recordName,pvStructure),
-  pvDatabase(PVDatabase::getMaster())
+: PVRecord(recordName,pvStructure)
 {
 }
 
@@ -65,7 +64,7 @@ bool TraceRecord::init()
 void TraceRecord::process()
 {
     string name = pvRecordName->get();
-    PVRecordPtr pvRecord = pvDatabase->findRecord(name);
+    PVRecordPtr pvRecord = PVDatabase::getMaster()->findRecord(name);
     if(!pvRecord) {
         pvResult->put(name + " not found");
         return;

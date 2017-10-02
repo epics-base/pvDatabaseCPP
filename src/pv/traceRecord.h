@@ -55,7 +55,6 @@ private:
     TraceRecord(
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    PVDatabasePtr pvDatabase;
     epics::pvData::PVStringPtr pvRecordName;
     epics::pvData::PVIntPtr pvLevel;
     epics::pvData::PVStringPtr pvResult;

@@ -51,7 +51,7 @@ PVRecord::~PVRecord()
     if(traceLevel>0) {
         cout << "~PVRecord() " << recordName << endl;
     }
-    destroy();
+//    destroy();
 }
 
 void PVRecord::initPVRecord()
