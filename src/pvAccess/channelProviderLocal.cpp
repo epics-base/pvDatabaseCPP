@@ -9,6 +9,9 @@
  * @date 2013.04
  */
 
+#include <epicsThread.h>
+
+
 #include <pv/serverContext.h>
 #include <pv/syncChannelFind.h>
 
@@ -28,78 +31,65 @@ using std::string;
 namespace epics { namespace pvDatabase { 
 
 static string providerName("local");
-
+static ChannelProvider::shared_pointer channelProvider;
 
 class LocalChannelProviderFactory;
 typedef std::tr1::shared_ptr<LocalChannelProviderFactory> LocalChannelProviderFactoryPtr;
 
 class LocalChannelProviderFactory : public ChannelProviderFactory
-{
-    
+{  
 public:
     POINTER_DEFINITIONS(LocalChannelProviderFactory);
     virtual string getFactoryName() { return providerName;}
-    static LocalChannelProviderFactoryPtr create(
-        ChannelProviderLocalPtr const &channelProvider)
-    {
-        LocalChannelProviderFactoryPtr xxx(
-            new LocalChannelProviderFactory(channelProvider));
-        ChannelProviderRegistry::servers()->add(xxx);
-        return xxx;
-    }
     virtual  ChannelProvider::shared_pointer sharedInstance()
     {
+        if(!channelProvider) channelProvider = ChannelProvider::shared_pointer(new ChannelProviderLocal());
         return channelProvider;
     }
     virtual  ChannelProvider::shared_pointer newInstance()
     {
+cout << "LocalChannelProviderFactory::newInstance()\n";
         throw std::logic_error("newInstance not Implemented");
     }
-private:
-    LocalChannelProviderFactory(
-        ChannelProviderLocalPtr const &channelProvider)
-    : channelProvider(channelProvider)
-    {}
-    ChannelProviderLocalPtr channelProvider;
 };
+
 
 ChannelProviderLocalPtr getChannelProviderLocal()
 {
-    static ChannelProviderLocalPtr channelProviderLocal;
-    static Mutex mutex;
-    Lock xx(mutex);
-    if(!channelProviderLocal) {
-        channelProviderLocal = ChannelProviderLocalPtr(
-            new ChannelProviderLocal());
-        ChannelProvider::shared_pointer xxx =
-            dynamic_pointer_cast<ChannelProvider>(channelProviderLocal);
-        channelProviderLocal->channelFinder =
-            SyncChannelFind::shared_pointer(new SyncChannelFind(xxx));
-        LocalChannelProviderFactoryPtr factory(LocalChannelProviderFactory::create(channelProviderLocal));
-        
+    static int firstTime = 1;
+    if (firstTime) {
+        firstTime = 0;
+        ChannelProviderFactory::shared_pointer factory(
+             new  LocalChannelProviderFactory());
+         ChannelProviderRegistry::servers()->add(factory);
     }
-    return channelProviderLocal;
+    ChannelProvider::shared_pointer channelProvider =
+        ChannelProviderRegistry::servers()->getProvider(providerName);
+    return std::tr1::dynamic_pointer_cast<ChannelProviderLocal>(channelProvider);
 }
 
 ChannelProviderLocal::ChannelProviderLocal()
 : pvDatabase(PVDatabase::getMaster()),
-  beingDestroyed(false)
+  traceLevel(0)
 {
 }
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
-    destroy();
+    if(traceLevel>0) {
+        cout << "ChannelProviderLocal::~ChannelProviderLocal() \n";
+    }
 }
 
-void ChannelProviderLocal::destroy()
+std::tr1::shared_ptr<ChannelProvider> ChannelProviderLocal::getChannelProvider()
 {
-    Lock xx(mutex);
-    if(beingDestroyed) return;
-    beingDestroyed = true;
-    pvDatabase->destroy();
-    pvDatabase.reset();
+    return shared_from_this();
 }
+
+void ChannelProviderLocal::cancel()
+{
+}
+
 
 string ChannelProviderLocal::getProviderName()
 {
@@ -110,35 +100,41 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     string const & channelName,
     ChannelFindRequester::shared_pointer  const &channelFindRequester)
 {
+    if(traceLevel>1) {
+        cout << "ChannelProviderLocal::channelFind " << "channelName" << endl;
+    }
     Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord) {
         channelFindRequester->channelFindResult(
             Status::Ok,
-            channelFinder,
+            shared_from_this(),
             true);
         
     } else {
         Status notFoundStatus(Status::STATUSTYPE_ERROR,"pv not found");
         channelFindRequester->channelFindResult(
             notFoundStatus,
-            channelFinder,
+            shared_from_this(),
             false);
     }
-    return channelFinder;
+    return shared_from_this();
 }
 
 ChannelFind::shared_pointer ChannelProviderLocal::channelList(
     ChannelListRequester::shared_pointer const & channelListRequester)
 {
+    if(traceLevel>1) {
+        cout << "ChannelProviderLocal::channelList\n";
+    }
     PVStringArrayPtr records;
     {
         Lock guard(mutex);
         records = pvDatabase->getRecordNames();
     }
 
-    channelListRequester->channelListResult(Status::Ok, channelFinder, records->view(), false);
-    return channelFinder;
+    channelListRequester->channelListResult(Status::Ok, shared_from_this(), records->view(), false);
+    return shared_from_this();
 }
 
 Channel::shared_pointer ChannelProviderLocal::createChannel(
@@ -146,11 +142,14 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     ChannelRequester::shared_pointer  const &channelRequester,
     short priority)
 {
+    if(traceLevel>1) {
+        cout << "ChannelProviderLocal::createChannel " << "channelName" << endl;
+    }
     Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord) {
         ChannelLocalPtr channel(new ChannelLocal(
-            getPtrSelf(),channelRequester,pvRecord));
+            shared_from_this(),channelRequester,pvRecord));
         channelRequester->channelCreated(
             Status::Ok,
             channel);

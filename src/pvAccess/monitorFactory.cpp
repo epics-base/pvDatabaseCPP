@@ -14,7 +14,6 @@
 #include <epicsGuard.h>
 #include <pv/thread.h>
 #include <pv/bitSetUtil.h>
-#include <pv/queue.h>
 #include <pv/timeStamp.h>
 
 #define epicsExportSharedSymbols
@@ -34,16 +33,93 @@ namespace epics { namespace pvDatabase {
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
 static Status failedToCreateMonitorStatus(Status::STATUSTYPE_ERROR,"failed to create monitor");
-static Status wasDestroyedStatus(Status::STATUSTYPE_ERROR,"was destroyed");
 static Status alreadyStartedStatus(Status::STATUSTYPE_ERROR,"already started");
 static Status notStartedStatus(Status::STATUSTYPE_ERROR,"not started");
+static Status destroyedStatus(Status::STATUSTYPE_ERROR,"record is destroyed");
 
-
-
-typedef Queue<MonitorElement> MonitorElementQueue;
+class MonitorElementQueue;
 typedef std::tr1::shared_ptr<MonitorElementQueue> MonitorElementQueuePtr;
-typedef std::tr1::shared_ptr<MonitorRequester> MonitorRequesterPtr;
 
+class  MonitorElementQueue
+{
+private:
+    MonitorElementPtrArray elements;
+    // TODO use size_t instead
+    int size;
+    int numberFree;
+    int numberUsed;
+    int nextGetFree;
+    int nextSetUsed;
+    int nextGetUsed;
+    int nextReleaseUsed;
+public:
+    POINTER_DEFINITIONS(MonitorElementQueue);
+
+    MonitorElementQueue(std::vector<MonitorElementPtr> monitorElementArray)
+    :  elements(monitorElementArray),
+       size(monitorElementArray.size()),
+       numberFree(size),
+       numberUsed(0),
+       nextGetFree(0),
+       nextSetUsed(0),
+       nextGetUsed(0),
+       nextReleaseUsed(0)
+    {
+    }
+
+    virtual ~MonitorElementQueue() {}
+
+    void clear()
+    {
+        numberFree = size;
+        numberUsed = 0;
+        nextGetFree = 0;
+        nextSetUsed = 0;
+        nextGetUsed = 0;
+        nextReleaseUsed = 0;
+    }
+    
+    MonitorElementPtr getFree()
+    {
+        if(numberFree==0) return MonitorElementPtr();
+        numberFree--;
+        int ind = nextGetFree;
+        MonitorElementPtr queueElement = elements[nextGetFree++];
+        if(nextGetFree>=size) nextGetFree = 0;
+        return elements[ind];
+    }
+    
+    void setUsed(MonitorElementPtr const &element)
+    {
+       if(element!=elements[nextSetUsed++]) {
+           throw std::logic_error("not correct queueElement");
+        }
+        numberUsed++;
+        if(nextSetUsed>=size) nextSetUsed = 0;
+    }
+    
+    MonitorElementPtr getUsed()
+    {
+        if(numberUsed==0) return MonitorElementPtr();
+        int ind = nextGetUsed;
+        MonitorElementPtr queueElement = elements[nextGetUsed++];
+        if(nextGetUsed>=size) nextGetUsed = 0;
+        return elements[ind];
+    }
+    void releaseUsed(MonitorElementPtr const &element)
+    {
+        if(element!=elements[nextReleaseUsed++]) {
+            throw std::logic_error(
+               "not queueElement returned by last call to getUsed");
+        }
+        if(nextReleaseUsed>=size) nextReleaseUsed = 0;
+        numberUsed--;
+        numberFree++;
+    }
+};
+
+
+typedef std::tr1::shared_ptr<MonitorRequester> MonitorRequesterPtr;
 
     
 class MonitorLocal :
@@ -51,15 +127,15 @@ class MonitorLocal :
     public PVListener,
     public std::tr1::enable_shared_from_this<MonitorLocal>
 {
-    enum MonitorState {idle,active, destroyed};
+    enum MonitorState {idle,active,destroyed};
 public:
     POINTER_DEFINITIONS(MonitorLocal);
     virtual ~MonitorLocal();
     virtual Status start();
     virtual Status stop();
     virtual MonitorElementPtr poll();
-    virtual void destroy();
-    virtual void detach(PVRecordPtr const & pvRecord){destroy();}
+    virtual void destroy() EPICS_DEPRECATED {};
+    virtual void detach(PVRecordPtr const & pvRecord){}
     virtual void release(MonitorElementPtr const & monitorElement);
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField);
     virtual void dataPut(
@@ -109,25 +185,8 @@ MonitorLocal::~MonitorLocal()
     {
         cout << "MonitorLocal::~MonitorLocal()" << endl;
     }
-    destroy();
 }
 
-void MonitorLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "MonitorLocal::destroy state " << state << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(state==destroyed) return;
-    }
-    if(state==active) stop();
-    {
-        Lock xx(mutex);
-        state = destroyed;
-    }
-}
 
 Status MonitorLocal::start()
 {
@@ -137,8 +196,8 @@ Status MonitorLocal::start()
     }
     {
         Lock xx(mutex);
-        if(state==destroyed) return wasDestroyedStatus;
         if(state==active) return alreadyStartedStatus;
+        if(state==destroyed) return destroyedStatus;
     }
     pvRecord->addListener(getPtrSelf(),pvCopy);
     epicsGuard <PVRecord> guard(*pvRecord);
@@ -161,10 +220,10 @@ Status MonitorLocal::stop()
     }
     {
         Lock xx(mutex);
-        if(state==destroyed) return wasDestroyedStatus;
         if(state==idle) return notStartedStatus;
+        if(state==destroyed) return destroyedStatus;
         state = idle;
-   }
+    }
     pvRecord->removeListener(getPtrSelf(),pvCopy);
     return Status::Ok;
 }
@@ -310,6 +369,10 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
     {
         cout << "PVCopyMonitor::unlisten\n";
     }
+    {
+        Lock xx(mutex);
+        state = destroyed;
+    }
     MonitorRequesterPtr requester = monitorRequester.lock();
     if(requester) {
         if(pvRecord->getTraceLevel()>1)
@@ -318,7 +381,6 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
         }
         requester->unlisten(getPtrSelf());
     }
-    pvRecord->removeListener(getPtrSelf(),pvCopy);
 }
 
 
@@ -385,18 +447,12 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
 
 
 MonitorFactory::MonitorFactory()
-: isDestroyed(false)
 {
 }
 
 MonitorFactory::~MonitorFactory()
 {
-}
 
-void MonitorFactory::destroy()
-{
-    Lock lock(mutex);
-    isDestroyed = true;
 }
 
 MonitorPtr MonitorFactory::createMonitor(
@@ -405,10 +461,6 @@ MonitorPtr MonitorFactory::createMonitor(
     PVStructurePtr const & pvRequest)
 {
     Lock xx(mutex);
-    if(isDestroyed) {
-        monitorRequester->message("MonitorFactory is destroyed",errorMessage);
-        return nullMonitor;
-    }
     MonitorLocalPtr monitor(new MonitorLocal(
         monitorRequester,pvRecord));
     bool result = monitor->init(pvRequest);
@@ -420,8 +472,8 @@ MonitorPtr MonitorFactory::createMonitor(
     }
     if(pvRecord->getTraceLevel()>0)
     {
-        cout << "MonitorFactory::createMonitor";
-        cout << " recordName " << pvRecord->getRecordName() << endl;
+        cout << "MonitorFactory::createMonitor"
+        << " recordName " << pvRecord->getRecordName() << endl;
     }
     return monitor;
 }

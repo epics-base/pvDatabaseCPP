@@ -21,43 +21,21 @@ using namespace std;
 
 namespace epics { namespace pvDatabase {
 
+static PVDatabasePtr pvDatabaseMaster;
+
 PVDatabasePtr PVDatabase::getMaster()
 {
-    static PVDatabasePtr master;
-    static Mutex mutex;
-    Lock xx(mutex);
-    if(master.get()==NULL) {
-        master = PVDatabasePtr(new PVDatabase());
-    }
-    return master;
+    if(!pvDatabaseMaster) pvDatabaseMaster = PVDatabasePtr(new PVDatabase());  
+    return pvDatabaseMaster;
 }
 
 PVDatabase::PVDatabase()
-: isDestroyed(false)
 {
 }
 
 PVDatabase::~PVDatabase()
 {
-    destroy();
-}
-
-void PVDatabase::destroy()
-{
-    {
-        epicsGuard<epics::pvData::Mutex> guard(mutex);
-        if(isDestroyed) {
-            return;
-        }
-        isDestroyed = true;
-    }
-    for(PVRecordMap::iterator iter = recordMap.begin(); iter != recordMap.end(); iter++) {
-        PVRecordPtr pvRecord = (*iter).second;
-        if(pvRecord) {
-             pvRecord->destroy();
-        }
-    }
-    recordMap.clear();
+cout << "PVDatabase::~PVDatabase()\n";
 }
 
 void PVDatabase::lock() {
@@ -71,23 +49,19 @@ void PVDatabase::unlock() {
 PVRecordPtr PVDatabase::findRecord(string const& recordName)
 {
     epicsGuard<epics::pvData::Mutex> guard(mutex);
-    PVRecordPtr xxx;
-    if(isDestroyed) {
-        return xxx;
-    }
     PVRecordMap::iterator iter = recordMap.find(recordName);
     if(iter!=recordMap.end()) {
          return (*iter).second;
     }
-    return xxx;
+    return PVRecordPtr();
 }
 
 bool PVDatabase::addRecord(PVRecordPtr const & record)
 {
-    epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
+    if(record->getTraceLevel()>0) {
+        cout << "PVDatabase::addRecord " << record->getRecordName() << endl;
     }
+    epicsGuard<epics::pvData::Mutex> guard(mutex);
     string recordName = record->getRecordName();
     PVRecordMap::iterator iter = recordMap.find(recordName);
     if(iter!=recordMap.end()) {
@@ -100,10 +74,10 @@ bool PVDatabase::addRecord(PVRecordPtr const & record)
 
 bool PVDatabase::removeRecord(PVRecordPtr const & record)
 {
-    epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
+    if(record->getTraceLevel()>0) {
+        cout << "PVDatabase::removeRecord " << record->getRecordName() << endl;
     }
+    epicsGuard<epics::pvData::Mutex> guard(mutex);
     string recordName = record->getRecordName();
     PVRecordMap::iterator iter = recordMap.find(recordName);
     if(iter!=recordMap.end())  {
@@ -119,9 +93,6 @@ PVStringArrayPtr PVDatabase::getRecordNames()
 {
     epicsGuard<epics::pvData::Mutex> guard(mutex);
     PVStringArrayPtr xxx;
-    if(isDestroyed) {
-        return xxx;
-    }
     PVStringArrayPtr pvStringArray = static_pointer_cast<PVStringArray>
         (getPVDataCreate()->createPVScalarArray(pvString));
     size_t len = recordMap.size();

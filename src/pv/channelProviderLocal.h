@@ -70,10 +70,6 @@ public:
      * @brief Destructor
      */
     virtual ~MonitorFactory();
-    /**
-     * @brief Destroy the monitor factory.
-     */
-    virtual void destroy();
     /** 
      * @brief Create a monitor on a record.
      *
@@ -94,7 +90,6 @@ private:
     MonitorFactory();
     friend class MonitorLocal;
     friend epicsShareFunc MonitorFactoryPtr getMonitorFactory();
-    bool isDestroyed;
     epics::pvData::Mutex mutex;
 };
 
@@ -109,10 +104,15 @@ epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
  */
 class epicsShareClass ChannelProviderLocal :
     public epics::pvAccess::ChannelProvider,
+    public epics::pvAccess::ChannelFind,
     public std::tr1::enable_shared_from_this<ChannelProviderLocal>
 {
 public:
     POINTER_DEFINITIONS(ChannelProviderLocal);
+    /**
+     * @brief Constructor
+     */
+    ChannelProviderLocal();
     /**
      * @brief Destructor
      */
@@ -120,9 +120,8 @@ public:
     /**
      * @brief Destroy the channel provider.
      *
-     * Probably never called.
      */
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     /**
      * @brief Returns the channel provider name.
      * @return <b>local</b>
@@ -185,17 +184,32 @@ public:
         epics::pvAccess::ChannelRequester::shared_pointer const &channelRequester,
         short priority,
         std::string const &address);
+    /**
+     * @brief get trace level (0,1,2) means (nothing,lifetime,process)
+     * @return the level
+     */
+    int getTraceLevel() {return traceLevel;}
+    /**
+     * @brief set trace level (0,1,2) means (nothing,lifetime,process)
+     * @param level The level
+     */
+    void setTraceLevel(int level) {traceLevel = level;}
+    /**
+     * @brief ChannelFind method.
+     *
+     * @return pointer to self.
+     */
+    virtual std::tr1::shared_ptr<ChannelProvider> getChannelProvider();
+    /**
+     * @brief ChannelFind method.
+     *
+     */
+    virtual void cancel();
 private:
-    shared_pointer getPtrSelf()
-    {
-        return shared_from_this();
-    }
-    ChannelProviderLocal();
     friend epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
     PVDatabasePtr pvDatabase;
     epics::pvData::Mutex mutex;
-    bool beingDestroyed;
-    epics::pvAccess::ChannelFind::shared_pointer channelFinder;
+    int traceLevel;
     friend class ChannelProviderLocalRun;
 };
 
@@ -229,12 +243,8 @@ public:
     /** 
      * @brief Destroy the channel.
      *
-     * It cleans up all resources used to access the record.
-     * Note that this assumes that client has destroyed any objects that
-     * have been created for the  channel like channelGet, etc.
-     * The remote pvAccess server does this cleanup.
      */
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     /** 
      * @brief Detach from the record.
      *
@@ -404,7 +414,6 @@ private:
     epics::pvAccess::ChannelRequester::shared_pointer requester;
     ChannelProviderLocalPtr provider;
     PVRecordPtr pvRecord;
-    bool isDestroyed;
     epics::pvData::Mutex mutex;
 };
 

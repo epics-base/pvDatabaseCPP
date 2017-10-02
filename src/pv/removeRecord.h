@@ -54,7 +54,6 @@ private:
     RemoveRecord(
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    PVDatabasePtr pvDatabase;
     epics::pvData::PVStringPtr pvRecordName;
     epics::pvData::PVStringPtr pvResult;
 };

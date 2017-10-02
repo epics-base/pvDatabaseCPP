@@ -53,18 +53,15 @@ extern "C" void pvdbl(const iocshArgBuf *args)
     for(size_t i=0; i<xxx.size(); ++i) cout<< xxx[i] << endl;
 }
 
-static void channelProviderLocalExitHandler(void* /*pPrivate*/) {
-    getChannelProviderLocal()->destroy();
-}
 
 static void registerChannelProviderLocal(void)
 {
     static int firstTime = 1;
+cout << "registerChannelProviderLocal firstTime " << (firstTime ? "true" : "false") << endl;
     if (firstTime) {
         firstTime = 0;
         iocshRegister(&pvdblFuncDef, pvdbl);
         getChannelProviderLocal();
-        epicsAtExit(channelProviderLocalExitHandler, NULL);
     }
 }
 

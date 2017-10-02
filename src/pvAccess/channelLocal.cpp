@@ -103,7 +103,7 @@ public:
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void process();
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
     virtual void cancel(){}
@@ -121,14 +121,12 @@ private:
         PVRecordPtr const &pvRecord,
         int nProcess)
     : 
-      isDestroyed(false),
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
       nProcess(nProcess)
     {
     }
-    bool isDestroyed;
     ChannelLocalPtr channelLocal;
     ChannelProcessRequester::weak_pointer channelProcessRequester;
     PVRecordPtr pvRecord;
@@ -174,30 +172,10 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
     return process;
 }
 
-
-void ChannelProcessLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelProcessLocal::destroy";
-        cout << " destroyed " << isDestroyed << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
-}
-
-
 void ChannelProcessLocal::process()
 {
     ChannelProcessRequester::shared_pointer requester = channelProcessRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->processDone(channelDestroyedStatus,getPtrSelf());
-         return;
-    } 
     if(pvRecord->getTraceLevel()>1)
     {
         cout << "ChannelProcessLocal::process";
@@ -236,7 +214,7 @@ public:
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void get();
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
     virtual void cancel(){}
@@ -258,7 +236,6 @@ private:
         PVRecordPtr const &pvRecord)
     : 
       firstTime(true),
-      isDestroyed(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelGetRequester(channelGetRequester),
@@ -269,7 +246,6 @@ private:
     {
     }
     bool firstTime;
-    bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelGetRequester::weak_pointer channelGetRequester;
@@ -323,29 +299,10 @@ ChannelGetLocalPtr ChannelGetLocal::create(
 }
 
 
-void ChannelGetLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelGetLocal::destroy";
-        cout << " destroyed " << isDestroyed << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
-}
-
 void ChannelGetLocal::get()
 {
     ChannelGetRequester::shared_pointer requester = channelGetRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->getDone(
-             channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
-         return;
-    } 
     try {
         bitSet->clear();
         {
@@ -398,7 +355,7 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void put(PVStructurePtr const &pvStructure,BitSetPtr const &bitSet);
     virtual void get();
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
     virtual void cancel(){}
@@ -417,7 +374,6 @@ private:
         PVCopyPtr const &pvCopy,
         PVRecordPtr const &pvRecord)
     :
-      isDestroyed(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelPutRequester(channelPutRequester),
@@ -425,7 +381,6 @@ private:
       pvRecord(pvRecord)
     {
     }
-    bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelPutRequester::weak_pointer channelPutRequester;
@@ -474,29 +429,10 @@ ChannelPutLocalPtr ChannelPutLocal::create(
     return put;
 }
 
-void ChannelPutLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelPutLocal::destroy";
-        cout << " destroyed " << isDestroyed << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
-}
-
 void ChannelPutLocal::get()
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->getDone(
-             channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
-         return;
-    }
     try {
         PVStructurePtr pvStructure = pvCopy->createPVStructure();
          BitSetPtr bitSet(new BitSet(pvStructure->getNumberFields()));
@@ -525,10 +461,6 @@ void ChannelPutLocal::put(
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->putDone(channelDestroyedStatus,getPtrSelf());
-         return;
-    }
     try {
         {   
             epicsGuard <PVRecord> guard(*pvRecord);
@@ -574,7 +506,7 @@ public:
         BitSetPtr const &putBitSet);
     virtual void getPut();
     virtual void getGet();
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
     virtual void cancel(){}
@@ -596,7 +528,6 @@ private:
         BitSetPtr const & getBitSet,
         PVRecordPtr const &pvRecord)
     : 
-      isDestroyed(false),
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelPutGetRequester(channelPutGetRequester),
@@ -607,7 +538,6 @@ private:
       pvRecord(pvRecord)
     {
     }
-    bool isDestroyed;
     bool callProcess;
     ChannelLocalPtr channelLocal;
     ChannelPutGetRequester::weak_pointer channelPutGetRequester;
@@ -668,30 +598,11 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
 }
 
 
-void ChannelPutGetLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelPutGetLocal::destroy";
-        cout << " destroyed " << isDestroyed << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
-}
-
 void ChannelPutGetLocal::putGet(
     PVStructurePtr const &pvPutStructure,BitSetPtr const &putBitSet)
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->putGetDone(
-             channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
-         return;
-    } 
     try {
         {
             epicsGuard <PVRecord> guard(*pvRecord);
@@ -718,11 +629,6 @@ void ChannelPutGetLocal::getPut()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->getPutDone(
-              channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
-         return;
-    } 
     try {
         PVStructurePtr pvPutStructure = pvPutCopy->createPVStructure();
         BitSetPtr putBitSet(new BitSet(pvPutStructure->getNumberFields()));
@@ -748,11 +654,6 @@ void ChannelPutGetLocal::getGet()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->getGetDone(
-             channelDestroyedStatus,getPtrSelf(),nullPVStructure,nullBitSet);
-         return;
-    } 
     try {
          getBitSet->clear();
          {
@@ -792,7 +693,6 @@ public:
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
         Service::shared_pointer const & service,
         PVRecordPtr const & pvRecord) :
-        isDestroyed(),
         channelLocal(channelLocal),
         channelRPCRequester(channelRPCRequester),
         service(service),
@@ -807,7 +707,6 @@ public:
         {
            cout << "~ChannelRPCLocal()" << endl;
         }
-        destroy();
     }
 
     void processRequest(RPCService::shared_pointer const & service,
@@ -819,9 +718,6 @@ public:
         ChannelRPCRequester::shared_pointer requester = channelRPCRequester.lock();
         if(!requester) return;
         requester->requestDone(status, getPtrSelf(), result);
-
-        if (isLastRequest.get())
-            destroy();
     }
 
     void processRequest(RPCServiceAsync::shared_pointer const & service,
@@ -841,7 +737,7 @@ public:
 
     virtual void cancel() {}
 
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
 
     virtual void lock() {}
 
@@ -854,7 +750,6 @@ private:
         return shared_from_this();
     }
 
-    AtomicBoolean isDestroyed;
     ChannelLocalPtr channelLocal;
     ChannelRPCRequester::weak_pointer channelRPCRequester;
     Service::shared_pointer service;
@@ -990,17 +885,6 @@ void ChannelRPCLocal::request(PVStructurePtr const & pvArgument)
 }
 
 
-void ChannelRPCLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelRPCLocal::destroy";
-        cout << " destroyed " << isDestroyed.get() << endl;
-    }
-    isDestroyed.set();
-}
-
-
 typedef std::tr1::shared_ptr<PVArray> PVArrayPtr;
 
 class ChannelArrayLocal :
@@ -1027,7 +911,7 @@ public:
          size_t offset, size_t count, size_t stride);
     virtual void getLength();
     virtual void setLength(size_t length);
-    virtual void destroy();
+    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel()
         {return channelLocal;}
     virtual void cancel(){}
@@ -1046,7 +930,6 @@ private:
         PVArrayPtr const &pvCopy,
         PVRecordPtr const &pvRecord)
     : 
-      isDestroyed(false),
       channelLocal(channelLocal),
       channelArrayRequester(channelArrayRequester),
       pvArray(pvArray),
@@ -1054,7 +937,7 @@ private:
       pvRecord(pvRecord)
     {
     }
-    bool isDestroyed;
+
     ChannelLocalPtr channelLocal;
     ChannelArrayRequester::weak_pointer channelArrayRequester;
     PVArrayPtr pvArray;
@@ -1147,29 +1030,11 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
     return array;
 }
 
-
-void ChannelArrayLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "ChannelArrayLocal::destroy";
-        cout << " destroyed " << isDestroyed << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
-}
-
 void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->getArrayDone(channelDestroyedStatus,getPtrSelf(),pvCopy);
-         return;
-    }
+    
     if(pvRecord->getTraceLevel()>1)
     {
        cout << "ChannelArrayLocal::getArray" << endl;
@@ -1218,10 +1083,7 @@ void ChannelArrayLocal::putArray(
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->putArrayDone(channelDestroyedStatus,getPtrSelf());
-         return;
-    }
+    
     if(pvRecord->getTraceLevel()>1)
     {
        cout << "ChannelArrayLocal::putArray" << endl;
@@ -1277,10 +1139,7 @@ void ChannelArrayLocal::setLength(size_t length)
 {
     ChannelArrayRequester::shared_pointer requester = channelArrayRequester.lock();
     if(!requester) return;
-    if(isDestroyed) {
-         requester->setLengthDone(channelDestroyedStatus,getPtrSelf());
-         return;
-    }
+    
     if(pvRecord->getTraceLevel()>1)
     {
        cout << "ChannelArrayLocal::setLength" << endl;
@@ -1308,8 +1167,7 @@ ChannelLocal::ChannelLocal(
 :   
     requester(requester),
     provider(provider),
-    pvRecord(pvRecord),
-    isDestroyed(false)
+    pvRecord(pvRecord)
 {
     if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::ChannelLocal()"
@@ -1325,25 +1183,9 @@ ChannelLocal::~ChannelLocal()
     {
         cout << "~ChannelLocal()" << endl;
     }
-    destroy();
-}
-
-void ChannelLocal::destroy()
-{
-    if(pvRecord->getTraceLevel()>0) {
-         cout << "ChannelLocal::destroy()"
-              << " recordName " << pvRecord->getRecordName()
-              << " isDestroyed " << isDestroyed
-              << " requester exists " << (requester ? "true" : "false")
-              << endl;
-    }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-        isDestroyed = true;
-    }
     pvRecord->removePVRecordClient(getPtrSelf());
 }
+
 
 void ChannelLocal::detach(PVRecordPtr const & pvRecord)
 {
@@ -1381,10 +1223,6 @@ void ChannelLocal::message(
          << " requester exists " << (requester ? "true" : "false")
          << endl;
     }
-    {
-        Lock xx(mutex);
-        if(isDestroyed) return;
-    }
     if(requester) {
         requester->message(message,messageType);
         return;
@@ -1402,8 +1240,6 @@ string ChannelLocal::getRemoteAddress()
 
 Channel::ConnectionState ChannelLocal::getConnectionState()
 {
-    Lock xx(mutex);
-    if(isDestroyed) return Channel::DESTROYED;
     return Channel::CONNECTED;
 }
 
@@ -1419,8 +1255,6 @@ ChannelRequester::shared_pointer ChannelLocal::getChannelRequester()
 
 bool ChannelLocal::isConnected()
 {
-    Lock xx(mutex);
-    if(isDestroyed) return false;
     return true;
 }
 

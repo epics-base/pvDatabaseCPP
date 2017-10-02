@@ -264,14 +264,6 @@ protected:
      * Must be called by derived classes.
      */
     void initPVRecord();
-    /** 
-     * @brief Get shared pointer to self.
-     * @return The shared pointer.
-     */
-    PVRecordPtr getPtrSelf()
-    {
-        return shared_from_this();
-    }
 private:
     PVRecordFieldPtr findPVRecordField(
         PVRecordStructurePtr const & pvrs,
@@ -505,12 +497,6 @@ public:
      */
     virtual ~PVDatabase();
     /**
-     *  @brief Destroy the PVDatabase.
-     *
-     *  For each record in the database the record is removed and it's destroy method is called.
-     */
-    virtual void destroy();
-    /**
      * Find a record.
      * An empty pointer is returned if the record is not in the database.
      * @param recordName The record to find.
@@ -541,7 +527,6 @@ private:
     void unlock();
     PVRecordMap  recordMap;
     epics::pvData::Mutex mutex;
-    bool isDestroyed;
 };
 
 }}
