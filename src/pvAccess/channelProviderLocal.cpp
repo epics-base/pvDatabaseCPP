@@ -30,11 +30,11 @@ using std::string;
 
 namespace epics { namespace pvDatabase { 
 
-static string providerName("local");
-static ChannelProvider::shared_pointer channelProvider;
-
 class LocalChannelProviderFactory;
 typedef std::tr1::shared_ptr<LocalChannelProviderFactory> LocalChannelProviderFactoryPtr;
+
+static string providerName("local");
+static ChannelProviderLocalPtr channelProvider;
 
 class LocalChannelProviderFactory : public ChannelProviderFactory
 {  
@@ -43,7 +43,7 @@ public:
     virtual string getFactoryName() { return providerName;}
     virtual  ChannelProvider::shared_pointer sharedInstance()
     {
-        if(!channelProvider) channelProvider = ChannelProvider::shared_pointer(new ChannelProviderLocal());
+        if(!channelProvider) channelProvider = ChannelProviderLocalPtr(new ChannelProviderLocal());
         return channelProvider;
     }
     virtual  ChannelProvider::shared_pointer newInstance()
