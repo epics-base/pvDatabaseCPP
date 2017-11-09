@@ -112,6 +112,7 @@ void PVRecord::process()
         cout << "PVRecord::process() " << recordName << endl;
     }
     if(pvTimeStamp.isAttached()) {
+        pvTimeStamp.get(timeStamp);
         timeStamp.getCurrent();
         pvTimeStamp.set(timeStamp);
     }
