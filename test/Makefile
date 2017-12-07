@@ -5,7 +5,9 @@ include $(TOP)/configure/CONFIG
 
 PVDATABASE_TEST = $(TOP)/test
 
-PROD_LIBS += pvDatabase pvAccess pvData Com
+PROD_LIBS += pvDatabase
+PROD_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
+PROD_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(PVDATABASE_TEST)/src/Makefile
 
@@ -24,5 +26,3 @@ TESTSPEC_RTEMS = rtemsTestHarness.$(MUNCH_SUFFIX); pvDatabaseAllTests
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 include $(TOP)/configure/RULES
-
-
