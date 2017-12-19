@@ -74,6 +74,6 @@ make distclean all
 make runtests
 
 ###########################################
-# Create distribution
+# Create cache
 
 tar -czf pvDatabase.CB-dist.tar.gz lib include dbd LICENSE
