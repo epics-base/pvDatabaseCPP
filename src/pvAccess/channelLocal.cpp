@@ -1039,14 +1039,6 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
     {
        cout << "ChannelArrayLocal::getArray" << endl;
     }
-    if(offset<0) {
-         requester->getArrayDone(illegalOffsetStatus,getPtrSelf(),pvCopy);
-         return;
-    }
-    if(stride<0) {
-         requester->getArrayDone(illegalStrideStatus,getPtrSelf(),pvCopy);
-         return;
-    }
     const char *exceptionMessage = NULL;
     try {
         bool ok = false;
@@ -1087,18 +1079,6 @@ void ChannelArrayLocal::putArray(
     if(pvRecord->getTraceLevel()>1)
     {
        cout << "ChannelArrayLocal::putArray" << endl;
-    }
-    if(offset<0) {
-         requester->putArrayDone(illegalOffsetStatus,getPtrSelf());
-         return;
-    }
-    if(count<0) {
-         requester->putArrayDone(illegalCountStatus,getPtrSelf());
-         return;
-    }
-    if(stride<0) {
-         requester->putArrayDone(illegalStrideStatus,getPtrSelf());
-         return;
     }
     size_t newLength = offset + count*stride;
     if(newLength<pvArray->getLength()) pvArray->setLength(newLength);
@@ -1147,9 +1127,7 @@ void ChannelArrayLocal::setLength(size_t length)
     try {
          {
              epicsGuard <PVRecord> guard(*pvRecord);
-             if(length>=0) {
-                 if(pvArray->getLength()!=length) pvArray->setLength(length);
-             }
+             if(pvArray->getLength()!=length) pvArray->setLength(length);
          }
          requester->setLengthDone(Status::Ok,getPtrSelf());
     } catch(std::exception e) {
