@@ -691,7 +691,7 @@ public:
     ChannelRPCLocal(
         ChannelLocalPtr const & channelLocal,
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
-        Service::shared_pointer const & service,
+        RPCServiceAsync::shared_pointer const & service,
         PVRecordPtr const & pvRecord) :
         channelLocal(channelLocal),
         channelRPCRequester(channelRPCRequester),
@@ -752,7 +752,7 @@ private:
 
     ChannelLocalPtr channelLocal;
     ChannelRPCRequester::weak_pointer channelRPCRequester;
-    Service::shared_pointer service;
+    RPCServiceAsync::shared_pointer service;
     PVRecordPtr pvRecord;
     AtomicBoolean isLastRequest;
 };
@@ -763,7 +763,7 @@ ChannelRPCLocalPtr ChannelRPCLocal::create(
     PVStructurePtr const & pvRequest,
     PVRecordPtr const &pvRecord)
 {
-    Service::shared_pointer service = pvRecord->getService(pvRequest);
+    RPCServiceAsync::shared_pointer service = pvRecord->getService(pvRequest);
     if (!service)
     {
         Status status(Status::STATUSTYPE_ERROR,
