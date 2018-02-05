@@ -67,7 +67,6 @@ static void test()
     ServerContext::shared_pointer ctx =
         startPVAServer("local",0,true,true);
     testOk1(ctx.get()!=0);
-    ctx->destroy();
 }
 
 MAIN(testPVAServer)
