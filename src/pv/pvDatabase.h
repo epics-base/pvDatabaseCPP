@@ -112,10 +112,10 @@ public:
      * @param pvRequest The request PVStructure 
      * @return The corresponding service
      */
-    virtual epics::pvAccess::Service::shared_pointer getService(
+    virtual epics::pvAccess::RPCServiceAsync::shared_pointer getService(
         epics::pvData::PVStructurePtr const & pvRequest)
     {
-        return epics::pvAccess::Service::shared_pointer();
+        return epics::pvAccess::RPCServiceAsync::shared_pointer();
     }
     /**
      * @brief Creates a <b>soft</b> record. 
