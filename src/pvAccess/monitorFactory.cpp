@@ -29,6 +29,8 @@ using std::string;
 
 namespace epics { namespace pvDatabase { 
 
+class MonitorLocal;
+typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
 
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
@@ -445,22 +447,11 @@ bool MonitorLocal::init(PVStructurePtr const & pvRequest)
     return true;
 }
 
-
-MonitorFactory::MonitorFactory()
-{
-}
-
-MonitorFactory::~MonitorFactory()
-{
-
-}
-
-MonitorPtr MonitorFactory::createMonitor(
+MonitorPtr createMonitorLocal(
     PVRecordPtr const & pvRecord,
     MonitorRequester::shared_pointer const & monitorRequester,
     PVStructurePtr const & pvRequest)
 {
-    Lock xx(mutex);
     MonitorLocalPtr monitor(new MonitorLocal(
         monitorRequester,pvRecord));
     bool result = monitor->init(pvRequest);
@@ -476,21 +467,6 @@ MonitorPtr MonitorFactory::createMonitor(
         << " recordName " << pvRecord->getRecordName() << endl;
     }
     return monitor;
-}
-
-
-
-MonitorFactoryPtr getMonitorFactory()
-{
-    static MonitorFactoryPtr monitorFactoryPtr;
-    static Mutex mutex;
-    Lock xx(mutex);
-
-    if(!monitorFactoryPtr) {
-        monitorFactoryPtr = MonitorFactoryPtr(
-            new MonitorFactory());
-    }
-    return monitorFactoryPtr;
 }
 
 }}

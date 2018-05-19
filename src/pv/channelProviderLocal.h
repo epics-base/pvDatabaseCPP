@@ -39,60 +39,18 @@
 
 #include <pv/pvDatabase.h>
 
-
 namespace epics { namespace pvDatabase { 
-
-
-class MonitorFactory;
-typedef std::tr1::shared_ptr<MonitorFactory> MonitorFactoryPtr;
-
-class MonitorLocal;
-typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
-
 
 class ChannelProviderLocal;
 typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
 class ChannelLocal;
 typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
 
-epicsShareFunc MonitorFactoryPtr getMonitorFactory();
 
-/**
- * @brief MonitorFactory
- *
- * This class provides a static method to create a monitor for a PVRecord
- */
-class epicsShareClass MonitorFactory 
-{
-public:
-    POINTER_DEFINITIONS(MonitorFactory);
-    /**
-     * @brief Destructor
-     */
-    virtual ~MonitorFactory();
-    /** 
-     * @brief Create a monitor on a record.
-     *
-     * This is called by the local channel provider.
-     * @param pvRecord The record to monitor.
-     * @param monitorRequester The client callback.
-     * @param pvRequest Options specified by the client.
-     * This includes the subset of the fields in the record to monitor.
-     * @return A shared pointer to the newly created monitor.
-     * If the monitor can not be created a null monitor is returned.
-     * This means the pvRequest specified options that could not be satisfied.
-     */
-    epics::pvData::MonitorPtr createMonitor(
-        PVRecordPtr const & pvRecord,
-        epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
-        epics::pvData::PVStructurePtr const & pvRequest);
-private:
-    MonitorFactory();
-    friend class MonitorLocal;
-    friend epicsShareFunc MonitorFactoryPtr getMonitorFactory();
-    epics::pvData::Mutex mutex;
-};
-
+epicsShareFunc epics::pvData::MonitorPtr createMonitorLocal(
+    PVRecordPtr const & pvRecord,
+    epics::pvData::MonitorRequester::shared_pointer const & monitorRequester,
+    epics::pvData::PVStructurePtr const & pvRequest);
 
 epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
 
@@ -208,7 +166,6 @@ public:
 private:
     friend epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
     PVDatabasePtr pvDatabase;
-    epics::pvData::Mutex mutex;
     int traceLevel;
     friend class ChannelProviderLocalRun;
 };

@@ -103,7 +103,6 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::channelFind " << "channelName" << endl;
     }
-    Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord) {
         channelFindRequester->channelFindResult(
@@ -127,12 +126,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelList(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::channelList\n";
     }
-    PVStringArrayPtr records;
-    {
-        Lock guard(mutex);
-        records = pvDatabase->getRecordNames();
-    }
-
+    PVStringArrayPtr records(pvDatabase->getRecordNames());
     channelListRequester->channelListResult(Status::Ok, shared_from_this(), records->view(), false);
     return shared_from_this();
 }
@@ -145,7 +139,6 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::createChannel " << "channelName" << endl;
     }
-    Lock xx(mutex);
     PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
     if(pvRecord) {
         ChannelLocalPtr channel(new ChannelLocal(

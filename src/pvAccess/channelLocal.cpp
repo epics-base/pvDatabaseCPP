@@ -1371,8 +1371,7 @@ Monitor::shared_pointer ChannelLocal::createMonitor(
          << endl;
     }
 
-    MonitorPtr monitor = 
-        getMonitorFactory()->createMonitor(
+    MonitorPtr monitor = createMonitorLocal(
             pvRecord,
             monitorRequester,
             pvRequest);
