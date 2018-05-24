@@ -46,11 +46,62 @@ PVRecord::PVRecord(
 {
 }
 
+void PVRecord::notifyClients()
+{
+    {
+        epicsGuard<epics::pvData::Mutex> guard(mutex);
+        if(traceLevel>0) {
+            cout << "PVRecord::notifyClients() " << recordName 
+                 << " isDestroyed " << (isDestroyed ? "true" : "false")
+                 << endl;
+        }
+        if(isDestroyed) {
+            return;
+        }
+        isDestroyed = true;
+    }
+    pvTimeStamp.detach();
+    for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
+         iter!=pvListenerList.end();
+         iter++ )
+    {
+        PVListenerPtr listener = iter->lock();
+        if(!listener) continue;
+        if(traceLevel>0) {
+            cout << "PVRecord::notifyClients() calling listener->unlisten " 
+                 << recordName << endl;
+        }
+        listener->unlisten(shared_from_this());
+    }
+    pvListenerList.clear();
+    for (std::list<PVRecordClientWPtr>::iterator iter = clientList.begin();
+         iter!=clientList.end();
+         iter++ )
+    {
+        PVRecordClientPtr client = iter->lock();
+        if(!client) continue;
+        if(traceLevel>0) {
+            cout << "PVRecord::notifyClients() calling client->detach "
+                 << recordName << endl;
+        }
+        client->detach(shared_from_this());
+    }
+    if(traceLevel>0) {
+        cout << "PVRecord::notifyClients() calling clientList.clear() " 
+             << recordName << endl;
+    }
+    clientList.clear();
+    if(traceLevel>0) {
+        cout << "PVRecord::notifyClients() returning " << recordName << endl;
+    }
+}
+
 PVRecord::~PVRecord()
 {
     if(traceLevel>0) {
         cout << "~PVRecord() " << recordName << endl;
     }
+    notifyClients();
 }
 
 void PVRecord::initPVRecord()
@@ -65,45 +116,9 @@ void PVRecord::initPVRecord()
 
 void PVRecord::destroy()
 {
-    {
-        epicsGuard<epics::pvData::Mutex> guard(mutex);
-        if(traceLevel>0) {
-            cout << "PVRecord::destroy() " << recordName 
-                 << " isDestroyed " << (isDestroyed ? "true" : "false")
-                 << endl;
-        }
-        if(isDestroyed) {
-            return;
-        }
-        isDestroyed = true;
-    }
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
-    pvTimeStamp.detach();     
-    for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
-         iter!=pvListenerList.end();
-         iter++ )
-    {
-        PVListenerPtr listener = iter->lock();
-        if(!listener) continue;
-        if(traceLevel>0) {
-            cout << "PVRecord::destroy() calling listener->unlisten " << recordName << endl;
-        }
-        listener->unlisten(shared_from_this());
-    }
-    pvListenerList.clear();
-    for (std::list<PVRecordClientPtr>::iterator iter = clientList.begin();
-         iter!=clientList.end();
-         iter++ )
-    {
-        PVRecordClientPtr client = *iter;
-        if(!client) continue;
-        if(traceLevel>0) {
-            cout << "PVRecord::destroy() calling client->detach " << recordName << endl;
-        }
-        client->detach(shared_from_this());
-    }
-    clientList.clear();
+    notifyClients();
 }
 
 void PVRecord::process()
@@ -194,45 +209,29 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
     if(isDestroyed) {
         return false;
     }
-    std::list<PVRecordClientPtr>::iterator iter;
-    for (iter = clientList.begin();
-         iter!=clientList.end();
-         iter++ )
-    {
-        PVRecordClientPtr client = *iter;
-        if(client==pvRecordClient) {
-            return false;
+    // clean clientList
+    bool clientListClean = false;
+    while(!clientListClean) {
+        if(clientList.empty()) break;
+        clientListClean = true;
+        std::list<PVRecordClientWPtr>::iterator iter;
+        for (iter = clientList.begin();
+             iter!=clientList.end();
+             iter++ )
+        {
+            PVRecordClientPtr client = iter->lock();
+            if(client) continue;
+            if(traceLevel>1) {
+                 cout << "PVRecord::addPVRecordClient() erasing client"
+                      << recordName << endl;
+            }
+            clientList.erase(iter);
+            clientListClean = false;
+            break;
         }
-    }
-    if(traceLevel>1) {
-        cout << "PVRecord::addPVRecordClient() calling clientList.push_back(pvRecordClient)" << recordName << endl;
     }
     clientList.push_back(pvRecordClient);
     return true;
-}
-
-bool PVRecord::removePVRecordClient(PVRecordClientPtr const & pvRecordClient)
-{
-    if(traceLevel>1) {
-        cout << "PVRecord::removePVRecordClient() " << recordName << endl;
-    }
-    epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
-    }
-    std::list<PVRecordClientPtr>::iterator iter;
-    for (iter = clientList.begin();
-         iter!=clientList.end();
-         iter++ )
-    {
-        PVRecordClientPtr client = *iter;
-        if(!client) continue;
-        if(client==pvRecordClient) {
-            clientList.erase(iter);
-            return true;
-        }
-    }
-    return false;
 }
 
 bool PVRecord::addListener(
@@ -245,15 +244,6 @@ bool PVRecord::addListener(
     epicsGuard<epics::pvData::Mutex> guard(mutex);
     if(isDestroyed) {
         return false;
-    }
-    std::list<PVListenerWPtr>::iterator iter;
-    for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ )
-    {
-        PVListenerPtr listener = iter->lock();
-        if(!listener.get()) continue;
-        if(listener.get()==pvListener.get()) {
-            return false;
-        }
     }
     pvListenerList.push_back(pvListener);
     this->pvListener = pvListener;
@@ -394,14 +384,6 @@ bool PVRecordField::addListener(PVListenerPtr const & pvListener)
     if(pvRecord && pvRecord->getTraceLevel()>1) {
          cout << "PVRecordField::addListener() " << getFullName() << endl;
     }
-    std::list<PVListenerWPtr>::iterator iter;
-    for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ ) {
-        PVListenerPtr listener = iter->lock();
-        if(!listener.get()) continue;
-        if(listener.get()==pvListener.get()) {
-            return false;
-        }
-    }
     pvListenerList.push_back(pvListener);
     return true;
 }
@@ -450,7 +432,8 @@ void PVRecordField::postSubField()
 {
     callListener();
     if(isStructure) {
-        PVRecordStructurePtr pvrs = static_pointer_cast<PVRecordStructure>(shared_from_this());
+        PVRecordStructurePtr pvrs = 
+            static_pointer_cast<PVRecordStructure>(shared_from_this());
         PVRecordFieldPtrArrayPtr pvRecordFields = pvrs->getPVRecordFields();
         PVRecordFieldPtrArray::iterator iter;
         for(iter = pvRecordFields->begin() ; iter !=pvRecordFields->end(); iter++) {

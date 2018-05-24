@@ -34,10 +34,11 @@ typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
 
 static MonitorPtr nullMonitor;
 static MonitorElementPtr NULLMonitorElement;
-static Status failedToCreateMonitorStatus(Status::STATUSTYPE_ERROR,"failed to create monitor");
+static Status failedToCreateMonitorStatus(
+    Status::STATUSTYPE_ERROR,"failed to create monitor");
 static Status alreadyStartedStatus(Status::STATUSTYPE_ERROR,"already started");
 static Status notStartedStatus(Status::STATUSTYPE_ERROR,"not started");
-static Status destroyedStatus(Status::STATUSTYPE_ERROR,"record is destroyed");
+static Status deletedStatus(Status::STATUSTYPE_ERROR,"record is deleted");
 
 class MonitorElementQueue;
 typedef std::tr1::shared_ptr<MonitorElementQueue> MonitorElementQueuePtr;
@@ -129,7 +130,7 @@ class MonitorLocal :
     public PVListener,
     public std::tr1::enable_shared_from_this<MonitorLocal>
 {
-    enum MonitorState {idle,active,destroyed};
+    enum MonitorState {idle,active,deleted};
 public:
     POINTER_DEFINITIONS(MonitorLocal);
     virtual ~MonitorLocal();
@@ -199,7 +200,7 @@ Status MonitorLocal::start()
     {
         Lock xx(mutex);
         if(state==active) return alreadyStartedStatus;
-        if(state==destroyed) return destroyedStatus;
+        if(state==deleted) return deletedStatus;
     }
     pvRecord->addListener(getPtrSelf(),pvCopy);
     epicsGuard <PVRecord> guard(*pvRecord);
@@ -223,7 +224,7 @@ Status MonitorLocal::stop()
     {
         Lock xx(mutex);
         if(state==idle) return notStartedStatus;
-        if(state==destroyed) return destroyedStatus;
+        if(state==deleted) return deletedStatus;
         state = idle;
     }
     pvRecord->removeListener(getPtrSelf(),pvCopy);
@@ -373,7 +374,7 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
     }
     {
         Lock xx(mutex);
-        state = destroyed;
+        state = deleted;
     }
     MonitorRequesterPtr requester = monitorRequester.lock();
     if(requester) {
@@ -458,7 +459,8 @@ MonitorPtr createMonitorLocal(
     if(!result) {
         MonitorPtr monitor;
         StructureConstPtr structure;
-        monitorRequester->monitorConnect(failedToCreateMonitorStatus,monitor,structure);
+        monitorRequester->monitorConnect(
+            failedToCreateMonitorStatus,monitor,structure);
         return nullMonitor;
     }
     if(pvRecord->getTraceLevel()>0)

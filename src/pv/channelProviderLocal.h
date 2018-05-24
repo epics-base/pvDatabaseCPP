@@ -43,8 +43,10 @@ namespace epics { namespace pvDatabase {
 
 class ChannelProviderLocal;
 typedef std::tr1::shared_ptr<ChannelProviderLocal> ChannelProviderLocalPtr;
+typedef std::tr1::weak_ptr<ChannelProviderLocal> ChannelProviderLocalWPtr;
 class ChannelLocal;
 typedef std::tr1::shared_ptr<ChannelLocal> ChannelLocalPtr;
+typedef std::tr1::weak_ptr<ChannelLocal> ChannelLocalWPtr;
 
 
 epicsShareFunc epics::pvData::MonitorPtr createMonitorLocal(
@@ -82,11 +84,13 @@ public:
     virtual void destroy() EPICS_DEPRECATED {};
     /**
      * @brief Returns the channel provider name.
+     *
      * @return <b>local</b>
      */
     virtual  std::string getProviderName();
     /**
      * @brief Returns either a null channelFind or a channelFind for records in the PVDatabase.
+     *
      * @param channelName The name of the channel desired.
      * @param channelFindRequester The client callback.
      * @return shared pointer to ChannelFind.
@@ -162,10 +166,10 @@ public:
      * @brief ChannelFind method.
      *
      */
-    virtual void cancel();
+    virtual void cancel() {}
 private:
     friend epicsShareFunc ChannelProviderLocalPtr getChannelProviderLocal();
-    PVDatabasePtr pvDatabase;
+    PVDatabaseWPtr pvDatabase;
     int traceLevel;
     friend class ChannelProviderLocalRun;
 };
@@ -206,8 +210,7 @@ public:
      * @brief Detach from the record.
      *
      * This is called when a record is being removed from the database.
-     * Calls destroy.
-     * @param pvRecord The record being destroyed.
+     * @param pvRecord The record being removed.
      */
     virtual void detach(PVRecordPtr const &pvRecord);
     /** 
@@ -227,10 +230,7 @@ public:
      * @brief Get the channel provider
      * @return The provider.
      */
-    virtual epics::pvAccess::ChannelProvider::shared_pointer getProvider()
-    {
-        return provider;
-    }
+    virtual epics::pvAccess::ChannelProvider::shared_pointer getProvider();
     /** 
      * @brief Get the remote address
      * @return <b>local</b>
@@ -369,8 +369,8 @@ protected:
     }
 private:
     epics::pvAccess::ChannelRequester::shared_pointer requester;
-    ChannelProviderLocalPtr provider;
-    PVRecordPtr pvRecord;
+    ChannelProviderLocalWPtr provider;
+    PVRecordWPtr pvRecord;
     epics::pvData::Mutex mutex;
 };
 
