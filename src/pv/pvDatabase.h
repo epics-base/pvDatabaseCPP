@@ -13,7 +13,6 @@
 
 #include <list>
 #include <map>
-#include <deque>
 
 #include <pv/pvData.h>
 #include <pv/pvCopy.h>
@@ -46,6 +45,7 @@ typedef std::tr1::weak_ptr<PVRecordStructure> PVRecordStructureWPtr;
 
 class PVRecordClient;
 typedef std::tr1::shared_ptr<PVRecordClient> PVRecordClientPtr;
+typedef std::tr1::weak_ptr<PVRecordClient> PVRecordClientWPtr;
 
 class PVListener;
 typedef std::tr1::shared_ptr<PVListener> PVListenerPtr;
@@ -53,6 +53,7 @@ typedef std::tr1::weak_ptr<PVListener> PVListenerWPtr;
 
 class PVDatabase;
 typedef std::tr1::shared_ptr<PVDatabase> PVDatabasePtr;
+typedef std::tr1::weak_ptr<PVDatabase> PVDatabaseWPtr;
 
 /**
  * @brief Base interface for a PVRecord.
@@ -97,12 +98,16 @@ public:
      */
     virtual void process();
     /**
-     *  @brief Optional method for derived class.
+     *  @brief Destroy the record.
      *
      * Destroy the PVRecord. Release any resources used and 
      *  get rid of listeners and requesters.
      *  If derived class overrides this then it must call PVRecord::destroy()
      *  after it has destroyed any resorces it uses.
+     *
+     * Note: for most classes destroy no longer exists or has been deprecated.
+     *  This method makes it possible to remove a record from a database
+     *  while the database is still running.
      */
     virtual void destroy();
     /**
@@ -196,13 +201,6 @@ public:
      */
     bool addPVRecordClient(PVRecordClientPtr const & pvRecordClient);
     /**
-     * @brief Remove a client.
-     *
-     * @param pvRecordClient The client.
-     * @return <b>true</b> if the client is removed.
-     */
-    bool removePVRecordClient(PVRecordClientPtr const & pvRecordClient);
-    /**
      * @brief Add a PVListener.
      *
      * This must be called before calling pvRecordField.addListener.
@@ -268,23 +266,23 @@ private:
     PVRecordFieldPtr findPVRecordField(
         PVRecordStructurePtr const & pvrs,
         epics::pvData::PVFieldPtr const & pvField);
+    void notifyClients();
 
     std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
     PVRecordStructurePtr pvRecordStructure;
     std::list<PVListenerWPtr> pvListenerList;
-    std::list<PVRecordClientPtr> clientList;
+    std::list<PVRecordClientWPtr> clientList;
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;
     bool isDestroyed;
-
-    epics::pvData::PVTimeStamp pvTimeStamp;
-    epics::pvData::TimeStamp timeStamp;
-
     // following only valid while addListener or removeListener is active.
     bool isAddListener;
     PVListenerWPtr pvListener;
+
+    epics::pvData::PVTimeStamp pvTimeStamp;
+    epics::pvData::TimeStamp timeStamp;
 };
 
 epicsShareFunc std::ostream& operator<<(std::ostream& o, const PVRecord& record);
@@ -527,6 +525,7 @@ private:
     void unlock();
     PVRecordMap  recordMap;
     epics::pvData::Mutex mutex;
+    static bool getMasterFirstCall;
 };
 
 }}

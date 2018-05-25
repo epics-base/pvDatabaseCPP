@@ -11,14 +11,12 @@
 
 #include <epicsThread.h>
 
-
 #include <pv/serverContext.h>
 #include <pv/syncChannelFind.h>
 
 #define epicsExportSharedSymbols
 
 #include <pv/channelProviderLocal.h>
-#include <pv/traceRecord.h>
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
@@ -29,9 +27,6 @@ using std::endl;
 using std::string;
 
 namespace epics { namespace pvDatabase { 
-
-class LocalChannelProviderFactory;
-typedef std::tr1::shared_ptr<LocalChannelProviderFactory> LocalChannelProviderFactoryPtr;
 
 static string providerName("local");
 static ChannelProviderLocalPtr channelProvider;
@@ -48,8 +43,8 @@ public:
     }
     virtual  ChannelProvider::shared_pointer newInstance()
     {
-cout << "LocalChannelProviderFactory::newInstance()\n";
-        throw std::logic_error("newInstance not Implemented");
+        throw std::logic_error(
+            "LocalChannelProviderFactory::newInstance() not Implemented");
     }
 };
 
@@ -72,12 +67,15 @@ ChannelProviderLocal::ChannelProviderLocal()
 : pvDatabase(PVDatabase::getMaster()),
   traceLevel(0)
 {
+    if(traceLevel>0) {
+        cout << "ChannelProviderLocal::ChannelProviderLocal()\n";
+    }
 }
 
 ChannelProviderLocal::~ChannelProviderLocal()
 {
     if(traceLevel>0) {
-        cout << "ChannelProviderLocal::~ChannelProviderLocal() \n";
+        cout << "ChannelProviderLocal::~ChannelProviderLocal()\n";
     }
 }
 
@@ -85,11 +83,6 @@ std::tr1::shared_ptr<ChannelProvider> ChannelProviderLocal::getChannelProvider()
 {
     return shared_from_this();
 }
-
-void ChannelProviderLocal::cancel()
-{
-}
-
 
 string ChannelProviderLocal::getProviderName()
 {
@@ -103,8 +96,15 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::channelFind " << "channelName" << endl;
     }
-    Lock xx(mutex);
-    PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
+    PVDatabasePtr pvdb(pvDatabase.lock());
+    if(!pvdb) {
+        Status notFoundStatus(Status::STATUSTYPE_ERROR,"pvDatabase was deleted");
+        channelFindRequester->channelFindResult(
+            notFoundStatus,
+            shared_from_this(),
+            false);
+    }
+    PVRecordPtr pvRecord = pvdb->findRecord(channelName);
     if(pvRecord) {
         channelFindRequester->channelFindResult(
             Status::Ok,
@@ -127,13 +127,11 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelList(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::channelList\n";
     }
-    PVStringArrayPtr records;
-    {
-        Lock guard(mutex);
-        records = pvDatabase->getRecordNames();
-    }
-
-    channelListRequester->channelListResult(Status::Ok, shared_from_this(), records->view(), false);
+    PVDatabasePtr pvdb(pvDatabase.lock());
+    if(!pvdb)throw std::logic_error("pvDatabase was deleted");
+    PVStringArrayPtr records(pvdb->getRecordNames());
+    channelListRequester->channelListResult(
+        Status::Ok, shared_from_this(), records->view(), false);
     return shared_from_this();
 }
 
@@ -145,23 +143,23 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     if(traceLevel>1) {
         cout << "ChannelProviderLocal::createChannel " << "channelName" << endl;
     }
-    Lock xx(mutex);
-    PVRecordPtr pvRecord = pvDatabase->findRecord(channelName);
-    if(pvRecord) {
-        ChannelLocalPtr channel(new ChannelLocal(
-            shared_from_this(),channelRequester,pvRecord));
-        channelRequester->channelCreated(
-            Status::Ok,
-            channel);
-        pvRecord->addPVRecordClient(channel);
-        return channel;
-    }   
-    Status notFoundStatus(Status::STATUSTYPE_ERROR,"pv not found");
-    channelRequester->channelCreated(
-        notFoundStatus,
-        Channel::shared_pointer());
-    return Channel::shared_pointer();
-    
+    ChannelLocalPtr channel;
+    Status status = Status::Ok;
+    PVDatabasePtr pvdb(pvDatabase.lock());
+    if(!pvdb) {
+        status = Status::error("pvDatabase was deleted");
+    } else {
+        PVRecordPtr pvRecord = pvdb->findRecord(channelName);
+        if(pvRecord) {
+            channel = ChannelLocalPtr(new ChannelLocal(
+                shared_from_this(),channelRequester,pvRecord));
+            pvRecord->addPVRecordClient(channel);
+       } else {
+            status = Status::error("pv not found");
+       }
+    }
+    channelRequester->channelCreated(status,channel);
+    return channel;
 }
 
 Channel::shared_pointer ChannelProviderLocal::createChannel(
