@@ -1,3 +1,8 @@
+LATEST
+======
+
+* pvCopy is now implemented in pvDatabaseCPP. The version in pvDatacPP can be deprecated.
+* plugin support is implemented.
 
 EPICS V4 release 4.6
 ====================

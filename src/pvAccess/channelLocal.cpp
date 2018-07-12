@@ -327,6 +327,7 @@ void ChannelGetLocal::get()
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
+        bool notifyClient = true;
         bitSet->clear();
         {
             epicsGuard <PVRecord> guard(*pvr);
@@ -335,18 +336,29 @@ void ChannelGetLocal::get()
                 pvr->process();
                 pvr->endGroupPut();
             }
-            pvCopy->updateCopySetBitSet(pvStructure, bitSet);
+            notifyClient = pvCopy->updateCopySetBitSet(pvStructure, bitSet);
         }
         if(firstTime) {
             bitSet->clear();
             bitSet->set(0);
             firstTime = false;
-        } 
-        requester->getDone(
-            Status::Ok,
-            getPtrSelf(),
-            pvStructure,
-            bitSet);
+            notifyClient = true;
+        }
+        if(notifyClient) {
+            requester->getDone(
+                Status::Ok,
+                getPtrSelf(),
+                pvStructure,
+                bitSet);
+            bitSet->clear();
+        } else {
+            BitSetPtr temp(new BitSet(bitSet->size()));
+            requester->getDone(
+                Status::Ok,
+                getPtrSelf(),
+                pvStructure,
+                temp);
+        }
         if(pvr->getTraceLevel()>1)
         {
             cout << "ChannelGetLocal::get" << endl;
