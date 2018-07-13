@@ -71,7 +71,6 @@ static void test()
         pvRecord->unlock();
     }
     if(debug) {cout << "processed exampleDouble "  << endl; }
-    channelProvider->destroy();
 }
 
 MAIN(testLocalProvider)

@@ -13,6 +13,7 @@
 /* src */
 int testExampleRecord(void);
 int testPVCopy(void);
+int testPlugin(void);
 int testPVRecord(void);
 int testLocalProvider(void);
 int testPVAServer(void);
@@ -24,6 +25,7 @@ void pvDatabaseAllTests(void)
     /* src */
     runTest(testExampleRecord);
     runTest(testPVCopy);
+    runTest(testPlugin);
     runTest(testPVRecord);
     runTest(testLocalProvider);
     runTest(testPVAServer);

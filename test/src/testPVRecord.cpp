@@ -69,7 +69,6 @@ static void scalarTest()
     if(pvRecord && debug) {
           cout << pvRecord << endl;
     }
-    pvRecord->destroy();
 }
 
 static void arrayTest()
@@ -81,7 +80,6 @@ static void arrayTest()
     if(pvRecord && debug) {
           cout << pvRecord << endl;
     }
-    pvRecord->destroy();
 }
 
 static void powerSupplyTest()
@@ -94,7 +92,6 @@ static void powerSupplyTest()
     if(pvRecord && debug) {
           cout << pvRecord << endl;
     }
-    pvRecord->destroy();
 }
 
 MAIN(testPVRecord)

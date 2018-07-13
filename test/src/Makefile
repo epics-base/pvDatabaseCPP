@@ -3,6 +3,12 @@
 
 SRC_DIRS += $(PVDATABASE_TEST)/src
 
+
+TESTPROD_HOST += testPlugin
+testPlugin_SRCS += testPlugin.cpp
+testHarness_SRCS += testPlugin.cpp
+TESTS += testPlugin
+
 TESTPROD_HOST += testPVCopy
 testPVCopy_SRCS += testPVCopy.cpp
 testHarness_SRCS += testPVCopy.cpp
@@ -22,7 +28,6 @@ TESTPROD_HOST += testLocalProvider
 testLocalProvider_SRCS += testLocalProvider.cpp
 testHarness_SRCS += testLocalProvider.cpp
 TESTS += testLocalProvider
-
 
 TESTPROD_HOST += testPVAServer
 testPVAServer_SRCS += testPVAServer.cpp
