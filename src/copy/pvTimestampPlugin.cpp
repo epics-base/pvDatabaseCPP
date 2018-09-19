@@ -2,7 +2,7 @@
 /*
  * The License for this software can be found in the file LICENSE that is included with the distribution.
  */
-
+#define epicsExportSharedSymbols
 #include <pv/pvTimestampPlugin.h>
 #include <pv/convert.h>
 #include <pv/pvCopy.h>

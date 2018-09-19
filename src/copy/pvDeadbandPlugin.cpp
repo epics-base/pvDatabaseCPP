@@ -4,6 +4,7 @@
  */
 #include <stdlib.h>
 
+#define epicsExportSharedSymbols
 #include <pv/pvDeadbandPlugin.h>
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>

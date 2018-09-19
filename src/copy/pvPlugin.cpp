@@ -2,6 +2,8 @@
 /*
  * The License for this software can be found in the file LICENSE that is included with the distribution.
  */
+
+#define epicsExportSharedSymbols
 #include <pv/pvPlugin.h>
 
 using namespace epics::pvData;
