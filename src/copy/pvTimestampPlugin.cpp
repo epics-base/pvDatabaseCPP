@@ -2,9 +2,13 @@
 /*
  * The License for this software can be found in the file LICENSE that is included with the distribution.
  */
+
+#include <pv/pvData.h>
+#include <pv/bitSet.h>
+#include <pv/convert.h>
+
 #define epicsExportSharedSymbols
 #include <pv/pvTimestampPlugin.h>
-#include <pv/convert.h>
 #include <pv/pvCopy.h>
 
 using std::string;

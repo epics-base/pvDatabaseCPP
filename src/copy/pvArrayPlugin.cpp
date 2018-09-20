@@ -4,11 +4,12 @@
  */
 
 #include <stdlib.h>
-
-#define epicsExportSharedSymbols
-#include <pv/pvArrayPlugin.h>
+#include <pv/pvData.h>
+#include <pv/bitSet.h>
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
+#define epicsExportSharedSymbols
+#include <pv/pvArrayPlugin.h>
 
 using std::string;
 using std::size_t;

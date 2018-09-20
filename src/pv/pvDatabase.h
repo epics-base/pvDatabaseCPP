@@ -15,7 +15,6 @@
 #include <map>
 
 #include <pv/pvData.h>
-#include <pv/pvCopy.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
 
@@ -25,6 +24,7 @@
 #endif
 
 #include <shareLib.h>
+#include <pv/pvCopy.h>
 
 
 namespace epics { namespace pvDatabase { 

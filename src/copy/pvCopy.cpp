@@ -12,11 +12,11 @@
 #include <sstream>
 
 #include <epicsThread.h>
-
-#define epicsExportSharedSymbols
-
+#include <pv/pvData.h>
+#include <pv/bitSet.h>
 #include <pv/thread.h>
 
+#define epicsExportSharedSymbols
 #include <pv/pvCopy.h>
 #include <pv/pvArrayPlugin.h>
 #include <pv/pvTimestampPlugin.h>
