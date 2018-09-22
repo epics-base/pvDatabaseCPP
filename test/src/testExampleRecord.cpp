@@ -68,7 +68,6 @@ static void test()
         exampleRecord->unlock();
     }
     if(debug) {cout << "processed exampleDouble "  << endl; }
-    exampleRecord->destroy();
     recordName = "powerSupplyExample";
     PowerSupplyPtr psr;
     pvStructure = createPowerSupply();
@@ -127,7 +126,6 @@ static void test()
     testOk1(psr->getVoltage()==1.0);
     testOk1(psr->getPower()==1.0);
     testOk1(psr->getCurrent()==1.0);
-    psr->destroy();
 }
 
 MAIN(testExampleRecord)
