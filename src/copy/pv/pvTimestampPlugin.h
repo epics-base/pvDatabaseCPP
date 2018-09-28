@@ -17,7 +17,7 @@
 #include <pv/pvPlugin.h>
 #include <pv/pvTimeStamp.h>
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 class PVTimestampPlugin;
 class PVTimestampFilter;

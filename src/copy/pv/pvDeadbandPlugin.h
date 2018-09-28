@@ -16,7 +16,7 @@
 #include <pv/pvData.h>
 #include <pv/pvPlugin.h>
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 class PVDeadbandPlugin;
 class PVDeadbandFilter;

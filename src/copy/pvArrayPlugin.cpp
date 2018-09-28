@@ -19,7 +19,7 @@ using std::tr1::static_pointer_cast;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 static ConvertPtr convert = getConvert();
 static std::string name("array");

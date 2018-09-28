@@ -17,6 +17,7 @@
 #include <pv/pvData.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
+#include <pv/pvStructureCopy.h>
 
 #ifdef pvdatabaseEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -24,8 +25,6 @@
 #endif
 
 #include <shareLib.h>
-#include <pv/pvCopy.h>
-
 
 namespace epics { namespace pvDatabase { 
 
@@ -65,7 +64,7 @@ typedef std::tr1::weak_ptr<PVDatabase> PVDatabaseWPtr;
  * @date 2012.11.20
  */
 class epicsShareClass PVRecord :
-     public PVCopyTraverseMasterCallback,
+     public epics::pvCopy::PVCopyTraverseMasterCallback,
      public std::tr1::enable_shared_from_this<PVRecord>
 {
 public:
@@ -210,7 +209,7 @@ public:
      */
     bool addListener(
         PVListenerPtr const & pvListener,
-        PVCopyPtr const & pvCopy);
+        epics::pvCopy::PVCopyPtr const & pvCopy);
     /**
      *  @brief  PVCopyTraverseMasterCallback method
      *
@@ -226,7 +225,7 @@ public:
      */
     bool removeListener(
         PVListenerPtr const & pvListener,
-        PVCopyPtr const & pvCopy);
+        epics::pvCopy::PVCopyPtr const & pvCopy);
 
 
     /**

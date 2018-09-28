@@ -29,6 +29,7 @@
 #include <pv/standardPVField.h>
 #include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
+#include <pv/pvStructureCopy.h>
 #define epicsExportSharedSymbols
 #include "powerSupply.h"
 
@@ -37,6 +38,7 @@ using namespace std;
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace epics::pvCopy;
 using namespace epics::pvDatabase;
 
 static bool debug = true;

@@ -35,7 +35,7 @@
 #endif
 
 #include <shareLib.h>
-#include <pv/pvCopy.h>
+#include <pv/pvStructureCopy.h>
 #include <pv/pvDatabase.h>
 
 namespace epics { namespace pvDatabase { 

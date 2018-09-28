@@ -9,7 +9,7 @@
 
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{ 
+namespace epics { namespace pvCopy{ 
 
 typedef std::map<std::string,PVPluginPtr> PVPluginMap;
 

@@ -17,7 +17,7 @@
 #include <pv/thread.h>
 
 #define epicsExportSharedSymbols
-#include <pv/pvCopy.h>
+#include <pv/pvStructureCopy.h>
 #include <pv/pvArrayPlugin.h>
 #include <pv/pvTimestampPlugin.h>
 #include <pv/pvDeadbandPlugin.h>
@@ -31,7 +31,7 @@ using std::endl;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvCopy { 
 
 /**
  * Convenience method for implementing dump.
