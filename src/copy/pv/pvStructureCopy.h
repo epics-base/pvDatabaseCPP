@@ -12,11 +12,10 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
-
-#include <shareLib.h>
-
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
+
+#include <shareLib.h>
 
 namespace epics { namespace pvCopy{ 
 

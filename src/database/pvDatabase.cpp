@@ -11,6 +11,10 @@
 
 #include <epicsGuard.h>
 #include <pv/pvStructureCopy.h>
+#include <pv/pvPlugin.h>
+#include <pv/pvArrayPlugin.h>
+#include <pv/pvTimestampPlugin.h>
+#include <pv/pvDeadbandPlugin.h>
 
 #define epicsExportSharedSymbols
 
@@ -18,6 +22,7 @@
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
+using namespace epics::pvCopy;
 using namespace std;
 
 namespace epics { namespace pvDatabase {
@@ -33,6 +38,8 @@ PVDatabasePtr PVDatabase::getMaster()
     if(getMasterFirstCall) {
         getMasterFirstCall = false;
         pvDatabaseMaster = PVDatabasePtr(new PVDatabase());
+        PVArrayPlugin::create();
+        PVTimestampPlugin::create();
     }    
     return pvDatabaseMaster;
 }
