@@ -10,6 +10,7 @@
  */
 
 #include <epicsGuard.h>
+#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
 
