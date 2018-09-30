@@ -34,8 +34,12 @@ PVArrayPlugin::~PVArrayPlugin()
 
 void PVArrayPlugin::create()
 {
-     PVArrayPluginPtr pvPlugin = PVArrayPluginPtr(new PVArrayPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVArrayPluginPtr pvPlugin = PVArrayPluginPtr(new PVArrayPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+    }
 }
 
 PVFilterPtr PVArrayPlugin::create(

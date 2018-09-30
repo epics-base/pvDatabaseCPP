@@ -31,15 +31,15 @@ namespace epics { namespace pvDatabase {
 
 static PVDatabasePtr pvDatabaseMaster;
 
-bool PVDatabase::getMasterFirstCall = true;
-
 PVDatabasePtr PVDatabase::getMaster()
 {
-    if(getMasterFirstCall) {
-        getMasterFirstCall = false;
+    static bool firstTime = true;
+    if(firstTime) {
+        firstTime = false;
         pvDatabaseMaster = PVDatabasePtr(new PVDatabase());
         PVArrayPlugin::create();
         PVTimestampPlugin::create();
+        PVDeadbandPlugin::create();
     }    
     return pvDatabaseMaster;
 }

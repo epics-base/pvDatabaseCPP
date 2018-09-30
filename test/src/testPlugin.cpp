@@ -30,6 +30,7 @@
 #include <pv/channelProviderLocal.h>
 #include <pv/convert.h>
 #include <pv/pvStructureCopy.h>
+#include <pv/pvDatabase.h>
 #define epicsExportSharedSymbols
 #include "powerSupply.h"
 
@@ -267,6 +268,7 @@ static void ignoreTest()
 MAIN(testPlugin)
 {
     testPlan(22);
+    PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     deadbandTest();
     arrayTest();
     timeStampTest();

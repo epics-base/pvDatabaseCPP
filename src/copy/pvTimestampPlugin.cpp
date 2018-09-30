@@ -34,8 +34,12 @@ PVTimestampPlugin::~PVTimestampPlugin()
 
 void PVTimestampPlugin::create()
 {
-     PVTimestampPluginPtr pvPlugin = PVTimestampPluginPtr(new PVTimestampPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVTimestampPluginPtr pvPlugin = PVTimestampPluginPtr(new PVTimestampPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+     }
 }
 
 PVFilterPtr PVTimestampPlugin::create(

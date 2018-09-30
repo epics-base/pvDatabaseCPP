@@ -34,8 +34,12 @@ PVDeadbandPlugin::~PVDeadbandPlugin()
 
 void PVDeadbandPlugin::create()
 {
-     PVDeadbandPluginPtr pvPlugin = PVDeadbandPluginPtr(new PVDeadbandPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVDeadbandPluginPtr pvPlugin = PVDeadbandPluginPtr(new PVDeadbandPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+     }
 }
 
 PVFilterPtr PVDeadbandPlugin::create(

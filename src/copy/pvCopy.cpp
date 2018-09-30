@@ -16,9 +16,9 @@
 #include <pv/bitSet.h>
 #include <pv/thread.h>
 
+#include <pv/pvPlugin.h>
 #define epicsExportSharedSymbols
 #include <pv/pvStructureCopy.h>
-#include <pv/pvPlugin.h>
 
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
