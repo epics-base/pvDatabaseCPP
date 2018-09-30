@@ -17,6 +17,8 @@
 #include <pv/pvPlugin.h>
 #include <pv/pvTimeStamp.h>
 
+#include <shareLib.h>
+
 namespace epics { namespace pvCopy{
 
 class PVTimestampPlugin;
@@ -32,7 +34,7 @@ typedef std::tr1::shared_ptr<PVTimestampFilter> PVTimestampFilterPtr;
  * @author mrk
  * @since date 2017.03.24
  */
-class PVTimestampPlugin : public PVPlugin
+class epicsShareClass PVTimestampPlugin : public PVPlugin
 {
 private:
     PVTimestampPlugin();
@@ -60,7 +62,7 @@ public:
 /**
  * @brief  A filter that sets a timeStamp to the current time.
  */
-class PVTimestampFilter : public PVFilter
+class epicsShareClass PVTimestampFilter : public PVFilter
 {
 private:
     epics::pvData::PVTimeStamp pvTimeStamp;

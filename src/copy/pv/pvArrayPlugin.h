@@ -16,6 +16,8 @@
 #include <pv/pvData.h>
 #include <pv/pvPlugin.h>
 
+#include <shareLib.h>
+
 namespace epics { namespace pvCopy{
 
 class PVArrayPlugin;
@@ -31,7 +33,7 @@ typedef std::tr1::shared_ptr<PVArrayFilter> PVArrayFilterPtr;
  * @author mrk
  * @since date 2017.02.23
  */
-class PVArrayPlugin : public PVPlugin
+class epicsShareClass PVArrayPlugin : public PVPlugin
 {
 private:
     PVArrayPlugin();
@@ -59,7 +61,7 @@ public:
 /**
  * @brief  A filter that gets a sub array from a PVScalarArray.
  */
-class PVArrayFilter : public PVFilter
+class epicsShareClass PVArrayFilter : public PVFilter
 {
 private:
     long start;

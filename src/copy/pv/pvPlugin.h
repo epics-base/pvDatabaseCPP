@@ -18,6 +18,8 @@
 #include <pv/lock.h>
 #include <pv/pvStructureCopy.h>
 
+#include <shareLib.h>
+
 namespace epics { namespace pvCopy{ 
 
 class PVPlugin;

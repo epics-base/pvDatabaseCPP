@@ -16,6 +16,8 @@
 #include <pv/pvData.h>
 #include <pv/pvPlugin.h>
 
+#include <shareLib.h>
+
 namespace epics { namespace pvCopy{
 
 class PVDeadbandPlugin;
@@ -31,7 +33,7 @@ typedef std::tr1::shared_ptr<PVDeadbandFilter> PVDeadbandFilterPtr;
  * @author mrk
  * @since date 2017.02.23
  */
-class PVDeadbandPlugin : public PVPlugin
+class epicsShareClass PVDeadbandPlugin : public PVPlugin
 {
 private:
     PVDeadbandPlugin();
@@ -59,7 +61,7 @@ public:
 /**
  * @brief  A Plugin for a filter that gets a sub array from a PVScalarDeadband.
  */
-class PVDeadbandFilter : public PVFilter
+class epicsShareClass PVDeadbandFilter : public PVFilter
 {
 private:
     bool absolute;
