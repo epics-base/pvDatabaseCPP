@@ -9,6 +9,11 @@
  */
 #ifndef PVSTRUCTURECOPY_H
 #define PVSTRUCTURECOPY_H
+
+#if defined(_WIN32) && !defined(NOMINMAX)
+#define NOMINMAX
+#endif
+
 #include <string>
 #include <stdexcept>
 #include <memory>
