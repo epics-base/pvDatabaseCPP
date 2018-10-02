@@ -4,8 +4,8 @@
  */
 
 #include <pv/pvData.h>
-#include <pv/pvStructureCopy.h>
 #define epicsExportSharedSymbols
+#include <pv/pvStructureCopy.h>
 #include <pv/pvPlugin.h>
 
 using namespace epics::pvData;

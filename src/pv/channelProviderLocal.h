@@ -28,7 +28,7 @@
 #include <pv/pvAccess.h>
 #include <pv/status.h>
 #include <pv/serverContext.h>
-#include <pv/pvStructureCopy.h>
+
 
 #ifdef channelProviderLocalEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -37,6 +37,7 @@
 
 #include <shareLib.h>
 #include <pv/pvDatabase.h>
+#include <pv/pvStructureCopy.h>
 
 namespace epics { namespace pvDatabase { 
 

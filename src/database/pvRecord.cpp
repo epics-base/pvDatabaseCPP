@@ -11,11 +11,9 @@
 #include <epicsGuard.h>
 #include <epicsThread.h>
 
-#include <pv/pvStructureCopy.h>
-
 #define epicsExportSharedSymbols
-
 #include <pv/pvDatabase.h>
+#include <pv/pvStructureCopy.h>
 
 
 using std::tr1::static_pointer_cast;
