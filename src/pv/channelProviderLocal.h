@@ -29,14 +29,15 @@
 #include <pv/status.h>
 #include <pv/serverContext.h>
 
+
 #ifdef channelProviderLocalEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
 #	undef channelProviderLocalEpicsExportSharedSymbols
 #endif
 
 #include <shareLib.h>
-#include <pv/pvCopy.h>
 #include <pv/pvDatabase.h>
+#include <pv/pvStructureCopy.h>
 
 namespace epics { namespace pvDatabase { 
 

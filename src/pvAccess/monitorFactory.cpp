@@ -22,6 +22,7 @@
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace epics::pvCopy;
 using std::tr1::static_pointer_cast;
 using std::cout;
 using std::endl;

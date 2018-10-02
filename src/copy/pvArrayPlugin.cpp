@@ -19,7 +19,7 @@ using std::tr1::static_pointer_cast;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 static ConvertPtr convert = getConvert();
 static std::string name("array");
@@ -34,8 +34,12 @@ PVArrayPlugin::~PVArrayPlugin()
 
 void PVArrayPlugin::create()
 {
-     PVArrayPluginPtr pvPlugin = PVArrayPluginPtr(new PVArrayPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVArrayPluginPtr pvPlugin = PVArrayPluginPtr(new PVArrayPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+    }
 }
 
 PVFilterPtr PVArrayPlugin::create(

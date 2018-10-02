@@ -9,7 +9,7 @@
 
 #define epicsExportSharedSymbols
 #include <pv/pvTimestampPlugin.h>
-#include <pv/pvCopy.h>
+#include <pv/pvStructureCopy.h>
 
 using std::string;
 using std::size_t;
@@ -19,7 +19,7 @@ using std::tr1::static_pointer_cast;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 static ConvertPtr convert = getConvert();
 static std::string name("timestamp");
@@ -34,8 +34,12 @@ PVTimestampPlugin::~PVTimestampPlugin()
 
 void PVTimestampPlugin::create()
 {
-     PVTimestampPluginPtr pvPlugin = PVTimestampPluginPtr(new PVTimestampPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVTimestampPluginPtr pvPlugin = PVTimestampPluginPtr(new PVTimestampPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+     }
 }
 
 PVFilterPtr PVTimestampPlugin::create(

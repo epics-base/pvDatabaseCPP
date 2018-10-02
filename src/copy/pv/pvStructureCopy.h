@@ -1,4 +1,4 @@
-/* pvCopy.h */
+/* pvStructureCopy.h */
 /*
  * Copyright information and license terms for this software can be
  * found in the file LICENSE that is included with the distribution
@@ -7,18 +7,22 @@
  * @author Marty Kraimer
  * @date 2013.04
  */
-#ifndef PVCOPY_H
-#define PVCOPY_H
+#ifndef PVSTRUCTURECOPY_H
+#define PVSTRUCTURECOPY_H
+
+#if defined(_WIN32) && !defined(NOMINMAX)
+#define NOMINMAX
+#endif
+
 #include <string>
 #include <stdexcept>
 #include <memory>
-
-#include <shareLib.h>
-
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
 
-namespace epics { namespace pvDatabase{ 
+#include <shareLib.h>
+
+namespace epics { namespace pvCopy{ 
 
 class PVCopyTraverseMasterCallback;
 typedef std::tr1::shared_ptr<PVCopyTraverseMasterCallback> PVCopyTraverseMasterCallbackPtr;
@@ -27,6 +31,11 @@ typedef std::tr1::shared_ptr<PVCopyTraverseMasterCallback> PVCopyTraverseMasterC
  * @brief Callback for traversing master structure
  *
  * Must be implemented by code that creates pvCopy.
+ *
+ * This was originally name pvCopy.h and implemented in pvDataCPP
+ * When it was moved to pvDatabaseCPP it was renamed to prevent conflicts with
+ * the version in pvDataCPP.
+ * Also the namespace was changed from epics::pvData to epics::pvCopy
  */
 class epicsShareClass PVCopyTraverseMasterCallback
 {
@@ -235,4 +244,4 @@ private:
 
 }}
 
-#endif  /* PVCOPY_H */
+#endif  /* PVSTRUCTURECOPY_H */

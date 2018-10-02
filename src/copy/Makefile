@@ -2,7 +2,7 @@
 
 SRC_DIRS += $(PVDATABASE_SRC)/copy
 
-INC += pv/pvCopy.h
+INC += pv/pvStructureCopy.h
 INC += pv/pvPlugin.h
 INC += pv/pvArrayPlugin.h
 INC += pv/pvDeadbandPlugin.h

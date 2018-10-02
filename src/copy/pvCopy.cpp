@@ -17,10 +17,8 @@
 #include <pv/thread.h>
 
 #define epicsExportSharedSymbols
-#include <pv/pvCopy.h>
-#include <pv/pvArrayPlugin.h>
-#include <pv/pvTimestampPlugin.h>
-#include <pv/pvDeadbandPlugin.h>
+#include <pv/pvPlugin.h>
+#include <pv/pvStructureCopy.h>
 
 using std::tr1::static_pointer_cast;
 using std::tr1::dynamic_pointer_cast;
@@ -31,7 +29,7 @@ using std::endl;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvCopy { 
 
 /**
  * Convenience method for implementing dump.
@@ -77,13 +75,6 @@ PVCopyPtr PVCopy::create(
     PVStructurePtr const &pvRequest, 
     string const & structureName)
 {
-    static bool firstTime = true;
-    if(firstTime) {
-         firstTime = false;
-         PVArrayPlugin::create();
-         PVTimestampPlugin::create();
-         PVDeadbandPlugin::create();
-    }
     PVStructurePtr pvStructure(pvRequest);
     if(structureName.size()>0) {
         if(pvStructure->getStructure()->getNumberFields()>0) {

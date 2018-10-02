@@ -5,11 +5,12 @@
 
 #include <pv/pvData.h>
 #define epicsExportSharedSymbols
+#include <pv/pvStructureCopy.h>
 #include <pv/pvPlugin.h>
 
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{ 
+namespace epics { namespace pvCopy{ 
 
 typedef std::map<std::string,PVPluginPtr> PVPluginMap;
 

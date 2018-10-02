@@ -22,6 +22,7 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/pvAlarm.h>
 #include <pv/pvDatabase.h>
+#include <pv/pvStructureCopy.h>
 
 #ifdef listenerEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -87,7 +88,7 @@ public:
 private:
     Listener(PVRecordPtr const & pvRecord)
     : pvCopy(
-          PVCopy::create(
+          epics::pvCopy::PVCopy::create(
               getPVDataCreate()->createPVStructure(
                   pvRecord->getPVRecordStructure()->getPVStructure()),
               CreateRequest::create()->createRequest(""),
@@ -96,7 +97,7 @@ private:
           recordName(pvRecord->getRecordName())
     {
     }
-    PVCopyPtr pvCopy;
+    epics::pvCopy::PVCopyPtr pvCopy;
     PVStructurePtr pvStructure;
     string recordName;
 };

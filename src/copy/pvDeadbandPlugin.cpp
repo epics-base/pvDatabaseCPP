@@ -19,7 +19,7 @@ using std::tr1::static_pointer_cast;
 using std::vector;
 using namespace epics::pvData;
 
-namespace epics { namespace pvDatabase{
+namespace epics { namespace pvCopy{
 
 static ConvertPtr convert = getConvert();
 static std::string name("deadband");
@@ -34,8 +34,12 @@ PVDeadbandPlugin::~PVDeadbandPlugin()
 
 void PVDeadbandPlugin::create()
 {
-     PVDeadbandPluginPtr pvPlugin = PVDeadbandPluginPtr(new PVDeadbandPlugin());
-     PVPluginRegistry::registerPlugin(name,pvPlugin);
+     static bool firstTime = true;
+     if(firstTime) {
+         firstTime = false;
+         PVDeadbandPluginPtr pvPlugin = PVDeadbandPluginPtr(new PVDeadbandPlugin());
+         PVPluginRegistry::registerPlugin(name,pvPlugin);
+     }
 }
 
 PVFilterPtr PVDeadbandPlugin::create(

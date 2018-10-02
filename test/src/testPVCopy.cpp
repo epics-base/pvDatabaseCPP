@@ -37,6 +37,7 @@ using namespace std;
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace epics::pvCopy;
 using namespace epics::pvDatabase;
 
 static bool debug = false;

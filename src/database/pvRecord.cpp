@@ -12,12 +12,13 @@
 #include <epicsThread.h>
 
 #define epicsExportSharedSymbols
-
 #include <pv/pvDatabase.h>
+#include <pv/pvStructureCopy.h>
 
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
+using namespace epics::pvDatabase;
 using namespace std;
 
 namespace epics { namespace pvDatabase {
@@ -236,7 +237,7 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
 
 bool PVRecord::addListener(
     PVListenerPtr const & pvListener,
-    PVCopyPtr const & pvCopy)
+    epics::pvCopy::PVCopyPtr const & pvCopy)
 {
     if(traceLevel>1) {
         cout << "PVRecord::addListener() " << recordName << endl;
@@ -267,7 +268,7 @@ void PVRecord::nextMasterPVField(PVFieldPtr const & pvField)
 
 bool PVRecord::removeListener(
     PVListenerPtr const & pvListener,
-    PVCopyPtr const & pvCopy)
+    epics::pvCopy::PVCopyPtr const & pvCopy)
 {
     if(traceLevel>1) {
         cout << "PVRecord::removeListener() " << recordName << endl;

@@ -15,10 +15,10 @@ INC += pv/pvDatabase.h
 INC += pv/traceRecord.h
 INC += pv/removeRecord.h
 
+include $(PVDATABASE_SRC)/copy/Makefile
 include $(PVDATABASE_SRC)/database/Makefile
 include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
-include $(PVDATABASE_SRC)/copy/Makefile
 
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)

@@ -16,9 +16,11 @@
 #include <string>
 #include <map>
 #include <pv/lock.h>
-#include <pv/pvCopy.h>
+#include <pv/pvStructureCopy.h>
 
-namespace epics { namespace pvDatabase{ 
+#include <shareLib.h>
+
+namespace epics { namespace pvCopy{ 
 
 class PVPlugin;
 class PVFilter;
