@@ -234,7 +234,7 @@ PVStructurePtr PVCopy::getOptions(std::size_t fieldOffset)
         if(!node->isStructure) return NULLPVStructure;
         CopyStructureNodePtr structNode = static_pointer_cast<CopyStructureNode>(node);
         CopyNodePtrArrayPtr nodes = structNode->nodes;
-        boolean okToContinue = false;
+        bool okToContinue = false;
         for(size_t i=0; i< nodes->size(); i++) {
             node = (*nodes)[i];
             size_t soff = node->structureOffset;
