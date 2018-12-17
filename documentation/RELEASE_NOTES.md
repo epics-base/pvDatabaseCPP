@@ -1,25 +1,31 @@
-LATEST
-======
+# pvDatabaseCPP Module
+
+This document summarizes the changes to the module between releases.
+
+
+## Release 4.4 (EPICS 7.0.2, Dec 2018)
 
 * pvCopy is now implemented in pvDatabaseCPP. The version in pvDatacPP can be deprecated.
 * plugin support is implemented.
 
-EPICS V4 release 4.6
-====================
+
+## Release 4.3 (EPICS 7.0.1, Dec 2017)
+
+* Updates for pvAccess API and build system changes.
+
+
+## Release 4.2 (EPICS V4.6, Aug 2016)
 
 * The examples are moved to exampleCPP
 * Support for channelRPC is now available.
 * removeRecord and traceRecord are now available.
 
-The test is now a regression test the can be ran via
+The test is now a regression test which can be run using:
 
      make runtests
 
 
-EPICS V4 release 4.5
-====================
-
-This release is one component of EPICS V4 release 4.5.
+## Release 4.1 (EPICS V4.5, Oct 2015)
 
 This is the first release of pvDatabaseCPP.
 
