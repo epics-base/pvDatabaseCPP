@@ -135,10 +135,10 @@ class MonitorLocal :
 public:
     POINTER_DEFINITIONS(MonitorLocal);
     virtual ~MonitorLocal();
+    virtual void destroy() {} // DEPRECATED
     virtual Status start();
     virtual Status stop();
     virtual MonitorElementPtr poll();
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual void detach(PVRecordPtr const & pvRecord){}
     virtual void release(MonitorElementPtr const & monitorElement);
     virtual void dataPut(PVRecordFieldPtr const & pvRecordField);

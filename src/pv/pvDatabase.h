@@ -98,18 +98,9 @@ public:
      */
     virtual void process();
     /**
-     *  @brief Destroy the record.
-     *
-     * Destroy the PVRecord. Release any resources used and 
-     *  get rid of listeners and requesters.
-     *  If derived class overrides this then it must call PVRecord::destroy()
-     *  after it has destroyed any resorces it uses.
-     *
-     * Note: for most classes destroy no longer exists or has been deprecated.
-     *  This method makes it possible to remove a record from a database
-     *  while the database is still running.
+     *  @brief DEPRECATED
      */
-    virtual void destroy();
+    virtual void destroy() {}
     /**
      *  @brief Optional method for derived class.
      *
@@ -276,7 +267,6 @@ private:
     epics::pvData::Mutex mutex;
     std::size_t depthGroupPut;
     int traceLevel;
-    bool isDestroyed;
     // following only valid while addListener or removeListener is active.
     bool isAddListener;
     PVListenerWPtr pvListener;

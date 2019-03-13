@@ -42,7 +42,6 @@ PVRecord::PVRecord(
   pvStructure(pvStructure),
   depthGroupPut(0),
   traceLevel(0),
-  isDestroyed(false),
   isAddListener(false)
 {
 }
@@ -53,13 +52,8 @@ void PVRecord::notifyClients()
         epicsGuard<epics::pvData::Mutex> guard(mutex);
         if(traceLevel>0) {
             cout << "PVRecord::notifyClients() " << recordName 
-                 << " isDestroyed " << (isDestroyed ? "true" : "false")
                  << endl;
         }
-        if(isDestroyed) {
-            return;
-        }
-        isDestroyed = true;
     }
     pvTimeStamp.detach();
     for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
@@ -113,13 +107,6 @@ void PVRecord::initPVRecord()
     pvRecordStructure->init();
     PVFieldPtr pvField = pvStructure->getSubField("timeStamp");
     if(pvField) pvTimeStamp.attach(pvField);
-}
-
-void PVRecord::destroy()
-{
-    PVDatabasePtr pvDatabase(PVDatabase::getMaster());
-    if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
-    notifyClients();
 }
 
 void PVRecord::process()
@@ -207,9 +194,6 @@ bool PVRecord::addPVRecordClient(PVRecordClientPtr const & pvRecordClient)
         cout << "PVRecord::addPVRecordClient() " << recordName << endl;
     }
     epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
-    }
     // clean clientList
     bool clientListClean = false;
     while(!clientListClean) {
@@ -243,9 +227,6 @@ bool PVRecord::addListener(
         cout << "PVRecord::addListener() " << recordName << endl;
     }
     epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
-    }
     pvListenerList.push_back(pvListener);
     this->pvListener = pvListener;
     isAddListener = true;
@@ -274,9 +255,6 @@ bool PVRecord::removeListener(
         cout << "PVRecord::removeListener() " << recordName << endl;
     }
     epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(isDestroyed) {
-        return false;
-    }
     std::list<PVListenerWPtr>::iterator iter;
     for (iter = pvListenerList.begin(); iter!=pvListenerList.end(); iter++ )
     {

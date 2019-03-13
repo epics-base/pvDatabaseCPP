@@ -71,13 +71,13 @@ class ChannelProcessLocal :
 public:
     POINTER_DEFINITIONS(ChannelProcessLocal);
     virtual ~ChannelProcessLocal();
+    virtual void destroy() {} // DEPRECATED
     static ChannelProcessLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void process();
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel();
     virtual void cancel(){}
     virtual void lock();
@@ -204,13 +204,13 @@ class ChannelGetLocal :
 public:
     POINTER_DEFINITIONS(ChannelGetLocal);
     virtual ~ChannelGetLocal();
+    virtual void destroy() {} // DEPRECATED
     static ChannelGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelGetRequester::shared_pointer const & channelGetRequester,
         PVStructurePtr const & pvRequest,
         PVRecordPtr const &pvRecord);
     virtual void get();
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel();
     virtual void cancel(){}
     virtual void lock();
@@ -378,6 +378,7 @@ class ChannelPutLocal :
 public:
     POINTER_DEFINITIONS(ChannelPutLocal);
     virtual ~ChannelPutLocal();
+    virtual void destroy() {} // DEPRECATED
     static ChannelPutLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutRequester::shared_pointer const & channelPutRequester,
@@ -385,7 +386,6 @@ public:
         PVRecordPtr const &pvRecord);
     virtual void put(PVStructurePtr const &pvStructure,BitSetPtr const &bitSet);
     virtual void get();
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel();
     virtual void cancel(){}
     virtual void lock();
@@ -551,6 +551,7 @@ class ChannelPutGetLocal :
 public:
     POINTER_DEFINITIONS(ChannelPutGetLocal);
     virtual ~ChannelPutGetLocal();
+    virtual void destroy() {} // DEPRECATED
     static ChannelPutGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
@@ -561,7 +562,6 @@ public:
         BitSetPtr const &putBitSet);
     virtual void getPut();
     virtual void getGet();
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel();
     virtual void cancel(){}
     virtual void lock();
@@ -769,6 +769,7 @@ class ChannelRPCLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelRPCLocal);
+    virtual void destroy() {} // DEPRECATED
     static ChannelRPCLocalPtr create(
         ChannelLocalPtr const & channelLocal,
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
@@ -805,7 +806,6 @@ public:
     virtual void request(PVStructurePtr const & pvArgument);
     virtual Channel::shared_pointer getChannel();
     virtual void cancel() {}
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual void lock() {}
     virtual void unlock() {}
     virtual void lastRequest() {}
@@ -964,6 +964,7 @@ class ChannelArrayLocal :
 public:
     POINTER_DEFINITIONS(ChannelArrayLocal);
     virtual ~ChannelArrayLocal();
+    virtual void destroy() {} // DEPRECATED
     static ChannelArrayLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelArrayRequester::shared_pointer const & channelArrayRequester,
@@ -975,7 +976,6 @@ public:
          size_t offset, size_t count, size_t stride);
     virtual void getLength();
     virtual void setLength(size_t length);
-    virtual void destroy() EPICS_DEPRECATED {};
     virtual std::tr1::shared_ptr<Channel> getChannel();
     virtual void cancel(){}
     virtual void lock();
@@ -1151,7 +1151,7 @@ void ChannelArrayLocal::getArray(size_t offset, size_t count, size_t stride)
             pvCopy->setLength(count);
             copy(pvArray,offset,stride,pvCopy,0,1,count);
         }
-    } catch(std::exception e) {
+    } catch(std::exception& e) {
         exceptionMessage = e.what();
     }
     Status status = Status::Ok;
@@ -1178,7 +1178,7 @@ void ChannelArrayLocal::putArray(
     try {
         epicsGuard <PVRecord> guard(*pvr);
         copy(pvArray,0,1,this->pvArray,offset,stride,count);
-    } catch(std::exception e) {
+    } catch(std::exception& e) {
         exceptionMessage = e.what();
     }
     Status status = Status::Ok;
@@ -1199,7 +1199,7 @@ void ChannelArrayLocal::getLength()
     try {
         epicsGuard <PVRecord> guard(*pvr);
         length = pvArray->getLength();
-    } catch(std::exception e) {
+    } catch(std::exception& e) {
         exceptionMessage = e.what();
     }
     Status status = Status::Ok;
@@ -1225,7 +1225,7 @@ void ChannelArrayLocal::setLength(size_t length)
              if(pvArray->getLength()!=length) pvArray->setLength(length);
          }
          requester->setLengthDone(Status::Ok,getPtrSelf());
-    } catch(std::exception e) {
+    } catch(std::exception& e) {
         string exceptionMessage = e.what();
         Status status = Status(Status::STATUSTYPE_ERROR,exceptionMessage);
         requester->setLengthDone(status,getPtrSelf());
