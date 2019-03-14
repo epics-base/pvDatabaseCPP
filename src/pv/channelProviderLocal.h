@@ -78,10 +78,10 @@ public:
      */
     virtual ~ChannelProviderLocal();
     /**
-     * @brief Destroy the channel provider.
+     * @brief DEPRECATED
      *
      */
-    virtual void destroy() EPICS_DEPRECATED {};
+    virtual void destroy(){};
     /**
      * @brief Returns the channel provider name.
      *
@@ -202,10 +202,10 @@ public:
      */
     virtual ~ChannelLocal();
     /** 
-     * @brief Destroy the channel.
+     * @brief DEPRECATED
      *
      */
-    virtual void destroy() EPICS_DEPRECATED {};
+    virtual void destroy() {};
     /** 
      * @brief Detach from the record.
      *
