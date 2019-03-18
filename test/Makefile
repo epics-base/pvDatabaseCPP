@@ -23,7 +23,7 @@ TESTSPEC_vxWorks = pvDbTestHarness.$(MUNCH_SUFFIX); pvDatabaseAllTests
 
 # Build for RTEMS, with harness code & configuration
 PROD_RTEMS += pvDbTestHarness
-pvDbTestHarness_SRCS_RTEMS += rtemsTestHarness.c rtemsConfig.c
+pvDbTestHarness_SRCS_RTEMS += rtemsTestHarness.c
 TESTSPEC_RTEMS = pvDbTestHarness.$(MUNCH_SUFFIX); pvDatabaseAllTests
 
 # Build test scripts for hosts
