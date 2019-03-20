@@ -2,6 +2,11 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.4.1 (EPICS 7.0.2.1, Mar 2019)
+
+* Cleaned up some build warnings.
+* RTEMS test harness simplified.
+
 
 ## Release 4.4 (EPICS 7.0.2, Dec 2018)
 
