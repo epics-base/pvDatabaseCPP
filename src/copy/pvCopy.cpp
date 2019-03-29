@@ -492,11 +492,43 @@ CopyNodePtr PVCopy::createStructureNodes(
         size_t numberRequest = requestPVStructure->getPVFields().size();
         if(pvSubFieldOptions) numberRequest--;
         if(numberRequest>0) {
-            nodes->push_back(createStructureNodes(
-                static_pointer_cast<PVStructure>(pvMasterField),
-                requestPVStructure,
-                static_pointer_cast<PVStructure>(copyPVField)));
-            continue;
+            Type copyType = copyPVField->getField()->getType();
+            if(copyType==epics::pvData::structure) {
+                nodes->push_back(createStructureNodes(
+                    static_pointer_cast<PVStructure>(pvMasterField),
+                    requestPVStructure,
+                    static_pointer_cast<PVStructure>(copyPVField)));
+                continue;
+            }
+            if(numberRequest!=1) {
+                 string val("requested field ");
+                 val += fieldName + " does not have type structure";
+                 throw std::logic_error(val);
+            }
+            if(copyType==epics::pvData::union_) {
+                 PVUnionPtr pvUnion = static_pointer_cast<PVUnion>(pvMasterField);
+                 std::string selectedName = pvUnion->getSelectedFieldName();
+                 PVFieldPtrArray const & pvFields = requestPVStructure->getPVFields();
+                 size_t len = pvFields.size();
+                 if(len!=1) {
+                      string val("field ");
+                      val += fieldName + " logic error on pvdatabase copy";
+                      throw std::logic_error(val);
+                 }
+                 PVFieldPtr pvRequestValue = pvFields[0];
+                 if(pvRequestValue) {
+                     string requestName = pvRequestValue->getFieldName();
+                     if(requestName.compare(selectedName)!=0) {
+                         string val("field ");
+                         val += requestName + " does not match union type";
+                         throw std::logic_error(val);
+                     }
+                 }
+            } else {
+                 string val("requested field ");
+                 val += fieldName + " does not have type structure";
+                 throw std::logic_error(val);
+            }
         }
         CopyNodePtr node(new CopyNode());
         node->options = pvSubFieldOptions;
