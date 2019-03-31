@@ -464,7 +464,13 @@ StructureConstPtr PVCopy::createStructure(
         fields.push_back(field);
     }
     size_t numsubfields = fields.size();
-    if(numsubfields==0) return NULLStructure;
+    if(numsubfields==0) {
+         std::stringstream ss;
+         ss << pvFromRequest << "\n";
+         string val("a requested field was not found in\n");
+         val += ss.str();
+         throw std::invalid_argument(val);
+    }
     return getFieldCreate()->createStructure(fieldNames, fields);
 }
 
@@ -500,34 +506,45 @@ CopyNodePtr PVCopy::createStructureNodes(
                     static_pointer_cast<PVStructure>(copyPVField)));
                 continue;
             }
-            if(numberRequest!=1) {
-                 string val("requested field ");
-                 val += fieldName + " does not have type structure";
-                 throw std::logic_error(val);
-            }
             if(copyType==epics::pvData::union_) {
+                 if(numberRequest!=1) {
+                     std::stringstream ss;
+                     ss << pvFromRequest << "\n";
+                     string val("union field has more than one subfield in\n");
+                     val += ss.str();
+                     throw std::logic_error(val);
+                 }
                  PVUnionPtr pvUnion = static_pointer_cast<PVUnion>(pvMasterField);
                  std::string selectedName = pvUnion->getSelectedFieldName();
                  PVFieldPtrArray const & pvFields = requestPVStructure->getPVFields();
                  size_t len = pvFields.size();
                  if(len!=1) {
-                      string val("field ");
-                      val += fieldName + " logic error on pvdatabase copy";
-                      throw std::logic_error(val);
+                      std::stringstream ss;
+                      ss << pvFromRequest << "\n";
+                      string val("subfield of union has more than one subfield in\n");
+                      val += ss.str();
+                      throw std::invalid_argument(val);
                  }
                  PVFieldPtr pvRequestValue = pvFields[0];
                  if(pvRequestValue) {
                      string requestName = pvRequestValue->getFieldName();
                      if(requestName.compare(selectedName)!=0) {
+                         std::stringstream ss;
+                         ss << pvFromRequest << "\n";
+                         string requestName = pvRequestValue->getFieldName();
                          string val("field ");
-                         val += requestName + " does not match union type";
-                         throw std::logic_error(val);
+                         val += requestName + " does not match union type in\n";
+                         val += ss.str();
+                         throw std::invalid_argument(val);
                      }
                  }
             } else {
+                 std::stringstream ss;
+                 ss << pvFromRequest << "\n";
                  string val("requested field ");
-                 val += fieldName + " does not have type structure";
-                 throw std::logic_error(val);
+                 val += fieldName + " does not have type structure in\n";
+                 val += ss.str();
+                 throw std::invalid_argument(val);
             }
         }
         CopyNodePtr node(new CopyNode());
