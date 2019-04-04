@@ -168,7 +168,7 @@ PVFieldPtr PVCopy::getMasterPVField(size_t structureOffset)
         node = getMasterNode(snode,structureOffset);
     }
     if(!node) {
-        throw std::invalid_argument(
+        throw std::logic_error(
             "PVCopy::getMasterPVField: structureOffset not valid");
     }
     size_t diff = structureOffset - node->structureOffset;
@@ -248,7 +248,7 @@ PVStructurePtr PVCopy::getOptions(std::size_t fieldOffset)
             }
         }
         if(okToContinue) continue;
-        throw std::invalid_argument("fieldOffset not valid");
+        throw std::logic_error("PVCopy logic error: fieldOffset not valid");
     }
 }
 
@@ -464,7 +464,13 @@ StructureConstPtr PVCopy::createStructure(
         fields.push_back(field);
     }
     size_t numsubfields = fields.size();
-    if(numsubfields==0) return NULLStructure;
+    if(numsubfields==0) {
+         std::stringstream ss;
+         ss << pvFromRequest << "\n";
+         string val("no fields from the following request were found\n");
+         val += ss.str();
+         throw std::invalid_argument(val);
+    }
     return getFieldCreate()->createStructure(fieldNames, fields);
 }
 
@@ -487,16 +493,65 @@ CopyNodePtr PVCopy::createStructureNodes(
             requestPVStructure->getSubField<PVStructure>("_options");
         PVFieldPtr pvMasterField = pvMasterStructure->getSubField(fieldName);
         if(!pvMasterField) {
-              throw std::logic_error("did not find field in master");
+              throw std::logic_error("PVCopy logic error: did not find field in master");
         }
         size_t numberRequest = requestPVStructure->getPVFields().size();
-        if(pvSubFieldOptions) numberRequest--;
+        bool haveOptions = false;
+        if(pvSubFieldOptions) {
+             numberRequest--;
+             haveOptions = true;
+        }
         if(numberRequest>0) {
-            nodes->push_back(createStructureNodes(
-                static_pointer_cast<PVStructure>(pvMasterField),
-                requestPVStructure,
-                static_pointer_cast<PVStructure>(copyPVField)));
-            continue;
+            Type copyType = copyPVField->getField()->getType();
+            if(copyType==epics::pvData::structure) {
+                nodes->push_back(createStructureNodes(
+                    static_pointer_cast<PVStructure>(pvMasterField),
+                    requestPVStructure,
+                    static_pointer_cast<PVStructure>(copyPVField)));
+                continue;
+            }
+            if(copyType==epics::pvData::union_) {
+                 if(numberRequest!=1) {
+                     std::stringstream ss;
+                     ss << pvFromRequest << "\n";
+                     string val("In the following request a union field has more than one subfield in\n");
+                     val += ss.str();
+                     throw std::invalid_argument(val);
+                 }
+                 PVUnionPtr pvUnion = static_pointer_cast<PVUnion>(pvMasterField);
+                 std::string selectedName = pvUnion->getSelectedFieldName();
+                 PVFieldPtrArray const & pvFields = requestPVStructure->getPVFields();
+                 size_t len = pvFields.size();
+                 if(len>2 || (haveOptions && len!=2)) {
+                      std::stringstream ss;
+                      ss << pvFromRequest << "\n";
+                      string val("PVCopy logic error: pvRequest is\n");
+                      val += ss.str();
+                      throw std::logic_error(val);
+                 }
+                 size_t indRequestValue = 0;
+                 if((pvFields[0]->getFieldName().compare("_options"))==0) indRequestValue = 1;
+                 PVFieldPtr pvRequestValue = pvFields[indRequestValue];
+                 if(pvRequestValue) {
+                     string requestName = pvRequestValue->getFieldName();
+                     if(requestName.compare(selectedName)!=0) {
+                         std::stringstream ss;
+                         ss << pvFromCopy << "\n";
+                         string requestName = pvRequestValue->getFieldName();
+                         string val("field ");
+                         val += requestName + " does not match union type in\n";
+                         val += ss.str();
+                         throw std::invalid_argument(val);
+                     }
+                 }
+            } else {
+                 std::stringstream ss;
+                 ss << pvFromCopy << "\n";
+                 string val("requested a subfield of field ");
+                 val += fieldName + " which does not have type structure in\n";
+                 val += ss.str();
+                 throw std::invalid_argument(val);
+            }
         }
         CopyNodePtr node(new CopyNode());
         node->options = pvSubFieldOptions;
