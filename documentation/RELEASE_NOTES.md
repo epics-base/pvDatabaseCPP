@@ -2,6 +2,19 @@
 
 This document summarizes the changes to the module between releases.
 
+## release (EPICS 7.0.2.2 April 2019)
+
+Formerly if a client makes a request for a subfield of a non structure field
+it resulted in a crash.
+
+Now if a request is made for a subfield of a non structure field
+
+1) if the field is not a union an exception is thrown which is passed to the client.
+2) if the field is a union
+    a) if more than one subfield is requested an exception is thrown 
+    b) if the subfield is the type for the current union the request succeeds
+    c) if type is not the same an exception is thrown
+
 ## Release 4.4.1 (EPICS 7.0.2.1, Mar 2019)
 
 * Cleaned up some build warnings.
