@@ -2,7 +2,7 @@
 
 This document summarizes the changes to the module between releases.
 
-## release (EPICS 7.0.2.2 April 2019)
+## Release 4.4.2 (EPICS 7.0.2.2, Apr 2019)
 
 Formerly if a client makes a request for a subfield of a non structure field
 it resulted in a crash.
@@ -48,5 +48,3 @@ The test is now a regression test which can be run using:
 This is the first release of pvDatabaseCPP.
 
 It provides functionality equivalent to pvDatabaseJava.
-
-
