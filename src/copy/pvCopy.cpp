@@ -259,8 +259,6 @@ CopyNodePtr PVCopy::getCopyNode(std::size_t fieldOffset)
     if(fieldOffset==0) return headNode;
     CopyNodePtr node = headNode;
     while(true) {
-        size_t soff = node->structureOffset;
-        if(fieldOffset>=soff && fieldOffset<soff+node->nfields) return node;
         if(!node->isStructure) return node;
         CopyStructureNodePtr structNode = static_pointer_cast<CopyStructureNode>(node);
         CopyNodePtrArrayPtr nodes = structNode->nodes;
