@@ -212,19 +212,93 @@ bool PVCopy::updateCopyFromBitSet(
     return checkIgnore(copyPVStructure,bitSet);
 }
 
+void PVCopy::updateMasterField(
+     CopyNodePtr const & node,
+     PVFieldPtr const & pvCopy,
+     PVFieldPtr const &pvMaster,
+     BitSetPtr const  &bitSet)
+{
+    bool result = false;
+    for(size_t i=0; i< node->pvFilters.size(); ++i) {
+        PVFilterPtr pvFilter = node->pvFilters[i];
+        if(pvFilter->filter(pvCopy,bitSet,false)) result = true;
+    }
+    if(result) return;
+    pvMaster->copyUnchecked(*pvCopy);
+}
+
+void PVCopy::updateMasterCheckBitSet(
+    PVStructurePtr const  &copyPVStructure,
+    BitSetPtr const  &bitSet,
+    size_t nextSet)
+{
+    if(!bitSet->get(nextSet)) {
+        size_t next = bitSet->nextSetBit(nextSet);
+        if(next==string::npos) return;
+        updateMasterCheckBitSet(copyPVStructure,bitSet,next);
+        return;
+    }
+    PVFieldPtr pvField = copyPVStructure;
+    if(nextSet!=0) pvField = copyPVStructure->getSubField(nextSet);
+    if(pvField->getField()->getType()==epics::pvData::structure) {
+        bitSet->clear(nextSet);
+        PVStructurePtr pv = static_pointer_cast<PVStructure>(pvField);
+        PVFieldPtrArray pvFieldArray = pv->getPVFields();
+        for(size_t i=0; i>pvFieldArray.size(); ++i) {
+            PVFieldPtr pvField = pvFieldArray[i];
+            bitSet->set(pvField->getFieldOffset());
+        }
+    }
+    size_t next = bitSet->nextSetBit(nextSet+1);
+    if(next==string::npos) return;
+    updateMasterCheckBitSet(copyPVStructure,bitSet,next);
+}
+
+CopyNodePtr PVCopy::getCopyNode(std::size_t fieldOffset)
+{
+    if(fieldOffset==0) return headNode;
+    CopyNodePtr node = headNode;
+    while(true) {
+        size_t soff = node->structureOffset;
+        if(fieldOffset>=soff && fieldOffset<soff+node->nfields) return node;
+        if(!node->isStructure) return node;
+        CopyStructureNodePtr structNode = static_pointer_cast<CopyStructureNode>(node);
+        CopyNodePtrArrayPtr nodes = structNode->nodes;
+        bool okToContinue = false;
+        for(size_t i=0; i< nodes->size(); i++) {
+            node = (*nodes)[i];
+            size_t soff = node->structureOffset;
+            if(fieldOffset>=soff && fieldOffset<soff+node->nfields) {
+                okToContinue = true;
+                break;
+            }
+        }
+        if(okToContinue) continue;
+    }
+    throw std::logic_error("PVCopy::getCopyNode fieldOffset not valid");
+}
+
+
 void PVCopy::updateMaster(
     PVStructurePtr const  &copyPVStructure,
     BitSetPtr const  &bitSet)
 {
-    if(bitSet->get(0)) {
-        for(size_t i=0; i< copyPVStructure->getNumberFields(); ++i) {
-            bitSet->set(i,true);
+    updateMasterCheckBitSet(copyPVStructure,bitSet,0);
+    size_t nextSet =0;
+    while(true) {
+        nextSet = bitSet->nextSetBit(nextSet);
+        if(nextSet==string::npos) return;
+        PVFieldPtr pvCopy = copyPVStructure->getSubField(nextSet);
+        PVFieldPtr pvMaster = headNode->masterPVField;
+        if(pvMaster->getField()->getType()==epics::pvData::structure) {
+             PVStructurePtr pv = static_pointer_cast<PVStructure>(pvMaster);
+             pvMaster = pv->getSubField(pvCopy->getFullName());
         }
+        updateMasterField(getCopyNode(nextSet),pvCopy,pvMaster,bitSet);
+        bitSet->clear(nextSet);
     }
-    updateMaster(copyPVStructure,headNode,bitSet);
 }
-
-
+ 
 PVStructurePtr PVCopy::getOptions(std::size_t fieldOffset)
 {
     if(fieldOffset==0) return headNode->options;
@@ -248,7 +322,7 @@ PVStructurePtr PVCopy::getOptions(std::size_t fieldOffset)
             }
         }
         if(okToContinue) continue;
-        throw std::logic_error("PVCopy logic error: fieldOffset not valid");
+        throw std::logic_error("PVCopy::getOptions logic error: fieldOffset not valid");
     }
 }
 
@@ -347,36 +421,6 @@ void PVCopy::updateCopyFromBitSet(
     PVFieldPtrArray const & pvCopyFields = pvCopyStructure->getPVFields();
     for(size_t i=0; i<pvCopyFields.size(); ++i) {
         updateCopyFromBitSet(pvCopyFields[i],(*structureNode->nodes)[i],bitSet);
-    }
-}
-void PVCopy::updateMaster(
-    PVFieldPtr const & pvCopy,
-    CopyNodePtr const & node,
-    BitSetPtr const & bitSet)
-{
-    bool result = false;
-    bool update = bitSet->get(pvCopy->getFieldOffset());
-    if(update) {
-        for(size_t i=0; i< node->pvFilters.size(); ++i) {
-            PVFilterPtr pvFilter = node->pvFilters[i];
-            if(pvFilter->filter(pvCopy,bitSet,false)) result = true;
-        }
-    }
-    if(!node->isStructure) {
-        if(result) return;
-        PVFieldPtr pvMaster = node->masterPVField;
-        pvMaster->copy(*pvCopy);
-        return;
-    }
-    CopyStructureNodePtr structureNode = static_pointer_cast<CopyStructureNode>(node);
-    size_t offset = structureNode->structureOffset;
-    size_t nextSet = bitSet->nextSetBit(offset);
-    if(nextSet==string::npos) return;
-    if(offset>=pvCopy->getNextFieldOffset()) return;  
-    PVStructurePtr pvCopyStructure = static_pointer_cast<PVStructure>(pvCopy);
-    PVFieldPtrArray const & pvCopyFields = pvCopyStructure->getPVFields();
-    for(size_t i=0; i<pvCopyFields.size(); ++i) {
-        updateMaster(pvCopyFields[i],(*structureNode->nodes)[i],bitSet);
     }
 }
 
@@ -493,7 +537,7 @@ CopyNodePtr PVCopy::createStructureNodes(
             requestPVStructure->getSubField<PVStructure>("_options");
         PVFieldPtr pvMasterField = pvMasterStructure->getSubField(fieldName);
         if(!pvMasterField) {
-              throw std::logic_error("PVCopy logic error: did not find field in master");
+              throw std::logic_error("PVCopy::createStructureNodes did not find field in master");
         }
         size_t numberRequest = requestPVStructure->getPVFields().size();
         bool haveOptions = false;
