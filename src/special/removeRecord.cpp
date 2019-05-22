@@ -65,7 +65,7 @@ void RemoveRecord::process()
         pvResult->put(name + " not found");
         return;
     }
-    pvRecord->destroy();
+    pvRecord->remove();
     pvResult->put("success");
 }
 
