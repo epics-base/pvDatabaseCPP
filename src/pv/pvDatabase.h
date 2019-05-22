@@ -102,6 +102,15 @@ public:
      */
     virtual void destroy() {}
     /**
+     *  @brief remove record from database.
+     *
+     * Remove the PVRecord. Release any resources used and 
+     *  get rid of listeners and requesters.
+     *  If derived class overrides this then it must call PVRecord::remove()
+     *  after it has destroyed any resorces it uses.
+     */
+    virtual void remove();
+    /**
      *  @brief Optional method for derived class.
      *
      * Return a service corresponding to the specified request PVStructure.
