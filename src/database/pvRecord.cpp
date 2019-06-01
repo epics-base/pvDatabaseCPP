@@ -10,11 +10,12 @@
  */
 #include <epicsGuard.h>
 #include <epicsThread.h>
+#include <pv/convert.h>
+#include <pv/pvStructureCopy.h>
+#include <pv/pvData.h>
 
 #define epicsExportSharedSymbols
 #include <pv/pvDatabase.h>
-#include <pv/pvStructureCopy.h>
-
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
@@ -101,20 +102,6 @@ PVRecord::~PVRecord()
 
 void PVRecord::remove()
 {
-#ifdef XXX
-    {
-        epicsGuard<epics::pvData::Mutex> guard(mutex);
-        if(traceLevel>0) {
-            cout << "PVRecord::remove() " << recordName 
-                 << " isDestroyed " << (isDestroyed ? "true" : "false")
-                 << endl;
-        }
-        if(isDestroyed) {
-            return;
-        }
-        isDestroyed = true;
-    }
-#endif
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
     pvTimeStamp.detach();     
