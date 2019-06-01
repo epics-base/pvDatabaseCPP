@@ -14,6 +14,7 @@
 #include <shareLib.h>
 
 #include <pv/channelProviderLocal.h>
+#include <pv/controlSupport.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -54,15 +55,8 @@ private:
     NumericRecord(
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::PVScalarPtr pvValue;
-    epics::pvData::PVStructurePtr pvControl;
-    epics::pvData::PVStructurePtr pvValueAlarm;
-    epics::pvData::PVDoublePtr pvLimitLow;
-    epics::pvData::PVDoublePtr pvLimitHigh;
-    epics::pvData::PVDoublePtr pvMinStep;
-    double requestedValue;
-    double currentValue;
-    bool isMinStep;
+    ControlSupportPtr controlSupport;
+    epics::pvData::PVBooleanPtr pvReset;
 };
 
 }}
