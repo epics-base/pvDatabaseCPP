@@ -45,20 +45,22 @@ public:
      */
     virtual ~ControlSupport();
     /**
-     * @brief Optional  initialization method.
+     * @brief Connects to contol fields.
      *
-     * A derived method <b>Must</b> call initControlSupport.
+     * @param pvValue The field to support.
+     * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
-    virtual bool init();
+    virtual bool init(
+        epics::pvData::PVFieldPtr const & pvValue,
+        epics::pvData::PVFieldPtr const & pvSupport);
     /**
-     * @brief Optional method for derived class.
-     *
+     * @brief Honors control fields.
      *  
      */
     virtual void process();
     /**
-     *  @brief Optional method for derived class.
+     *  @brief If implementing minSteps it sets isMinStep to false.
      *
      */
     virtual void reset();

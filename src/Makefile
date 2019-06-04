@@ -17,6 +17,7 @@ INC += pv/removeRecord.h
 INC += pv/numericRecord.h
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
+INC += pv/scalarAlarmSupport.h
 include $(PVDATABASE_SRC)/copy/Makefile
 include $(PVDATABASE_SRC)/database/Makefile
 include $(PVDATABASE_SRC)/pvAccess/Makefile

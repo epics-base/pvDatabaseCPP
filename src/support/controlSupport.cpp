@@ -39,10 +39,8 @@ ControlSupport::ControlSupport(PVRecordPtr const & pvRecord)
    : pvRecord(pvRecord)
 {}
 
-bool ControlSupport::init()
+bool ControlSupport::init(PVFieldPtr const & pv,PVFieldPtr const & pvsup)
 {
-    PVStructurePtr pvStructure = pvRecord->getPVStructure();
-    PVFieldPtr pv(pvStructure->getSubField("value"));
     if(pv) {
          if(pv->getField()->getType()==epics::pvData::scalar) {
               ScalarConstPtr s = static_pointer_cast<const Scalar>(pv->getField());
@@ -56,14 +54,21 @@ bool ControlSupport::init()
         << " failed because not numeric scalar\n";
         return false;
     }
+    pvControl = static_pointer_cast<PVStructure>(pvsup);
+    if(pvControl) {
+       pvLimitLow = pvControl->getSubField<PVDouble>("limitLow");
+       pvLimitHigh = pvControl->getSubField<PVDouble>("limitHigh");
+       pvMinStep = pvControl->getSubField<PVDouble>("minStep");
+    }
+    if(!pvControl || !pvLimitLow || !pvLimitHigh || !pvMinStep) {
+        cout << "ControlSupport for record " << pvRecord->getRecordName()
+        << " failed because pvSupport not a valid control structure\n";
+        return false;
+    }
     ConvertPtr convert = getConvert();
     requestedValue = convert->toDouble(pvValue);
     currentValue = requestedValue;
     isMinStep = false;
-    pvControl = pvStructure->getSubField<PVStructure>("control");
-    pvLimitLow = pvControl->getSubField<PVDouble>("limitLow");
-    pvLimitHigh = pvControl->getSubField<PVDouble>("limitHigh");
-    pvMinStep = pvControl->getSubField<PVDouble>("minStep");
     return true;
 }
 
@@ -71,11 +76,6 @@ void ControlSupport::process()
 {
     ConvertPtr convert = getConvert();
     double value = convert->toDouble(pvValue);
-cout << "value " << value
-<< " requestedValue " << requestedValue
-<< " currentValue " << currentValue
-<< " isMinStep " << (isMinStep ? "true" : "false")
-<< "\n";
     if(value==requestedValue&&value==currentValue) return;
     if(!isMinStep) requestedValue = value;
     double limitLow = pvLimitLow->get();

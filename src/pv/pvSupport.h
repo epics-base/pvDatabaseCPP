@@ -51,10 +51,15 @@ public:
     /**
      * @brief Optional  initialization method.
      *
-     * A derived method <b>Must</b> call initPVSupport.
+     * Called after PVRecord is created but before record is installed into PVDatabase.
+     *
+     * @param pvValue The field to support.
+     * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
-    virtual bool init() {return true;}
+    virtual bool init(
+        epics::pvData::PVFieldPtr const & pvValue,
+        epics::pvData::PVFieldPtr const & pvSupport) {return true;}
     /**
      *  @brief Optional method for derived class.
      *
@@ -62,13 +67,10 @@ public:
      */
     virtual void start() {}
     /**
-     * @brief Optional method for derived class.
+     * @brief Virtual method for derived class.
      *
-     *  It is the method that makes a record smart.
-     *  If it encounters errors it should raise alarms and/or
-     *  call the <b>message</b> method provided by the base class.
-     *  If the pvStructure has a top level timeStamp,
-     *  the base class sets the timeStamp to the current time.
+     *  It is the method that implements support.
+     *  It is called each time the record is processed.
      */
     virtual void process() = 0;
     /**

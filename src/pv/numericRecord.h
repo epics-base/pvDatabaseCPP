@@ -15,6 +15,7 @@
 
 #include <pv/channelProviderLocal.h>
 #include <pv/controlSupport.h>
+#include <pv/scalarAlarmSupport.h>
 
 namespace epics { namespace pvDatabase { 
 
@@ -23,10 +24,10 @@ class NumericRecord;
 typedef std::tr1::shared_ptr<NumericRecord> NumericRecordPtr;
 
 /**
- * @brief support for control and valueAlarm for a numeric scalar record
+ * @brief support for control and scalarAlarm for a numeric scalar record
  *
  * This is support for a record with a top level field that has type scalar.
- * It provides support for control and valueAlarm
+ * It provides support for control and scalarAlarm
  */
 class epicsShareClass NumericRecord :
     public PVRecord
@@ -56,6 +57,7 @@ private:
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     ControlSupportPtr controlSupport;
+    ScalarAlarmSupportPtr scalarAlarmSupport;
     epics::pvData::PVBooleanPtr pvReset;
 };
 

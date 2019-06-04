@@ -12,6 +12,7 @@
 #include <pv/convert.h>
 #include <pv/standardField.h>
 #include <pv/controlSupport.h>
+#include <pv/scalarAlarmSupport.h>
 
 #define epicsExportSharedSymbols
 
@@ -42,7 +43,7 @@ NumericRecordPtr NumericRecord::create(
         add("timeStamp",standardField->timeStamp()) ->
         add("display",standardField->display()) ->
         add("control",standardField->control()) ->
-        add("valueAlarm",standardField->doubleAlarm()) ->
+        add("scalarAlarm",ScalarAlarmSupport::scalarAlarm()) ->
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
     NumericRecordPtr pvRecord(
@@ -62,8 +63,16 @@ bool NumericRecord::init()
 {
     initPVRecord();
     PVRecordPtr pvRecord = shared_from_this();
+    PVStructurePtr pvStructure(getPVStructure());
     controlSupport = ControlSupport::create(pvRecord);
-    bool result = controlSupport->init();
+    bool result = controlSupport->init(
+       pvStructure->getSubField("value"),pvStructure->getSubField("control"));
+    if(!result) return false;
+    scalarAlarmSupport = ScalarAlarmSupport::create(pvRecord);
+    result = scalarAlarmSupport->init(
+       pvStructure->getSubField("value"),
+       pvStructure->getSubField<PVStructure>("alarm"),
+       pvStructure->getSubField("scalarAlarm"));
     if(!result) return false;
     pvReset = getPVStructure()->getSubField<PVBoolean>("reset");
     return true;
@@ -74,8 +83,10 @@ void NumericRecord::process()
     if(pvReset->get()==true) {
         pvReset->put(false);
         controlSupport->reset();
+        scalarAlarmSupport->reset();
     } else {
         controlSupport->process();
+        scalarAlarmSupport->process();
     }
     PVRecord::process();
 }

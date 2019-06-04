@@ -3,3 +3,4 @@
 SRC_DIRS += $(PVDATABASE_SRC)/support
 
 LIBSRCS += controlSupport.cpp
+LIBSRCS += scalarAlarmSupport.cpp
