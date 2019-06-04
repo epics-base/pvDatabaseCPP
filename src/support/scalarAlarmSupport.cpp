@@ -115,23 +115,26 @@ void ScalarAlarmSupport::process()
     double hysteresis = pvHysteresis->get();
     int alarmRange = range_Normal;
     if(highAlarmLimit>lowAlarmLimit) {
-         if(value>=highAlarmLimit) {
+         if(value>=highAlarmLimit
+         ||(prevAlarmRange==range_Hihi && value>=highAlarmLimit-hysteresis)) {
              alarmRange = range_Hihi;
-         } else if(value<=lowAlarmLimit) {
+         } else if(value<=lowAlarmLimit
+         ||(prevAlarmRange==range_Lolo && value<=lowAlarmLimit+hysteresis)) {
              alarmRange = range_Lolo;
          }
     }
-    if(alarmRange==range_Normal && (pvHighWarningLimit>pvLowWarningLimit)) {
-         if(value>=highWarningLimit) {
+    if(alarmRange==range_Normal && (highWarningLimit>lowWarningLimit)) {
+         if(value>=highWarningLimit
+         ||(prevAlarmRange==range_High && value>=highWarningLimit-hysteresis)) {
              alarmRange = range_High;
-         } else if(value<=lowWarningLimit) {
+         } else if(value<=lowWarningLimit
+         ||(prevAlarmRange==range_Low && value<=lowWarningLimit+hysteresis)) {
              alarmRange = range_Low;
          }
     }
-cout << "ScalarAlarmSupport::process() alarmRange " << alarmRange
-<< " prevAlarmRange " << prevAlarmRange << "\n";
     if(alarmRange!=prevAlarmRange) setAlarm(pvAlarm,alarmRange);
     prevAlarmRange = alarmRange;
+    currentValue = value;
 }
 
 void ScalarAlarmSupport::reset()
