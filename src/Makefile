@@ -14,7 +14,6 @@ INC += pv/channelProviderLocal.h
 INC += pv/pvDatabase.h
 INC += pv/traceRecord.h
 INC += pv/removeRecord.h
-INC += pv/numericRecord.h
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h

@@ -2,6 +2,10 @@
 
 This document summarizes the changes to the module between releases.
 
+## Master (June 2019)
+
+support is a new feature
+
 ## Release 4.4.2 (EPICS 7.0.2.2, Apr 2019)
 
 Formerly if a client makes a request for a subfield of a non structure field
