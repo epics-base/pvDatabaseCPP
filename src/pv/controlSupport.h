@@ -56,15 +56,19 @@ public:
         epics::pvData::PVFieldPtr const & pvSupport);
     /**
      * @brief Honors control fields.
-     *  
+     *
+     *
+     * @return Returns true is any fields were modified; otherwise false.
      */
-    virtual void process();
+    virtual bool process();
     /**
      *  @brief If implementing minSteps it sets isMinStep to false.
      *
+     * @return Returns true is any fields were modified; otherwise false.
      */
     virtual void reset();
     static ControlSupportPtr create(PVRecordPtr const & pvRecord);
+    static epics::pvData::StructureConstPtr controlField(); 
 private:
     ControlSupport(PVRecordPtr const & pvRecord);
     PVRecordPtr pvRecord;
@@ -73,6 +77,7 @@ private:
     epics::pvData::PVDoublePtr pvLimitLow;
     epics::pvData::PVDoublePtr pvLimitHigh;
     epics::pvData::PVDoublePtr pvMinStep;
+    epics::pvData::PVDoublePtr pvOutputValue;
     double requestedValue;
     double currentValue;
     bool isMinStep;

@@ -59,18 +59,19 @@ public:
         epics::pvData::PVFieldPtr const & pvSupport);
     /**
      * @brief Honors scalarAlarm fields.
-     *  
+     *
+     *
+     * @return Returns true is any fields were modified; otherwise false.
      */
-    virtual void process();
+    virtual bool process();
     /**
      *  @brief If implementing minSteps it sets isMinStep to false.
      *
      */
     virtual void reset();
     static ScalarAlarmSupportPtr create(PVRecordPtr const & pvRecord);
-    static epics::pvData::StructureConstPtr scalarAlarm(); 
+    static epics::pvData::StructureConstPtr scalarAlarmField(); 
 private:
-    static epics::pvData::StructureConstPtr scalarAlarmField;
 
     ScalarAlarmSupport(PVRecordPtr const & pvRecord);
     enum {

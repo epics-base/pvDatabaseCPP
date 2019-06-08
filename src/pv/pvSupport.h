@@ -69,10 +69,13 @@ public:
     /**
      * @brief Virtual method for derived class.
      *
+     * Called when record is processed.
      *  It is the method that implements support.
      *  It is called each time the record is processed.
+     *
+     * @return Returns true is any fields were modified; otherwise false.
      */
-    virtual void process() = 0;
+    virtual bool process() = 0;
     /**
      *  @brief Optional method for derived class.
      *

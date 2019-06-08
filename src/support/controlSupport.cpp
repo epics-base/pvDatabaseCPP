@@ -29,6 +29,18 @@ ControlSupport::~ControlSupport()
 cout << "ControlSupport::~ControlSupport()\n";
 }
 
+epics::pvData::StructureConstPtr ControlSupport::controlField()
+{
+    return FieldBuilder::begin()
+            ->setId("control_t")
+            ->add("limitLow", pvDouble)
+            ->add("limitHigh", pvDouble)
+            ->add("minStep", pvDouble)
+            ->add("outputValue", pvDouble)
+            ->createStructure();
+}
+
+
 ControlSupportPtr ControlSupport::create(PVRecordPtr const & pvRecord)
 {
    ControlSupportPtr support(new ControlSupport(pvRecord));
@@ -59,8 +71,9 @@ bool ControlSupport::init(PVFieldPtr const & pv,PVFieldPtr const & pvsup)
        pvLimitLow = pvControl->getSubField<PVDouble>("limitLow");
        pvLimitHigh = pvControl->getSubField<PVDouble>("limitHigh");
        pvMinStep = pvControl->getSubField<PVDouble>("minStep");
+       pvOutputValue = pvControl->getSubField<PVDouble>("outputValue");
     }
-    if(!pvControl || !pvLimitLow || !pvLimitHigh || !pvMinStep) {
+    if(!pvControl || !pvLimitLow || !pvLimitHigh || !pvMinStep || !pvOutputValue) {
         cout << "ControlSupport for record " << pvRecord->getRecordName()
         << " failed because pvSupport not a valid control structure\n";
         return false;
@@ -72,47 +85,44 @@ bool ControlSupport::init(PVFieldPtr const & pv,PVFieldPtr const & pvsup)
     return true;
 }
 
-void ControlSupport::process()
+bool ControlSupport::process()
 {
     ConvertPtr convert = getConvert();
     double value = convert->toDouble(pvValue);
-    if(value==requestedValue&&value==currentValue) return;
+    if(value==requestedValue&&value==currentValue) return false;
     if(!isMinStep) requestedValue = value;
     double limitLow = pvLimitLow->get();
     double limitHigh = pvLimitHigh->get();
     double minStep = pvMinStep->get();
     if(limitHigh>limitLow) {
-        if(value>limitHigh) value = limitHigh;
-        if(value<limitLow) value = limitLow;
-        if(!isMinStep) {
-            if(requestedValue>limitHigh) requestedValue = limitHigh;
-            if(requestedValue<limitLow) requestedValue = limitLow;
-        }
+        if(requestedValue>limitHigh) requestedValue = limitHigh;
+        if(requestedValue<limitLow) requestedValue = limitLow;
     }
+    double diff = requestedValue - currentValue;
+    double outputValue = requestedValue;
     if(minStep>0.0) {
-        double diff = requestedValue - currentValue;
         if(diff<0.0) {
-            value = currentValue - minStep;
+            outputValue = currentValue - minStep;
             isMinStep = true;
-            if(value<requestedValue) {
-                 value = requestedValue;
+            if(outputValue<requestedValue) {
+                 outputValue = requestedValue;
                  isMinStep = false;
             }
         } else {
-            value = currentValue + minStep;
+            outputValue = currentValue + minStep;
             isMinStep = true;
-            if(value>requestedValue)  {
-                 value = requestedValue;
+            if(outputValue>requestedValue)  {
+                 outputValue = requestedValue;
                  isMinStep = false;
             }
         }
-cout << "diff " << diff
-<< " value " << value
-<< " isMinStep " << (isMinStep ? "true" : "false")
-<< "\n";
     }
-    currentValue = value;
-    convert->fromDouble(pvValue,value);
+    currentValue = outputValue;
+    pvOutputValue->put(outputValue);
+    if(!isMinStep && (outputValue!=requestedValue)) {
+         convert->fromDouble(pvValue,requestedValue);
+    }
+    return true;
 }
 
 void ControlSupport::reset()

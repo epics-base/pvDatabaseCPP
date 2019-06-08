@@ -32,8 +32,9 @@ cout << "ScalarAlarmSupport::~ScalarAlarmSupport()\n";
 }
 
 
-epics::pvData::StructureConstPtr ScalarAlarmSupport::scalarAlarmField =
-FieldBuilder::begin()
+epics::pvData::StructureConstPtr ScalarAlarmSupport::scalarAlarmField()
+{
+    return FieldBuilder::begin()
             ->setId("scalarAlarm_t")
             ->add("active", pvBoolean)
             ->add("lowAlarmLimit", pvDouble)
@@ -42,10 +43,6 @@ FieldBuilder::begin()
             ->add("highAlarmLimit", pvDouble)
             ->add("hysteresis", pvDouble)
             ->createStructure();
-
-epics::pvData::StructureConstPtr ScalarAlarmSupport::scalarAlarm()
-{
-    return scalarAlarmField;
 }
 
 ScalarAlarmSupportPtr ScalarAlarmSupport::create(PVRecordPtr const & pvRecord)
@@ -104,7 +101,7 @@ bool ScalarAlarmSupport::init(
     return true;
 }
 
-void ScalarAlarmSupport::process()
+bool ScalarAlarmSupport::process()
 {
     ConvertPtr convert = getConvert();
     double value = convert->toDouble(pvValue);
@@ -132,9 +129,14 @@ void ScalarAlarmSupport::process()
              alarmRange = range_Low;
          }
     }
-    if(alarmRange!=prevAlarmRange) setAlarm(pvAlarm,alarmRange);
+    bool retValue = false;
+    if(alarmRange!=prevAlarmRange) {
+        setAlarm(pvAlarm,alarmRange);
+        retValue = true;
+    }
     prevAlarmRange = alarmRange;
     currentValue = value;
+    return retValue;
 }
 
 void ScalarAlarmSupport::reset()
