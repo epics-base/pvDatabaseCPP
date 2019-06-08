@@ -8,8 +8,10 @@
  * @author mrk
  * @date 2013.04.18
  */
-#define epicsExportSharedSymbols
+#include <shareLib.h>
+#include <pv/channelProviderLocal.h>
 
+#define epicsExportSharedSymbols
 #include <pv/removeRecord.h>
 
 using std::tr1::static_pointer_cast;

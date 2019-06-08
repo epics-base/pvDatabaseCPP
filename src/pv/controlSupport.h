@@ -68,7 +68,7 @@ public:
      */
     virtual void reset();
     static ControlSupportPtr create(PVRecordPtr const & pvRecord);
-    static epics::pvData::StructureConstPtr controlField(); 
+    static epics::pvData::StructureConstPtr controlField(epics::pvData::ScalarType scalarType); 
 private:
     ControlSupport(PVRecordPtr const & pvRecord);
     PVRecordPtr pvRecord;
@@ -77,8 +77,7 @@ private:
     epics::pvData::PVDoublePtr pvLimitLow;
     epics::pvData::PVDoublePtr pvLimitHigh;
     epics::pvData::PVDoublePtr pvMinStep;
-    epics::pvData::PVDoublePtr pvOutputValue;
-    double requestedValue;
+    epics::pvData::PVScalarPtr pvOutputValue;
     double currentValue;
     bool isMinStep;
 };

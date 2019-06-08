@@ -29,14 +29,14 @@ ControlSupport::~ControlSupport()
 cout << "ControlSupport::~ControlSupport()\n";
 }
 
-epics::pvData::StructureConstPtr ControlSupport::controlField()
+epics::pvData::StructureConstPtr ControlSupport::controlField(ScalarType scalarType)
 {
     return FieldBuilder::begin()
             ->setId("control_t")
             ->add("limitLow", pvDouble)
             ->add("limitHigh", pvDouble)
             ->add("minStep", pvDouble)
-            ->add("outputValue", pvDouble)
+            ->add("outputValue", scalarType)
             ->createStructure();
 }
 
@@ -71,7 +71,7 @@ bool ControlSupport::init(PVFieldPtr const & pv,PVFieldPtr const & pvsup)
        pvLimitLow = pvControl->getSubField<PVDouble>("limitLow");
        pvLimitHigh = pvControl->getSubField<PVDouble>("limitHigh");
        pvMinStep = pvControl->getSubField<PVDouble>("minStep");
-       pvOutputValue = pvControl->getSubField<PVDouble>("outputValue");
+       pvOutputValue = pvControl->getSubField<PVScalar>("outputValue");
     }
     if(!pvControl || !pvLimitLow || !pvLimitHigh || !pvMinStep || !pvOutputValue) {
         cout << "ControlSupport for record " << pvRecord->getRecordName()
@@ -79,8 +79,7 @@ bool ControlSupport::init(PVFieldPtr const & pv,PVFieldPtr const & pvsup)
         return false;
     }
     ConvertPtr convert = getConvert();
-    requestedValue = convert->toDouble(pvValue);
-    currentValue = requestedValue;
+    currentValue = convert->toDouble(pvValue);
     isMinStep = false;
     return true;
 }
@@ -89,38 +88,37 @@ bool ControlSupport::process()
 {
     ConvertPtr convert = getConvert();
     double value = convert->toDouble(pvValue);
-    if(value==requestedValue&&value==currentValue) return false;
-    if(!isMinStep) requestedValue = value;
+    if(!isMinStep && value==currentValue) return false;
     double limitLow = pvLimitLow->get();
     double limitHigh = pvLimitHigh->get();
     double minStep = pvMinStep->get();
     if(limitHigh>limitLow) {
-        if(requestedValue>limitHigh) requestedValue = limitHigh;
-        if(requestedValue<limitLow) requestedValue = limitLow;
+        if(value>limitHigh) value = limitHigh;
+        if(value<limitLow) value = limitLow;
     }
-    double diff = requestedValue - currentValue;
-    double outputValue = requestedValue;
+    double diff = value - currentValue;
+    double outputValue = value;
     if(minStep>0.0) {
         if(diff<0.0) {
             outputValue = currentValue - minStep;
             isMinStep = true;
-            if(outputValue<requestedValue) {
-                 outputValue = requestedValue;
+            if(outputValue<value) {
+                 outputValue = value;
                  isMinStep = false;
             }
         } else {
             outputValue = currentValue + minStep;
             isMinStep = true;
-            if(outputValue>requestedValue)  {
-                 outputValue = requestedValue;
+            if(outputValue>value)  {
+                 outputValue = value;
                  isMinStep = false;
             }
         }
     }
     currentValue = outputValue;
-    pvOutputValue->put(outputValue);
-    if(!isMinStep && (outputValue!=requestedValue)) {
-         convert->fromDouble(pvValue,requestedValue);
+    convert->fromDouble(pvOutputValue,outputValue);
+    if(!isMinStep && (outputValue!=value)) {
+         convert->fromDouble(pvValue,value);
     }
     return true;
 }
