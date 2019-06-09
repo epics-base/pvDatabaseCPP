@@ -92,15 +92,18 @@ bool ControlSupport::process()
     double limitLow = pvLimitLow->get();
     double limitHigh = pvLimitHigh->get();
     double minStep = pvMinStep->get();
+    bool setValue = false;
     if(limitHigh>limitLow) {
-        if(value>limitHigh) value = limitHigh;
-        if(value<limitLow) value = limitLow;
+        if(value>limitHigh) {value = limitHigh;setValue=true;}
+        if(value<limitLow) {value = limitLow;setValue=true;}
     }
+    if(setValue) convert->fromDouble(pvValue,value);
     double diff = value - currentValue;
     double outputValue = value;
     if(minStep>0.0) {
         if(diff<0.0) {
             outputValue = currentValue - minStep;
+            if(limitHigh>limitLow && outputValue<=limitLow) outputValue = limitLow;
             isMinStep = true;
             if(outputValue<value) {
                  outputValue = value;
@@ -108,6 +111,7 @@ bool ControlSupport::process()
             }
         } else {
             outputValue = currentValue + minStep;
+            if(limitHigh>limitLow && outputValue>=limitHigh) outputValue = limitHigh;
             isMinStep = true;
             if(outputValue>value)  {
                  outputValue = value;
@@ -115,11 +119,9 @@ bool ControlSupport::process()
             }
         }
     }
+    if(outputValue==currentValue) return false;
     currentValue = outputValue;
     convert->fromDouble(pvOutputValue,outputValue);
-    if(!isMinStep && (outputValue!=value)) {
-         convert->fromDouble(pvValue,value);
-    }
     return true;
 }
 
