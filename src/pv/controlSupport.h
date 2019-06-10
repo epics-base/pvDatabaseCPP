@@ -67,7 +67,19 @@ public:
      * @return Returns true is any fields were modified; otherwise false.
      */
     virtual void reset();
+    /** 
+     * @brief create a ControlSupport
+     *
+     * @param pvRecord - The pvRecord to which the support is attached.
+     * @return The new ControlSupport
+     */
     static ControlSupportPtr create(PVRecordPtr const & pvRecord);
+    /** 
+     * @brief create a controlSupport required by ControlSupport
+     *
+     * @param scalarType The type for outputValue.
+     * @return The controlField introspection structure.
+     */
     static epics::pvData::StructureConstPtr controlField(epics::pvData::ScalarType scalarType); 
 private:
     ControlSupport(PVRecordPtr const & pvRecord);

@@ -134,7 +134,13 @@ void ProcessRecord::run()
            PVRecordPtr pvRecord = (*iter).second;
            pvRecord->lock();
            pvRecord->beginGroupPut();
-           pvRecord->process();
+           try {
+               pvRecord->process();
+           } catch (std::exception& ex) {
+               std::cout << "record " << pvRecord->getRecordName() << "exception " << ex.what() << "\n";
+           } catch (...) {
+               std::cout<< "record " << pvRecord->getRecordName() << " process exception\n";
+           }
            pvRecord->endGroupPut();
            pvRecord->unlock();
         }

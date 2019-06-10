@@ -69,8 +69,6 @@ pvDatabaseCPP is one of the components of
 EPICS Version 7
 </p>
 <p>This document is only a guide to help locate code and documentation related to pvDatabaseCPP
-</p>
-<p>
 It is intended for developers that want to use pvDatabaseCPP.
 </p>
 <h2>Developer Guide</h2>
@@ -87,7 +85,7 @@ In particular read everything related to pvDatabase.
 </p>
 <p>pvDatabase has plugin support, which is implemented in <b>pvCopy</b>.
 <b>pvCopy</b> was originally implemented in <b>pvDataCPP</b>,
-but pvDatabaseCPP now implemnents its own version and adds plugin support.
+but pvDatabaseCPP now implements its own version and adds plugin support.
 </p>
 <p>
 See
@@ -98,7 +96,7 @@ pvRequest
 for details.
 </p>
 <p>The developerGuide discusses code in a way that applies to both CPP and C++.
-For the descriptions of the CPP specific code consult the next section.
+For the descriptions of the CPP specific code consult the following sections.
 </p>
 
 <h2>doxygen</h2>
@@ -108,18 +106,78 @@ href="./html/index.html">doxgen</a>
 </p>
 
 <h2>pvDatabaseCPP</h2>
-<p>pvDatabaseCPP itself has the following implementations of a <b>PVRecord</b></p>
+<h3>include/pv</h3>
+<p>The header files that describe the various components implemented by pvDatabase.
+</p>
 <dl>
-    <dt>RemoveRecord.cpp</dt>
-      <dd>
-         This is the code that is used to delete another record in the same <b>IOC</b>.
-      </dd>
-    <dt>TraceRecord.cpp</dt>
-      <dd>
-         This is the code that is used to set the trace level
-         in another record in the same <b>IOC</b>.
-      </dd>
+   <dt>pvDatabase.h</dt>
+   <dd>
+    This describes PVRecord and PVDatabase.
+   </dd>
+   <dt>channelProviderLocal.h </dt>
+   <dd>
+    This describes a channel provider for PVDatabase
+   </dd>
+   <dt>pvSupport.h</dt>
+   <dd>
+    This is the base class for support attached to a field of a record.
+   </dd>
+   <dt>controlSupport.h</dt>
+   <dd>
+    This is support that implements control limits.
+   </dd>
+   <dt>scalarAlarmSupport.h</dt>
+   <dd>
+     This is support for a alarm limits for a scalar numeric field.
+   </dd>
+   <dt>processRecord.h</dt>
+   <dd>
+   This is a PVRecord that periodical processes a set of PVRecords in the local PVDatabase.
+   </dd>
+   <dt>removeRecord.h</dt>
+   <dd>
+    This is a PVRecord that removes a PVRecord in the local PVDatabase.
+   </dd>
+   <dt>traceRecord.h</dt>
+   <dd>
+    This is a PVRecord that sets the trace value for another PVRecord in the local PVDatabase.
+   </dd>
+   <dt>pvStructureCopy.h</dt>
+   <dd>
+    This is a facility that allows a client to access a subfield of the fields in a PVRecord.
+    It also provides record and field options an plugin support.
+   </dd>
+   <dt>pvPlugin.h</dt>
+   <dd>
+    This is the base class for a plugin attached to a record or field of PVRecord.
+   </dd>
+   <dt>pvArrayPlugin.h</dt>
+   <dd>
+     A plugin for accessing a subset of the elements in an array field.
+   </dd>
+   <dt>pvDeadbandPlugin.h</dt>
+   <dd>
+    A deadband plugin for monitors.
+   </dd>
+   <dt>pvTimestampPlugin.h</dt>
+   <dd>
+    A plugin for timeStamp.
+   </dd>
 </dl>
+<h3>src/database</h3>
+<p>This has the code that implements pvDatabase and pvRecord.</p>
+<h3>src/pvAccess</h3>
+<p>This has the code for the channel provider for pvDatabase.
+</p>
+<h3>src/support</h3>
+<p>This has the pvSupport code.</p>
+<h3>src/special</h3>
+<p>
+This has the code for processRecord, removeRecord, and traceRecord.
+</p>
+<h3>src/copy</h3>
+<p>This has the code for pvStructureCopy and all the plugin support.
+</p> 
 <h2>exampleCPP</h2>
 <p>Example code is available as part of this release.
 <a

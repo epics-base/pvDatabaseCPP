@@ -6,7 +6,7 @@
  */
 /**
  * @author mrk
- * @date 2013.04.18
+ * @date 2019.06.07
  */
 #ifndef PROCESSRECORD_H
 #define PROCESSRECORD_H
@@ -55,8 +55,17 @@ public:
      * @brief Process the record specified by  recordName.
      */
     virtual void process();
+    /**
+     * @brief The run method for the thread.
+     */
     virtual void run();
+    /**
+     * @brief Start the thread
+     */
     void startThread();
+    /**
+     * @brief Stop the thread
+     */
     void stop();
 private:
     ProcessRecord(

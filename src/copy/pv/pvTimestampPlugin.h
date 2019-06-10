@@ -60,7 +60,7 @@ public:
 };
 
 /**
- * @brief  A filter that sets a timeStamp to the current time.
+ * @brief  A filter that sets a timeStamp to/from the current field or pvCopy.
  */
 class epicsShareClass PVTimestampFilter : public PVFilter
 {

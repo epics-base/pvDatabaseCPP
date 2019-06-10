@@ -50,6 +50,7 @@ public:
      * @brief Connects to contol fields.
      *
      * @param pvValue The field to support.
+     * @param pvAlarm The alarm field.
      * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
@@ -69,7 +70,18 @@ public:
      *
      */
     virtual void reset();
+    /** 
+     * @brief create a ScalarAlarm
+     *
+     * @param pvRecord - The pvRecord to which the support is attached.
+     * @return The new ScalarAlarm
+     */
     static ScalarAlarmSupportPtr create(PVRecordPtr const & pvRecord);
+    /** 
+     * @brief create a scalarAlarm required by ScalarAlarm
+     *
+     * @return The scalarAlarmField introspection structure.
+     */
     static epics::pvData::StructureConstPtr scalarAlarmField(); 
 private:
 
