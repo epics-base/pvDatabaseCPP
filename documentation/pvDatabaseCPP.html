@@ -36,7 +36,8 @@
 
 <div class="head">
 <h1>pvDatabaseCPP</h1>
-<h2 class="nocount">Release ? - June 2019</h2>
+<h2 class="nocount">Release ? - TBD</h2>
+Latest update 2019.06.19.
 
 
 <h2 class="nocount">Abstract</h2>
@@ -181,7 +182,7 @@ This has the code for processRecord, removeRecord, and traceRecord.
 <h2>exampleCPP</h2>
 <p>Example code is available as part of this release.
 <a
-href="http://epics-pvdata.sourceforge.net/docbuild/exampleCPP/tip/documentation/exampleCPP.html">
+href="https://github.com/epics-base/exampleCPP">
 exampleCPP
 </a>
 </p>
@@ -245,6 +246,9 @@ other functionality.</p>
      Each record uses the control and scalarAlarm support provided by pvDatabaseCPP.
    </dd>
 </dl>
+<p>
+It also creates records that can be used by clients to show example of the plugin support.
+</p>
 
 <h2>iocshell commands</h2>
 <p>Shell commands are made available via the standard DBD include mechanism
@@ -267,7 +271,7 @@ pvDatabaseCPP
       </dd>
 </dl>
 <p>In addition any code that implements a PVRecord must implement an ioc command.
-Look at any of the examples in <b>exampleCPP</b> to see how to implement shell commands.</p>
+Look at the examples in <b>exampleCPP/support</b> to see how to implement shell commands.</p>
 
 </div>
 </body>

@@ -36,7 +36,6 @@ epics::pvData::StructureConstPtr ScalarAlarmSupport::scalarAlarmField()
 {
     return FieldBuilder::begin()
             ->setId("scalarAlarm_t")
-            ->add("active", pvBoolean)
             ->add("lowAlarmLimit", pvDouble)
             ->add("lowWarningLimit", pvDouble)
             ->add("highWarningLimit", pvDouble)
@@ -75,7 +74,6 @@ bool ScalarAlarmSupport::init(
     }
     pvScalarAlarm = static_pointer_cast<PVStructure>(pvsup);
     if(pvScalarAlarm) {
-       pvActive = pvScalarAlarm->getSubField<PVBoolean>("active");
        pvLowAlarmLimit = pvScalarAlarm->getSubField<PVDouble>("lowAlarmLimit");
        pvLowWarningLimit = pvScalarAlarm->getSubField<PVDouble>("lowWarningLimit");
        pvHighWarningLimit = pvScalarAlarm->getSubField<PVDouble>("highWarningLimit");
@@ -83,7 +81,6 @@ bool ScalarAlarmSupport::init(
        pvHysteresis = pvScalarAlarm->getSubField<PVDouble>("hysteresis");
     }
     if(!pvScalarAlarm
-       || !pvActive
        || !pvLowAlarmLimit || !pvLowWarningLimit 
        || !pvLowWarningLimit || !pvHighAlarmLimit
        || !pvHysteresis)
