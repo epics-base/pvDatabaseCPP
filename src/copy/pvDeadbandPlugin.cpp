@@ -64,9 +64,9 @@ PVDeadbandFilterPtr PVDeadbandFilter::create(
     ScalarConstPtr scalar = static_pointer_cast<const Scalar>(field);
     if(!ScalarTypeFunc::isNumeric(scalar->getScalarType())) return PVDeadbandFilterPtr();
     bool absolute = false;
-    if(requestValue.find("abs")>=0) {
+    if(requestValue.find("abs")==0) {
         absolute = true;
-    } else if(requestValue.find("rel")>=0) {
+    } else if(requestValue.find("rel")==0) {
         absolute = false;
     } else {
         return PVDeadbandFilterPtr();
