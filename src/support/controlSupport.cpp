@@ -12,6 +12,8 @@
 #include <pv/pvSupport.h>
 #include <pv/convert.h>
 #include <pv/standardField.h>
+#include <pv/pvStructureCopy.h>
+
 
 #define epicsExportSharedSymbols
 

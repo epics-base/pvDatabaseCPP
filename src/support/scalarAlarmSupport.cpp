@@ -14,6 +14,8 @@
 #include <pv/standardField.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
+#include <pv/pvStructureCopy.h>
+
 
 #define epicsExportSharedSymbols
 

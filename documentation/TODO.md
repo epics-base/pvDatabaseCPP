@@ -1,11 +1,6 @@
 TODO
 ===========
 
-unlisten and detach
--------------------
-
-Why do both unlisten and detach exists?
-
 
 create more regression tests
 ----------------

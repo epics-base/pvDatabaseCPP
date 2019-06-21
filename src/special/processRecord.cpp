@@ -92,7 +92,7 @@ void ProcessRecord::process()
         epicsGuard<epics::pvData::Mutex> guard(mutex);
         std::map<std::string,PVRecordPtr>::iterator iter = pvRecordMap.find(recordName);
         if(iter!=pvRecordMap.end()) {
-             pvResult->put(recordName + " already pesent");
+             pvResult->put(recordName + " already present");
              return;
         }
         PVRecordPtr pvRecord = pvDatabase->findRecord(recordName);
@@ -110,8 +110,7 @@ void ProcessRecord::process()
              pvResult->put(recordName + " not found");
              return;
         }
-        PVRecordPtr pvRecord = (*iter).second;
-        pvDatabase->removeRecord(pvRecord);
+        pvRecordMap.erase(iter);
         pvResult->put("success");
         return;
     } else {
