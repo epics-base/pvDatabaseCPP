@@ -3,6 +3,9 @@
 TOP = ..
 include $(TOP)/configure/CONFIG
 
+# needed for Windows
+LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
+
 PVDATABASE_SRC = $(TOP)/src
 
 LIBRARY += pvDatabase
@@ -26,8 +29,5 @@ include $(PVDATABASE_SRC)/support/Makefile
 
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
-
-# needed for Windows
-LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
 
 include $(TOP)/configure/RULES
