@@ -21,12 +21,13 @@ INC += pv/processRecord.h
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
-include $(PVDATABASE_SRC)/copy/Makefile
+
 include $(PVDATABASE_SRC)/database/Makefile
 include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
 
+pvDatabase_LIBS += pvCopy
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
