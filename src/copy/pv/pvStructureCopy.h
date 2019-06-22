@@ -250,7 +250,6 @@ private:
         std::string *builder,
         CopyNodePtr const &node,
         int indentLevel);
-    friend class PVCopyMonitor;
 };
 
 }}
