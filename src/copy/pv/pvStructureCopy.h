@@ -20,6 +20,11 @@
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
 
+#ifdef pvdatabaseEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef pvdatabaseEpicsExportSharedSymbols
+#endif
+
 #include <shareLib.h>
 
 namespace epics { namespace pvCopy{ 

@@ -18,6 +18,11 @@
 #include <pv/lock.h>
 #include <pv/pvStructureCopy.h>
 
+#ifdef pvdatabaseEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef pvdatabaseEpicsExportSharedSymbols
+#endif
+
 #include <shareLib.h>
 
 namespace epics { namespace pvCopy{ 

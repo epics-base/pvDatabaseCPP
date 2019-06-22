@@ -4,8 +4,12 @@
  */
 
 #include <pv/pvData.h>
-#define epicsExportSharedSymbols
+#include <string>
+#include <map>
+#include <pv/lock.h>
 #include <pv/pvStructureCopy.h>
+
+#define epicsExportSharedSymbols
 #include <pv/pvPlugin.h>
 
 using namespace epics::pvData;

@@ -11,10 +11,22 @@
 #ifndef PROCESSRECORD_H
 #define PROCESSRECORD_H
 
+
+#ifdef epicsExportSharedSymbols
+#   define pvdatabaseEpicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
+#endif
+
 #include <map>
 #include <epicsThread.h>
 #include <pv/event.h>
 #include <pv/channelProviderLocal.h>
+
+#ifdef pvdatabaseEpicsExportSharedSymbols
+#   define epicsExportSharedSymbols
+#	undef pvdatabaseEpicsExportSharedSymbols
+#endif
+
 #include <shareLib.h>
 
 namespace epics { namespace pvDatabase { 
