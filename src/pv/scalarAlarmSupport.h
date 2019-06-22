@@ -19,6 +19,7 @@
 #include <pv/pvSupport.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
+#include <pv/pvStructureCopy.h>
 
 #ifdef pvdatabaseEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
@@ -26,7 +27,6 @@
 #endif
 
 #include <shareLib.h>
-#include <pv/pvStructureCopy.h>
 
 namespace epics { namespace pvDatabase { 
 
