@@ -11,7 +11,7 @@ PVDATABASE_SRC = $(TOP)/src
 LIBRARY += pvDatabase
 
 # shared library ABI version.
-SHRLIB_VERSION ?= 4.4.2
+SHRLIB_VERSION ?= $(EPICS_PVA_MAJOR_VERSION).$(EPICS_PVA_MINOR_VERSION).$(EPICS_PVA_MAINTENANCE_VERSION)
 
 INC += pv/channelProviderLocal.h
 INC += pv/pvDatabase.h
