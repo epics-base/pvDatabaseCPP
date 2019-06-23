@@ -9,22 +9,22 @@
 #ifndef PVPLUGIN_H
 #define PVPLUGIN_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvaConstantsepicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
+//#ifdef epicsExportSharedSymbols
+//#   define pvaConstantsepicsExportSharedSymbols
+//#   undef epicsExportSharedSymbols
+//#endif
 
 #include <string>
 #include <map>
 #include <pv/lock.h>
 #include <pv/pvStructureCopy.h>
 
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
+//#ifdef pvdatabaseEpicsExportSharedSymbols
+//#   define epicsExportSharedSymbols
+//#	undef pvdatabaseEpicsExportSharedSymbols
+//#endif
 
-#include <shareLib.h>
+//#include <shareLib.h>
 
 namespace epics { namespace pvCopy{ 
 
