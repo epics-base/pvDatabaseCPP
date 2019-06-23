@@ -10,11 +10,10 @@
 #include <pv/bitSet.h>
 #include <pv/convert.h>
 #include <pv/pvTimeStamp.h>
-#include <pv/pvPlugin.h>
-#include <pv/pvStructureCopy.h>
+#include "pv/pvStructureCopy.h"
 
 #define epicsExportSharedSymbols
-#include <pv/pvTimestampPlugin.h>
+#include "pv/pvTimestampPlugin.h"
 
 
 using std::string;

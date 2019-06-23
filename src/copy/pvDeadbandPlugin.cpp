@@ -11,10 +11,10 @@
 #include <pv/pvPlugin.h>
 #include <pv/bitSet.h>
 #include <pv/convert.h>
-#include <pv/pvSubArrayCopy.h>
+#include "pv/pvSubArrayCopy.h"
 
 #define epicsExportSharedSymbols
-#include <pv/pvDeadbandPlugin.h>
+#include "pv/pvDeadbandPlugin.h"
 
 using std::string;
 using std::size_t;
