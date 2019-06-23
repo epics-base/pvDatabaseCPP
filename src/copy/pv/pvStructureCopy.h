@@ -10,8 +10,9 @@
 #ifndef PVSTRUCTURECOPY_H
 #define PVSTRUCTURECOPY_H
 
-#if defined(_WIN32) && !defined(NOMINMAX)
-#define NOMINMAX
+#ifdef epicsExportSharedSymbols
+#   define pvaConstantsepicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
 #endif
 
 #include <string>

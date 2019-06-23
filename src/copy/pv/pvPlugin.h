@@ -9,8 +9,9 @@
 #ifndef PVPLUGIN_H
 #define PVPLUGIN_H
 
-#if defined(_WIN32) && !defined(NOMINMAX)
-#define NOMINMAX
+#ifdef epicsExportSharedSymbols
+#   define pvaConstantsepicsExportSharedSymbols
+#   undef epicsExportSharedSymbols
 #endif
 
 #include <string>
