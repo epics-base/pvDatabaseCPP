@@ -8,7 +8,6 @@
 #include <map>
 #include <pv/lock.h>
 #include <pv/pvData.h>
-#include <pv/pvPlugin.h>
 #include <pv/bitSet.h>
 #include <pv/convert.h>
 
