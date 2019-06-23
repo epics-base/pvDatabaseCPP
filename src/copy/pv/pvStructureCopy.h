@@ -10,21 +10,11 @@
 #ifndef PVSTRUCTURECOPY_H
 #define PVSTRUCTURECOPY_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvaConstantsepicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <string>
 #include <stdexcept>
 #include <memory>
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

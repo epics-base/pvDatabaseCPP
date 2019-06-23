@@ -6,21 +6,12 @@
 #ifndef PVDEADBANDPLUGIN_H
 #define PVDEADBANDPLUGIN_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvaConstantsepicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
 
 #include <string>
 #include <map>
 #include <pv/lock.h>
 #include <pv/pvData.h>
 #include <pv/pvPlugin.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 
