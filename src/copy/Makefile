@@ -14,11 +14,11 @@ INC += pv/pvArrayPlugin.h
 INC += pv/pvDeadbandPlugin.h
 INC += pv/pvTimestampPlugin.h
 
+LIBSRCS += pvCopy.cpp
 LIBSRCS += pvPlugin.cpp
 LIBSRCS += pvArrayPlugin.cpp
 LIBSRCS += pvDeadbandPlugin.cpp
 LIBSRCS += pvTimestampPlugin.cpp
-LIBSRCS += pvCopy.cpp
 
 pvCopy_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvCopy_LIBS += $(EPICS_BASE_IOC_LIBS)
