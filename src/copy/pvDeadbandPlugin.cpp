@@ -11,7 +11,6 @@
 #include <pv/pvPlugin.h>
 #include <pv/bitSet.h>
 #include <pv/convert.h>
-#include "pv/pvSubArrayCopy.h"
 
 #define epicsExportSharedSymbols
 #include "pv/pvDeadbandPlugin.h"

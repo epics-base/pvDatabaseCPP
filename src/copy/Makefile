@@ -8,14 +8,14 @@ SHRLIB_VERSION ?= $(EPICS_PVA_MAJOR_VERSION).$(EPICS_PVA_MINOR_VERSION).$(EPICS_
 # needed for Windows
 LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
 
-INC += pv/pvStructureCopy.h
 INC += pv/pvPlugin.h
+INC += pv/pvStructureCopy.h
 INC += pv/pvArrayPlugin.h
 INC += pv/pvDeadbandPlugin.h
 INC += pv/pvTimestampPlugin.h
 
-LIBSRCS += pvCopy.cpp
 LIBSRCS += pvPlugin.cpp
+LIBSRCS += pvCopy.cpp
 LIBSRCS += pvArrayPlugin.cpp
 LIBSRCS += pvDeadbandPlugin.cpp
 LIBSRCS += pvTimestampPlugin.cpp

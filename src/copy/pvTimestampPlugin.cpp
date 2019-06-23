@@ -10,7 +10,6 @@
 #include <pv/bitSet.h>
 #include <pv/convert.h>
 #include <pv/pvTimeStamp.h>
-#include "pv/pvStructureCopy.h"
 
 #define epicsExportSharedSymbols
 #include "pv/pvTimestampPlugin.h"

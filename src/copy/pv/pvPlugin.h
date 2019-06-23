@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 #include <pv/lock.h>
-#include <pv/pvStructureCopy.h>
+#include <pv/bitSet.h>
 
 #include <shareLib.h>
 
@@ -21,6 +21,9 @@ namespace epics { namespace pvCopy{
 class PVPlugin;
 class PVFilter;
 class PVPluginRegistry;
+
+class PVCopy;
+typedef std::tr1::shared_ptr<PVCopy> PVCopyPtr;
 
 typedef std::tr1::shared_ptr<PVPlugin> PVPluginPtr;
 typedef std::tr1::shared_ptr<PVFilter> PVFilterPtr;

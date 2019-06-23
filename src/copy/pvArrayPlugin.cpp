@@ -7,7 +7,7 @@
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
 #include <pv/convert.h>
-#include "pv/pvSubArrayCopy.h"
+#include <pv/pvSubArrayCopy.h>
 #define epicsExportSharedSymbols
 #include "pv/pvArrayPlugin.h"
 
