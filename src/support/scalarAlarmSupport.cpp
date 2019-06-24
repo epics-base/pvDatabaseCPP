@@ -18,7 +18,7 @@
 
 
 #define epicsExportSharedSymbols
-
+#include <pv/pvDatabase.h>
 #include <pv/scalarAlarmSupport.h>
 
 using std::tr1::static_pointer_cast;

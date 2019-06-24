@@ -11,17 +11,7 @@
 #ifndef REMOVERECORD_H
 #define REMOVERECORD_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvdatabaseEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <pv/channelProviderLocal.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

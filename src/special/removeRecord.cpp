@@ -9,9 +9,9 @@
  * @date 2013.04.18
  */
 #include <shareLib.h>
-#include <pv/channelProviderLocal.h>
 
 #define epicsExportSharedSymbols
+#include <pv/pvDatabase.h>
 #include <pv/removeRecord.h>
 
 using std::tr1::static_pointer_cast;

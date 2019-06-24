@@ -11,11 +11,6 @@
 #ifndef CHANNELPROVIDERLOCAL_H
 #define CHANNELPROVIDERLOCAL_H
 
-#ifdef epicsExportSharedSymbols
-#   define channelProviderLocalEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <string>
 #include <cstring>
 #include <stdexcept>
@@ -30,12 +25,6 @@
 #include <pv/serverContext.h>
 #include <pv/pvDatabase.h>
 #include <pv/pvStructureCopy.h>
-
-
-#ifdef channelProviderLocalEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef channelProviderLocalEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

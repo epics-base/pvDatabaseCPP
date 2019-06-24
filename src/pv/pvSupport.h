@@ -10,11 +10,6 @@
 #ifndef PVSUPPORT_H
 #define PVSUPPORT_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvdatabaseEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <list>
 #include <map>
 
@@ -22,11 +17,6 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
 #include <pv/pvStructureCopy.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

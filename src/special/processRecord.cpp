@@ -11,10 +11,10 @@
 #include <map>
 #include <epicsThread.h>
 #include <pv/event.h>
-#include <pv/channelProviderLocal.h>
 #include <shareLib.h>
 
 #define epicsExportSharedSymbols
+#include <pv/pvDatabase.h>
 #include <pv/processRecord.h>
 
 using std::tr1::static_pointer_cast;

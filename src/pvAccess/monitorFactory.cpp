@@ -14,10 +14,12 @@
 #include <epicsGuard.h>
 #include <pv/thread.h>
 #include <pv/bitSetUtil.h>
+#include <pv/pvData.h>
 #include <pv/timeStamp.h>
+#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-
+#include <pv/pvDatabase.h>
 #include <pv/channelProviderLocal.h>
 
 using namespace epics::pvData;

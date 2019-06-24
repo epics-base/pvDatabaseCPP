@@ -15,9 +15,10 @@
 #include <epicsThread.h>
 #include <pv/timeStamp.h>
 #include <pv/pvSubArrayCopy.h>
+#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-
+#include <pv/pvDatabase.h>
 #include <pv/channelProviderLocal.h>
 
 using namespace epics::pvData;

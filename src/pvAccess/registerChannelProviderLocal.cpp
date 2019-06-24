@@ -11,29 +11,14 @@
 
 /* Author: Marty Kraimer */
 
-#include <cstddef>
-#include <cstdlib>
-#include <cstddef>
-#include <string>
-#include <cstdio>
-#include <memory>
-#include <iostream>
-
-#include <cantProceed.h>
-#include <epicsStdio.h>
-#include <epicsMutex.h>
-#include <epicsEvent.h>
-#include <epicsThread.h>
+#include <epicsExport.h>
 #include <iocsh.h>
-#include <shareLib.h>
-#include <epicsExit.h>
-
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-// this declared epicsExportSharedSymbols
-#include <epicsExport.h>
 
+#define epicsExportSharedSymbols
+#include <pv/pvDatabase.h>
 #include <pv/channelProviderLocal.h>
 
 using std::cout;

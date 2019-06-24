@@ -16,7 +16,7 @@
 
 
 #define epicsExportSharedSymbols
-
+#include <pv/pvDatabase.h>
 #include <pv/controlSupport.h>
 
 using std::tr1::static_pointer_cast;

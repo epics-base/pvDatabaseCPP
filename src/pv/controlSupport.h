@@ -10,19 +10,9 @@
 #ifndef CONTROLSUPPORT_H
 #define CONTROLSUPPORT_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvdatabaseEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <pv/pvDatabase.h>
 #include <pv/pvSupport.h>
 #include <pv/pvStructureCopy.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

@@ -10,21 +10,12 @@
 #ifndef SCALARALARMSUPPORT_H
 #define SCALARALARMSUPPORT_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvdatabaseEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
 
 #include <pv/pvDatabase.h>
 #include <pv/pvSupport.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
 #include <pv/pvStructureCopy.h>
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
 
 #include <shareLib.h>
 

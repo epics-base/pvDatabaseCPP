@@ -13,6 +13,8 @@
 #include <pv/convert.h>
 #include <pv/pvStructureCopy.h>
 #include <pv/pvData.h>
+#include <list>
+#include <pv/pvTimeStamp.h>
 
 #define epicsExportSharedSymbols
 #include <pv/pvDatabase.h>
