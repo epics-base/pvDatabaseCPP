@@ -15,12 +15,16 @@
 #include <pv/thread.h>
 #include <pv/bitSetUtil.h>
 #include <pv/pvData.h>
+#include <pv/pvAccess.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
+#include <pv/serverContext.h>
 #include <pv/timeStamp.h>
 #include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
-#include <pv/channelProviderLocal.h>
+#include "pv/pvDatabase.h"
+#include "pv/channelProviderLocal.h"
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

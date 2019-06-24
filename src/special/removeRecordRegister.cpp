@@ -11,12 +11,19 @@
 
 /* Author: Marty Kraimer */
 #include <epicsExport.h>
+#include <epicsThread.h>
 #include <iocsh.h>
+#include <pv/event.h>
 #include <pv/pvAccess.h>
+#include <pv/serverContext.h>
+#include <pv/pvData.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
+#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
-#include <pv/removeRecord.h>
+#include "pv/pvDatabase.h"
+#include "pv/removeRecord.h"
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

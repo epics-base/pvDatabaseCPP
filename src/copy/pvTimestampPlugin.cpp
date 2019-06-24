@@ -11,6 +11,7 @@
 #include <pv/convert.h>
 #include <pv/pvTimeStamp.h>
 #define epicsExportSharedSymbols
+#include "pv/pvPlugin.h"
 #include "pv/pvTimestampPlugin.h"
 
 

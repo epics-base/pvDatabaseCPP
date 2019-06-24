@@ -8,8 +8,7 @@
  * @author mrk
  * @date 2019.06.01
  */
-#include <pv/pvDatabase.h>
-#include <pv/pvSupport.h>
+
 #include <pv/convert.h>
 #include <pv/standardField.h>
 #include <pv/alarm.h>
@@ -18,8 +17,9 @@
 
 
 #define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
-#include <pv/scalarAlarmSupport.h>
+#include <pv/pvSupport.h>
+#include "pv/pvDatabase.h"
+#include "pv/scalarAlarmSupport.h"
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;

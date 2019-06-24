@@ -13,13 +13,21 @@
 
 #include <epicsGuard.h>
 #include <epicsThread.h>
+#include <pv/pvData.h>
+#include <pv/pvAccess.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
 #include <pv/timeStamp.h>
+#include <pv/createRequest.h>
+#include <pv/pvaVersion.h>
+#include <pv/pvaVersionNum.h>
+#include <pv/serverContext.h>
 #include <pv/pvSubArrayCopy.h>
 #include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
-#include <pv/channelProviderLocal.h>
+#include "pv/pvDatabase.h"
+#include "pv/channelProviderLocal.h"
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

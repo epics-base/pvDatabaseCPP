@@ -18,8 +18,8 @@
 
 
 #define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
-#include <pv/channelProviderLocal.h>
+#include "pv/pvDatabase.h"
+#include "pv/channelProviderLocal.h"
 
 using std::cout;
 using std::endl;
