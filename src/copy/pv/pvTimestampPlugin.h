@@ -6,10 +6,6 @@
 #ifndef PVTIMESTAMPPLUGIN_H
 #define PVTIMESTAMPPLUGIN_H
 
-#if defined(_WIN32) && !defined(NOMINMAX)
-#define NOMINMAX
-#endif
-
 #include <string>
 #include <map>
 #include <pv/lock.h>
@@ -60,7 +56,7 @@ public:
 };
 
 /**
- * @brief  A filter that sets a timeStamp to the current time.
+ * @brief  A filter that sets a timeStamp to/from the current field or pvCopy.
  */
 class epicsShareClass PVTimestampFilter : public PVFilter
 {

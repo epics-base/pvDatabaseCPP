@@ -9,7 +9,7 @@
 #include <pv/convert.h>
 #include <pv/pvSubArrayCopy.h>
 #define epicsExportSharedSymbols
-#include <pv/pvArrayPlugin.h>
+#include "pv/pvArrayPlugin.h"
 
 using std::string;
 using std::size_t;
@@ -177,8 +177,8 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvCopy,const BitSetPtr & bitSet,bo
     } else {
     	for(long i=0; i<len; ++i) {
     	    copy(*copyArray,indfrom,1,*masterArray,indto,1,1);
-    	    indfrom += increment;
-    	     indto += 1;
+    	    indfrom += 1;
+    	     indto += increment;
     	}
     }
     return true;

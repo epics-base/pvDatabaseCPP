@@ -1,4 +1,4 @@
-/* channelChannelProviderLocal.cpp */
+/* channelProviderLocal.cpp */
 /**
  * Copyright - See the COPYRIGHT that is included with this distribution.
  * EPICS pvData is distributed subject to a Software License Agreement found
@@ -10,13 +10,17 @@
  */
 
 #include <epicsThread.h>
-
+#include <epicsExport.h>
 #include <pv/serverContext.h>
 #include <pv/syncChannelFind.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
+#include <pv/timeStamp.h>
+#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
-
-#include <pv/channelProviderLocal.h>
+#include "pv/pvDatabase.h"
+#include "pv/channelProviderLocal.h"
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;

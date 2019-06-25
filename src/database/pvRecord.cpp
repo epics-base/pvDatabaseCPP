@@ -8,13 +8,25 @@
  * @author mrk
  * @date 2012.11.21
  */
+#include <list>
 #include <epicsGuard.h>
 #include <epicsThread.h>
-
-#define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
+#include <pv/status.h>
+#include <pv/pvAccess.h>
+#include <pv/createRequest.h>
+#include <pv/pvaVersion.h>
+#include <pv/pvaVersionNum.h>
+#include <pv/monitor.h>
+#include <pv/convert.h>
+#include <pv/rpcService.h>
+#include <pv/timeStamp.h>
+#include <pv/pvData.h>
+#include <pv/rpcService.h>
+#include <pv/pvTimeStamp.h>
 #include <pv/pvStructureCopy.h>
 
+#define epicsExportSharedSymbols
+#include "pv/pvDatabase.h"
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
@@ -101,20 +113,6 @@ PVRecord::~PVRecord()
 
 void PVRecord::remove()
 {
-#ifdef XXX
-    {
-        epicsGuard<epics::pvData::Mutex> guard(mutex);
-        if(traceLevel>0) {
-            cout << "PVRecord::remove() " << recordName 
-                 << " isDestroyed " << (isDestroyed ? "true" : "false")
-                 << endl;
-        }
-        if(isDestroyed) {
-            return;
-        }
-        isDestroyed = true;
-    }
-#endif
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
     pvTimeStamp.detach();     

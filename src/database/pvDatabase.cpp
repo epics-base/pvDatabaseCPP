@@ -10,13 +10,19 @@
  */
 
 #include <epicsGuard.h>
-#define epicsExportSharedSymbols
-#include <pv/pvDatabase.h>
+#include <list>
+#include <map>
+#include <pv/pvData.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
 #include <pv/pvStructureCopy.h>
-#include <pv/pvPlugin.h>
-#include <pv/pvArrayPlugin.h>
-#include <pv/pvTimestampPlugin.h>
-#include <pv/pvDeadbandPlugin.h>
+
+#define epicsExportSharedSymbols
+#include "pv/pvDatabase.h"
+#include "pv/pvPlugin.h"
+#include "pv/pvArrayPlugin.h"
+#include "pv/pvTimestampPlugin.h"
+#include "pv/pvDeadbandPlugin.h"
 
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;

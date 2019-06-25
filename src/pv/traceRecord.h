@@ -11,9 +11,10 @@
 #ifndef TRACERECORD_H
 #define TRACERECORD_H
 
+#include <pv/channelProviderLocal.h>
+
 #include <shareLib.h>
 
-#include <pv/channelProviderLocal.h>
 
 namespace epics { namespace pvDatabase { 
 

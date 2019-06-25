@@ -6,26 +6,15 @@
 #ifndef PVDATABASE_H
 #define PVDATABASE_H
 
-#ifdef epicsExportSharedSymbols
-#   define pvdatabaseEpicsExportSharedSymbols
-#   undef epicsExportSharedSymbols
-#endif
-
 #include <list>
 #include <map>
 
 #include <pv/pvData.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
-
-
-#ifdef pvdatabaseEpicsExportSharedSymbols
-#   define epicsExportSharedSymbols
-#	undef pvdatabaseEpicsExportSharedSymbols
-#endif
+#include <pv/pvStructureCopy.h>
 
 #include <shareLib.h>
-#include <pv/pvStructureCopy.h>
 
 namespace epics { namespace pvDatabase { 
 

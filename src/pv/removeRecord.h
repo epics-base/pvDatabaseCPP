@@ -11,9 +11,9 @@
 #ifndef REMOVERECORD_H
 #define REMOVERECORD_H
 
-#include <shareLib.h>
-
 #include <pv/channelProviderLocal.h>
+
+#include <shareLib.h>
 
 namespace epics { namespace pvDatabase { 
 

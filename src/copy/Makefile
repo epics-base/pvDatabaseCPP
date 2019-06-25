@@ -1,15 +1,27 @@
-# This is a Makefile fragment, see ../Makefile
+TOP = ../..
+include $(TOP)/configure/CONFIG
 
-SRC_DIRS += $(PVDATABASE_SRC)/copy
+LIBRARY += pvCopy
 
-INC += pv/pvStructureCopy.h
+SHRLIB_VERSION ?= $(EPICS_PVA_MAJOR_VERSION).$(EPICS_PVA_MINOR_VERSION).$(EPICS_PVA_MAINTENANCE_VERSION)
+
+# needed for Windows
+LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
+
 INC += pv/pvPlugin.h
+INC += pv/pvStructureCopy.h
 INC += pv/pvArrayPlugin.h
 INC += pv/pvDeadbandPlugin.h
 INC += pv/pvTimestampPlugin.h
 
-LIBSRCS += pvCopy.cpp
 LIBSRCS += pvPlugin.cpp
+LIBSRCS += pvCopy.cpp
 LIBSRCS += pvArrayPlugin.cpp
 LIBSRCS += pvDeadbandPlugin.cpp
 LIBSRCS += pvTimestampPlugin.cpp
+
+pvCopy_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
+pvCopy_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+include $(TOP)/configure/RULES
+

@@ -4,12 +4,15 @@
  */
 #include <stdlib.h>
 
+#include <string>
+#include <map>
+#include <pv/lock.h>
 #include <pv/pvData.h>
 #include <pv/bitSet.h>
 #include <pv/convert.h>
-#include <pv/pvSubArrayCopy.h>
+
 #define epicsExportSharedSymbols
-#include <pv/pvDeadbandPlugin.h>
+#include "pv/pvDeadbandPlugin.h"
 
 using std::string;
 using std::size_t;
@@ -64,9 +67,9 @@ PVDeadbandFilterPtr PVDeadbandFilter::create(
     ScalarConstPtr scalar = static_pointer_cast<const Scalar>(field);
     if(!ScalarTypeFunc::isNumeric(scalar->getScalarType())) return PVDeadbandFilterPtr();
     bool absolute = false;
-    if(requestValue.find("abs")>=0) {
+    if(requestValue.find("abs")==0) {
         absolute = true;
-    } else if(requestValue.find("rel")>=0) {
+    } else if(requestValue.find("rel")==0) {
         absolute = false;
     } else {
         return PVDeadbandFilterPtr();
