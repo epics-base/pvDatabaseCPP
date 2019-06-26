@@ -23,9 +23,9 @@
 #include <pv/pvaVersionNum.h>
 #include <pv/serverContext.h>
 #include <pv/pvSubArrayCopy.h>
-#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
 #include "pv/channelProviderLocal.h"
 

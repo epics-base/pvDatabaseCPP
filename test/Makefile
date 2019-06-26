@@ -6,7 +6,6 @@ include $(TOP)/configure/CONFIG
 PVDATABASE_TEST = $(TOP)/test
 
 PROD_LIBS += pvDatabase
-PROD_LIBS += pvCopy
 PROD_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 PROD_LIBS += $(EPICS_BASE_IOC_LIBS)
 

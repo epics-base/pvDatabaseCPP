@@ -20,9 +20,9 @@
 #include <pv/rpcService.h>
 #include <pv/serverContext.h>
 #include <pv/timeStamp.h>
-#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
 #include "pv/channelProviderLocal.h"
 

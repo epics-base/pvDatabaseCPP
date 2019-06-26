@@ -13,21 +13,31 @@ LIBRARY += pvDatabase
 # shared library ABI version.
 SHRLIB_VERSION ?= $(EPICS_PVA_MAJOR_VERSION).$(EPICS_PVA_MINOR_VERSION).$(EPICS_PVA_MAINTENANCE_VERSION)
 
-INC += pv/channelProviderLocal.h
+INC += pv/pvPlugin.h
+INC += pv/pvStructureCopy.h
+INC += pv/pvArrayPlugin.h
+INC += pv/pvDeadbandPlugin.h
+INC += pv/pvTimestampPlugin.h
+
 INC += pv/pvDatabase.h
+
+INC += pv/channelProviderLocal.h
+
 INC += pv/traceRecord.h
 INC += pv/removeRecord.h
 INC += pv/processRecord.h
+
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
 
+
+include $(PVDATABASE_SRC)/copy/Makefile
 include $(PVDATABASE_SRC)/database/Makefile
 include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
 
-pvDatabase_LIBS += pvCopy
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 

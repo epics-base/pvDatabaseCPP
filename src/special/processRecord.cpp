@@ -27,9 +27,9 @@
 #include <pv/pvAccess.h>
 #include <pv/status.h>
 #include <pv/serverContext.h>
-#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
 #include "pv/processRecord.h"
 

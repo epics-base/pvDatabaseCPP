@@ -9,12 +9,13 @@
  * @date 2019.06.01
  */
 
-
+#include <pv/pvData.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
 #include <pv/convert.h>
 #include <pv/standardField.h>
-#include <pv/pvStructureCopy.h>
-
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include <pv/pvSupport.h>
 #include "pv/pvDatabase.h"
 #include "pv/controlSupport.h"
