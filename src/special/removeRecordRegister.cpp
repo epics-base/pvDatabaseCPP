@@ -19,9 +19,9 @@
 #include <pv/pvData.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
-#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
 #include "pv/removeRecord.h"
 

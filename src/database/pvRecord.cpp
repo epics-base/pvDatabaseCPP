@@ -23,9 +23,9 @@
 #include <pv/pvData.h>
 #include <pv/rpcService.h>
 #include <pv/pvTimeStamp.h>
-#include <pv/pvStructureCopy.h>
 
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
 
 using std::tr1::static_pointer_cast;
