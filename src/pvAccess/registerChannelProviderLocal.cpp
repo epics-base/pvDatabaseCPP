@@ -11,12 +11,12 @@
 
 /* Author: Marty Kraimer */
 
-#include <epicsExport.h>
 #include <iocsh.h>
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-
+// The following must be the last include for code pvDatabase uses
+#include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvDatabase.h"
 #include "pv/channelProviderLocal.h"

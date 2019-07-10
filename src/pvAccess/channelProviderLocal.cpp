@@ -10,7 +10,6 @@
  */
 
 #include <epicsThread.h>
-#include <epicsExport.h>
 #include <pv/serverContext.h>
 #include <pv/syncChannelFind.h>
 #include <pv/pvTimeStamp.h>

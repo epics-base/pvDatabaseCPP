@@ -10,7 +10,6 @@
 
 
 /* Author: Marty Kraimer */
-#include <epicsExport.h>
 #include <epicsThread.h>
 #include <iocsh.h>
 #include <pv/event.h>
@@ -20,6 +19,8 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
 
+// The following must be the last include for code pvDatabase uses
+#include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
