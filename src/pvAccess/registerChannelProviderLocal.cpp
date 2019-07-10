@@ -14,6 +14,10 @@
 #include <iocsh.h>
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
+#include <pv/syncChannelFind.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/rpcService.h>
+#include <pv/timeStamp.h>
 
 // The following must be the last include for code pvDatabase uses
 #include <epicsExport.h>
