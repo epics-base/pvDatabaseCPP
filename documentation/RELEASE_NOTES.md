@@ -2,10 +2,11 @@
 
 This document summarizes the changes to the module between releases.
 
-## Master (June 2019)
+## Release 4.5.0 (EPICS 7.0.3, Jul 2019)
 
 1) support is a new feature.
 2) processRecord is new
+
 
 ## Release 4.4.2 (EPICS 7.0.2.2, Apr 2019)
 
@@ -19,6 +20,7 @@ Now if a request is made for a subfield of a non structure field
     a) if more than one subfield is requested an exception is thrown 
     b) if the subfield is the type for the current union the request succeeds
     c) if type is not the same an exception is thrown
+
 
 ## Release 4.4.1 (EPICS 7.0.2.1, Mar 2019)
 
