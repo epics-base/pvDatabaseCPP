@@ -108,12 +108,13 @@ PVRecord::~PVRecord()
     if(traceLevel>0) {
         cout << "~PVRecord() " << recordName << endl;
     }
-    notifyClients();
+//    notifyClients();
 }
 
 void PVRecord::remove()
 {
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
+    notifyClients();
     if(pvDatabase) pvDatabase->removeRecord(shared_from_this());
     pvTimeStamp.detach();     
     for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
