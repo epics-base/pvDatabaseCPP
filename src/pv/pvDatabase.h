@@ -97,11 +97,13 @@ public:
      *  get rid of listeners and requesters.
      *  If derived class overrides this then it must call PVRecord::remove()
      *  after it has destroyed any resorces it uses.
+     * @param callpvDatabaseRemoveRecord Should pvDatabase.removeRecord be called.
+     * Normally this is only set false by PVDatabase::removeRecord.
      */
-    virtual void remove();
+    virtual void remove(bool callpvDatabaseRemoveRecord = true);
     /**
      *  @brief Optional method for derived class.
-     *
+     * 
      * Return a service corresponding to the specified request PVStructure.
      * @param pvRequest The request PVStructure 
      * @return The corresponding service
@@ -255,7 +257,6 @@ private:
     PVRecordFieldPtr findPVRecordField(
         PVRecordStructurePtr const & pvrs,
         epics::pvData::PVFieldPtr const & pvField);
-    void notifyClients();
 
     std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
@@ -499,9 +500,11 @@ public:
     /**
      * @brief Remove a record.
      * @param record The record to remove.
+     * @param callRemove Call pvRecord->remove()
+     * Normally this is only set false by pvRecord.remove()
      * @return <b>true</b> if record was removed.
      */
-    bool removeRecord(PVRecordPtr const & record);
+    bool removeRecord(PVRecordPtr const & record,bool callRemove = true);
     /**
      * @brief Get the names of all the records in the database.
      * @return The names.

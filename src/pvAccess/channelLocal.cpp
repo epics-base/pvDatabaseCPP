@@ -156,10 +156,7 @@ ChannelProcessLocalPtr ChannelProcessLocal::create(
 
 ChannelProcessLocal::~ChannelProcessLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelProcessLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelProcessLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelProcessLocal::getChannel()
@@ -304,10 +301,7 @@ ChannelGetLocalPtr ChannelGetLocal::create(
 
 ChannelGetLocal::~ChannelGetLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelGetLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelGetLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelGetLocal::getChannel()
@@ -469,10 +463,7 @@ ChannelPutLocalPtr ChannelPutLocal::create(
 
 ChannelPutLocal::~ChannelPutLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelPutLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelPutLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelPutLocal::getChannel()
@@ -662,10 +653,7 @@ ChannelPutGetLocalPtr ChannelPutGetLocal::create(
 
 ChannelPutGetLocal::~ChannelPutGetLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelPutGetLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelPutGetLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelPutGetLocal::getChannel()
@@ -862,10 +850,7 @@ ChannelRPCLocalPtr ChannelRPCLocal::create(
 
 ChannelRPCLocal::~ChannelRPCLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelRPCLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelRPCLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelRPCLocal::getChannel()
@@ -1104,10 +1089,7 @@ ChannelArrayLocalPtr ChannelArrayLocal::create(
 
 ChannelArrayLocal::~ChannelArrayLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(pvr && pvr->getTraceLevel()>0) {
-        cout << "~ChannelArrayLocal() " << pvr->getRecordName() << endl;
-    }
+//cout << "~ChannelArrayLocal()\n";
 }
 
 std::tr1::shared_ptr<Channel> ChannelArrayLocal::getChannel()
@@ -1261,12 +1243,7 @@ ChannelLocal::ChannelLocal(
 
 ChannelLocal::~ChannelLocal()
 {
-    PVRecordPtr pvr(pvRecord.lock());
-    if(!pvr) return;
-    if(pvr->getTraceLevel()>0)
-    {
-        cout << "~ChannelLocal()" << endl;
-    }
+// cout << "~ChannelLocal()" << endl;
 }
 
 ChannelProvider::shared_pointer ChannelLocal::getProvider()

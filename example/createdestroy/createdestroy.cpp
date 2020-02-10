@@ -1,13 +1,15 @@
 /******************************************************************************
 * This is modeled after a test program created by Bertrand Bauvir from the ITER Organization
 ******************************************************************************/
-
+#include <iostream>
+#include <epicsGetopt.h>
 
 #include <pv/pvData.h>
 #include <pv/pvDatabase.h>
 #include <pv/serverContext.h>
 #include <pv/channelProviderLocal.h>
 #include <pva/client.h>
+#include <epicsEvent.h>
 
 // Local header files
 
@@ -17,12 +19,9 @@
 
 using std::tr1::static_pointer_cast;
 
-// Type definition
-
 class Record : public ::epics::pvDatabase::PVRecord
 {
-
-  public:
+public:
     std::shared_ptr<::epics::pvData::PVStructure> __pv;
     static std::shared_ptr<Record> create (std::string const & name, std::shared_ptr<::epics::pvData::PVStructure> const & pvstruct);
     Record (std::string const & name, std::shared_ptr<epics::pvData::PVStructure> const & pvstruct)
@@ -32,14 +31,10 @@ class Record : public ::epics::pvDatabase::PVRecord
 
 std::shared_ptr<Record> Record::create (std::string const & name, std::shared_ptr<::epics::pvData::PVStructure> const & pvstruct) 
 { 
-
   std::shared_ptr<Record> pvrecord (new Record (name, pvstruct)); 
-  
   // Need to be explicitly called .. not part of the base constructor
   if(!pvrecord->init()) pvrecord.reset();
-
   return pvrecord; 
-
 }
 
 void Record::process (void)
@@ -47,24 +42,85 @@ void Record::process (void)
   PVRecord::process();
   std::string name = this->getRecordName();
   std::cout << this->getRecordName()
-            << this->getPVStructure()
-            << "\n";
+            << " process\n";
+}
+
+class MyMonitor
+{
+private:
+    std::tr1::shared_ptr<::pvac::MonitorSync> monitor;
+    MyMonitor(std::tr1::shared_ptr<::pvac::ClientChannel> const &channel)
+    {
+         monitor = std::tr1::shared_ptr<::pvac::MonitorSync>(new ::pvac::MonitorSync(channel->monitor()));
+    }
+public:
+    static std::tr1::shared_ptr<MyMonitor> create(std::tr1::shared_ptr<::pvac::ClientChannel> const &channel)
+    {
+         return std::tr1::shared_ptr<MyMonitor>(new MyMonitor(channel));
+    }
+    void getData();
+};
+
+void MyMonitor::getData()
+{
+    while (true) {
+       if(!monitor->wait(.001)) break;
+       switch(monitor->event.event) {
+            case pvac::MonitorEvent::Fail:
+                std::cerr<<monitor->name()<<" : Error : "<<monitor->event.message<<"\n";
+                return;
+            case pvac::MonitorEvent::Cancel:
+                std::cout<<monitor->name()<<" <Cancel>\n";
+                return;
+            case pvac::MonitorEvent::Disconnect:
+                std::cout<<monitor->name()<<" <Disconnect>\n";
+                return;
+            case pvac::MonitorEvent::Data:
+                while(monitor->poll()) {
+                    std::cout<<monitor->name()<<" : "<<monitor->root;
+                }
+                if(monitor->complete()) {
+                   return;
+                }
+        }
+    }
 }
 
 
 int main (int argc, char** argv) 
 {
-  bool verbose = false;
+  int verbose = 0;
   unsigned loopctr = 0;
+  unsigned pausectr = 0;
+  bool allowExit = false;
+    int opt;
+    while((opt = getopt(argc, argv, "v:ah")) != -1) {
+        switch(opt) {
+            case 'v':
+               verbose = std::stoi(optarg);
+               break;
+            case 'a' :
+               allowExit = true;
+               break;
+            case 'h':
+             std::cout << " -v level -a -h \n";
+             std::cout << "default\n";
+             std::cout << "-v " << verbose
+                  << " -a  false" 
+                  << "\n";           
+                return 0;
+            default:
+                std::cerr<<"Unknown argument: "<<opt<<"\n";
+                return -1;
+        }
+    }
 
-  // Create PVA context
   ::epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
   ::epics::pvDatabase::ChannelProviderLocalPtr channelProvider = epics::pvDatabase::getChannelProviderLocal();
-
-  // Start PVA server
-  epics::pvAccess::ServerContext::shared_pointer context = epics::pvAccess::startPVAServer(epics::pvAccess::PVACCESS_ALL_PROVIDERS, 0, true, true);
-
-
+  epics::pvAccess::ServerContext::shared_pointer context 
+      = epics::pvAccess::startPVAServer(epics::pvAccess::PVACCESS_ALL_PROVIDERS, 0, true, true);
+  std::string startset("starting set of puts valuectr = ");
+  
   while (true) {
       loopctr++;
       std::string name = DEFAULT_RECORD_NAME + std::to_string(loopctr);
@@ -73,22 +129,35 @@ int main (int argc, char** argv)
       // Create record structure
       ::epics::pvData::FieldBuilderPtr builder = epics::pvData::getFieldCreate()->createFieldBuilder();
       builder->add("value", ::epics::pvData::pvULong);
-      std::shared_ptr<::epics::pvData::PVStructure> pvstruct = ::epics::pvData::getPVDataCreate()->createPVStructure(builder->createStructure());
+      std::shared_ptr<::epics::pvData::PVStructure> pvstruct 
+          = ::epics::pvData::getPVDataCreate()->createPVStructure(builder->createStructure());
       std::shared_ptr<Record> pvrecord = Record::create(std::string(name), pvstruct);
       master->addRecord(pvrecord);
-      if (verbose) pvrecord->setTraceLevel(3);
+      pvrecord->setTraceLevel(verbose);
       // Start PVA (local) client
       std::tr1::shared_ptr<::pvac::ClientProvider> provider
           = std::tr1::shared_ptr<::pvac::ClientProvider>(new ::pvac::ClientProvider ("pva"));
       std::tr1::shared_ptr<::pvac::ClientChannel> channel
           = std::tr1::shared_ptr<::pvac::ClientChannel>(new ::pvac::ClientChannel (provider->connect(name)));
-      builder = epics::pvData::getFieldCreate()->createFieldBuilder();
-          builder->add("value", ::epics::pvData::pvULong);
-          std::shared_ptr<::epics::pvData::PVStructure> c_pvstruct =
-               ::epics::pvData::getPVDataCreate()->createPVStructure(builder->createStructure());
+      std::tr1::shared_ptr<MyMonitor> mymonitor = MyMonitor::create(channel);
       unsigned valuectr = loopctr;
-      for (int ind=0; ind<10; ind++) channel->put().set("value",valuectr++).exec();
-      master->removeRecord(pvrecord);
+      std::cout << startset << loopctr << "\n";
+      for (int ind=0; ind<10; ind++) {
+          channel->put().set("value",valuectr++).exec();
+          mymonitor->getData();
+      }
+      pausectr++;
+      if(allowExit && pausectr>500) {
+          pausectr = 0;
+          std::cout << "Type exit to stop: \n";
+          int c = std::cin.peek();  // peek character
+          if ( c == EOF ) continue;
+          std::string str;
+          std::getline(std::cin,str);
+          if(str.compare("exit")==0) break;
+      }
+      pvrecord->remove();
+//      master->removeRecord(pvrecord);
   }
   return (0);
 }
