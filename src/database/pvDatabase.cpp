@@ -92,18 +92,28 @@ bool PVDatabase::addRecord(PVRecordPtr const & record)
     return true;
 }
 
-bool PVDatabase::removeRecord(PVRecordPtr const & record,bool callRemove)
+PVRecordWPtr PVDatabase::removeFromMap(PVRecordPtr const & record)
 {
-    if(record->getTraceLevel()>0) {
-        cout << "PVDatabase::removeRecord " << record->getRecordName() << endl;
-    }
     epicsGuard<epics::pvData::Mutex> guard(mutex);
     string recordName = record->getRecordName();
     PVRecordMap::iterator iter = recordMap.find(recordName);
     if(iter!=recordMap.end())  {
         PVRecordPtr pvRecord = (*iter).second;
-        if(callRemove) pvRecord->remove(false);
         recordMap.erase(iter);
+        return pvRecord->shared_from_this();
+    }
+    return PVRecordWPtr();
+}
+
+bool PVDatabase::removeRecord(PVRecordPtr const & record)
+{
+    if(record->getTraceLevel()>0) {
+        cout << "PVDatabase::removeRecord " << record->getRecordName() << endl;
+    }
+    epicsGuard<epics::pvData::Mutex> guard(mutex);
+    PVRecordWPtr pvRecord = removeFromMap(record);
+    if(pvRecord.use_count()!=0) {
+        pvRecord.lock()->unlistenClients();
         return true;
     }
     return false;

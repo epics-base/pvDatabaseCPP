@@ -65,17 +65,9 @@ PVRecord::~PVRecord()
     }
 }
 
-void PVRecord::remove(bool callpvDatabaseRemoveRecord)
+void PVRecord::unlistenClients()
 {
-    if(traceLevel>0) {
-            cout << "PVRecord::remove() " << recordName << endl;
-    }
-    epicsGuard<epics::pvData::Mutex> guard(mutex);
-    if(callpvDatabaseRemoveRecord) {
-        PVDatabasePtr pvDatabase(PVDatabase::getMaster());
-        if(pvDatabase) pvDatabase->removeRecord(shared_from_this(),false);
-    }
-    pvTimeStamp.detach();     
+    epicsGuard<epics::pvData::Mutex> guard(mutex);   
     for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
          iter!=pvListenerList.end();
          iter++ )
@@ -100,6 +92,19 @@ void PVRecord::remove(bool callpvDatabaseRemoveRecord)
         client->detach(shared_from_this());
     }
     clientList.clear();
+}
+
+
+void PVRecord::remove()
+{
+    if(traceLevel>0) {
+            cout << "PVRecord::remove() " << recordName << endl;
+    }
+    unlistenClients();
+    epicsGuard<epics::pvData::Mutex> guard(mutex);
+    PVDatabasePtr pvDatabase(PVDatabase::getMaster());
+    if(pvDatabase) pvDatabase->removeFromMap(shared_from_this());
+    pvTimeStamp.detach();     
 }
 
 void PVRecord::initPVRecord()

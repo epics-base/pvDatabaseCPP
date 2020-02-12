@@ -93,28 +93,38 @@ int main (int argc, char** argv)
   unsigned loopctr = 0;
   unsigned pausectr = 0;
   bool allowExit = false;
-    int opt;
-    while((opt = getopt(argc, argv, "v:ah")) != -1) {
-        switch(opt) {
-            case 'v':
-               verbose = std::stoi(optarg);
-               break;
-            case 'a' :
-               allowExit = true;
-               break;
-            case 'h':
-             std::cout << " -v level -a -h \n";
+  bool callRecord = false;
+  bool callDatabase = false;
+  int opt;
+  while((opt = getopt(argc, argv, "v:ardh")) != -1) {
+      switch(opt) {
+          case 'v':
+             verbose = std::stoi(optarg);
+             break;
+          case 'a' :
+             allowExit = true;
+             break;
+          case 'r' :
+             callRecord = true;
+             break;
+          case 'd' :
+             callDatabase = true;
+             break;
+          case 'h':
+             std::cout << " -v level -a -r -d -h \n";
+             std::cout << "-r call pvRecord->remove -d call master->removeRecord\n";
              std::cout << "default\n";
              std::cout << "-v " << verbose
                   << " -a  false" 
+                  << " -d"
                   << "\n";           
-                return 0;
-            default:
-                std::cerr<<"Unknown argument: "<<opt<<"\n";
-                return -1;
-        }
-    }
-
+              return 0;
+          default:
+              std::cerr<<"Unknown argument: "<<opt<<"\n";
+              return -1;
+      }
+  }
+  if(!callRecord && !callDatabase) callDatabase = true;
   ::epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
   ::epics::pvDatabase::ChannelProviderLocalPtr channelProvider = epics::pvDatabase::getChannelProviderLocal();
   epics::pvAccess::ServerContext::shared_pointer context 
@@ -142,12 +152,12 @@ int main (int argc, char** argv)
       std::tr1::shared_ptr<MyMonitor> mymonitor = MyMonitor::create(channel);
       unsigned valuectr = loopctr;
       std::cout << startset << loopctr << "\n";
-      for (int ind=0; ind<10; ind++) {
+      for (int ind=0; ind<100; ind++) {
           channel->put().set("value",valuectr++).exec();
           mymonitor->getData();
       }
       pausectr++;
-      if(allowExit && pausectr>500) {
+      if(allowExit && pausectr>10) {
           pausectr = 0;
           std::cout << "Type exit to stop: \n";
           int c = std::cin.peek();  // peek character
@@ -156,8 +166,14 @@ int main (int argc, char** argv)
           std::getline(std::cin,str);
           if(str.compare("exit")==0) break;
       }
-      pvrecord->remove();
-//      master->removeRecord(pvrecord);
+      if(callRecord) {
+std::cout << "callRecord\n";
+          pvrecord->remove();
+      }
+      if(callDatabase) {
+std::cout << "callDatabase\n";
+          master->removeRecord(pvrecord);
+      }
   }
   return (0);
 }
