@@ -30,7 +30,7 @@ namespace epics { namespace pvDatabase {
 
 ScalarAlarmSupport::~ScalarAlarmSupport()
 {
-cout << "ScalarAlarmSupport::~ScalarAlarmSupport()\n";
+//cout << "ScalarAlarmSupport::~ScalarAlarmSupport()\n";
 }
 
 

@@ -191,10 +191,7 @@ MonitorLocal::MonitorLocal(
 
 MonitorLocal::~MonitorLocal()
 {
-    if(pvRecord->getTraceLevel()>0)
-    {
-        cout << "MonitorLocal::~MonitorLocal()" << endl;
-    }
+//cout << "MonitorLocal::~MonitorLocal()" << endl;
 }
 
 

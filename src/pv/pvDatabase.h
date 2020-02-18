@@ -101,7 +101,7 @@ public:
     virtual void remove();
     /**
      *  @brief Optional method for derived class.
-     *
+     * 
      * Return a service corresponding to the specified request PVStructure.
      * @param pvRequest The request PVStructure 
      * @return The corresponding service
@@ -252,10 +252,12 @@ protected:
      */
     void initPVRecord();
 private:
+    friend class PVDatabase;
+    void unlistenClients();
+
     PVRecordFieldPtr findPVRecordField(
         PVRecordStructurePtr const & pvrs,
         epics::pvData::PVFieldPtr const & pvField);
-    void notifyClients();
 
     std::string recordName;
     epics::pvData::PVStructurePtr pvStructure;
@@ -499,6 +501,7 @@ public:
     /**
      * @brief Remove a record.
      * @param record The record to remove.
+     *
      * @return <b>true</b> if record was removed.
      */
     bool removeRecord(PVRecordPtr const & record);
@@ -508,6 +511,9 @@ public:
      */
     epics::pvData::PVStringArrayPtr getRecordNames();
 private:
+    friend class PVRecord;
+    
+    PVRecordWPtr removeFromMap(PVRecordPtr const & record);
     PVDatabase();
     void lock();
     void unlock();

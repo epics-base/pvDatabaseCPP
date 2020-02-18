@@ -29,7 +29,7 @@ namespace epics { namespace pvDatabase {
 
 ControlSupport::~ControlSupport()
 {
-cout << "ControlSupport::~ControlSupport()\n";
+//cout << "ControlSupport::~ControlSupport()\n";
 }
 
 epics::pvData::StructureConstPtr ControlSupport::controlField(ScalarType scalarType)
