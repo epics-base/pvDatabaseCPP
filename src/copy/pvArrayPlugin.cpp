@@ -174,7 +174,7 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     	if (end < 0) end = 0;
 
     }
-    if(toCopy) {	
+    if(toCopy) {
     	if (end >= no_elements) end = no_elements - 1;
     	if (end - start >= 0) len = 1 + (end - start) / increment;
     	if(len<=0 || start>=no_elements) {
@@ -194,7 +194,6 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     	    }
     	}
     	copyArray->setLength(len);
-    	bitSet->set(masterField->getFieldOffset());
     	return true;
     }
     if (end - start >= 0) len = 1 + (end - start) / increment;
