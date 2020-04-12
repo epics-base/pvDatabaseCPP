@@ -151,8 +151,10 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
 {
     PVFieldPtr pvCopy = pvField;
     PVScalarArrayPtr copyArray;
+    bool isUnion = false;
     Type type = masterField->getField()->getType();
     if(type==epics::pvData::union_) {
+        isUnion = true;
         PVUnionPtr pvMasterUnion = std::tr1::static_pointer_cast<PVUnion>(masterField);
         PVUnionPtr pvCopyUnion = std::tr1::static_pointer_cast<PVUnion>(pvCopy);
         if(toCopy) pvCopyUnion->copy(*pvMasterUnion);
@@ -194,6 +196,7 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     	    }
     	}
     	copyArray->setLength(len);
+        bitSet->set(pvField->getFieldOffset());
     	return true;
     }
     if (end - start >= 0) len = 1 + (end - start) / increment;
@@ -210,7 +213,7 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     	     indto += increment;
     	}
     }
-    masterField->postPut();
+    if(isUnion) masterField->postPut();
     return true;
 }
 
