@@ -291,7 +291,7 @@ void MonitorLocal::dataPut(PVRecordFieldPtr const & pvRecordField)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::dataPut(pvRecordField)" << endl;
+        cout << "MonitorLocal::dataPut(pvRecordField)" << endl;
     }
     if(state!=active) return;
     {
@@ -316,7 +316,7 @@ void MonitorLocal::dataPut(
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::dataPut(requested,pvRecordField)" << endl;
+        cout << "MonitorLocal::dataPut(requested,pvRecordField)" << endl;
     }
     if(state!=active) return;
     {
@@ -343,7 +343,7 @@ void MonitorLocal::beginGroupPut(PVRecordPtr const & pvRecord)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::beginGroupPut()" << endl;
+        cout << "MonitorLocal::beginGroupPut()" << endl;
     }
     if(state!=active) return;
     {
@@ -357,7 +357,7 @@ void MonitorLocal::endGroupPut(PVRecordPtr const & pvRecord)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::endGroupPut dataChanged " << dataChanged << endl;
+        cout << "MonitorLocal::endGroupPut dataChanged " << dataChanged << endl;
     }
     if(state!=active) return;
     {
@@ -374,7 +374,7 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
 {
     if(pvRecord->getTraceLevel()>1)
     {
-        cout << "PVCopyMonitor::unlisten\n";
+        cout << "MonitorLocal::unlisten\n";
     }
     {
         Lock xx(mutex);
@@ -384,7 +384,7 @@ void MonitorLocal::unlisten(PVRecordPtr const & pvRecord)
     if(requester) {
         if(pvRecord->getTraceLevel()>1)
         {
-            cout << "PVCopyMonitor::unlisten calling requester->unlisten\n";
+            cout << "MonitorLocal::unlisten calling requester->unlisten\n";
         }
         requester->unlisten(getPtrSelf());
     }
