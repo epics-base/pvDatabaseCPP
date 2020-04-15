@@ -32,7 +32,7 @@
 
 //epicsShareFunc epics::pvData::PVStructurePtr createPowerSupply();
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 class PowerSupply;
 typedef std::tr1::shared_ptr<PowerSupply> PowerSupplyPtr;

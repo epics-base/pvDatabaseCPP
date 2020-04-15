@@ -130,7 +130,7 @@ PVArrayFilterPtr PVArrayFilter::create(
     }
     PVArrayFilterPtr filter =
          PVArrayFilterPtr(
-             new PVArrayFilter(start,increment,end,masterField,masterArray)); 
+             new PVArrayFilter(start,increment,end,masterField,masterArray));
     return filter;
 }
 

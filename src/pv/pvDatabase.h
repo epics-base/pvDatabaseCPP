@@ -16,7 +16,7 @@
 
 #include <shareLib.h>
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 class PVRecord;
 typedef std::tr1::shared_ptr<PVRecord> PVRecordPtr;
@@ -93,7 +93,7 @@ public:
     /**
      *  @brief remove record from database.
      *
-     * Remove the PVRecord. Release any resources used and 
+     * Remove the PVRecord. Release any resources used and
      *  get rid of listeners and requesters.
      *  If derived class overrides this then it must call PVRecord::remove()
      *  after it has destroyed any resorces it uses.
@@ -101,9 +101,9 @@ public:
     virtual void remove();
     /**
      *  @brief Optional method for derived class.
-     * 
+     *
      * Return a service corresponding to the specified request PVStructure.
-     * @param pvRequest The request PVStructure 
+     * @param pvRequest The request PVStructure
      * @return The corresponding service
      */
     virtual epics::pvAccess::RPCServiceAsync::shared_pointer getService(
@@ -112,7 +112,7 @@ public:
         return epics::pvAccess::RPCServiceAsync::shared_pointer();
     }
     /**
-     * @brief Creates a <b>soft</b> record. 
+     * @brief Creates a <b>soft</b> record.
      *
      * @param recordName The name of the record, which is also the channelName.
      * @param pvStructure The top level structure.
@@ -247,7 +247,7 @@ protected:
         epics::pvData::PVStructurePtr const & pvStructure);
     /**
      * @brief Initializes the base class.
-     * 
+     *
      * Must be called by derived classes.
      */
     void initPVRecord();
@@ -512,7 +512,7 @@ public:
     epics::pvData::PVStringArrayPtr getRecordNames();
 private:
     friend class PVRecord;
-    
+
     PVRecordWPtr removeFromMap(PVRecordPtr const & record);
     PVDatabase();
     void lock();

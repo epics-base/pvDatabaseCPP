@@ -26,7 +26,7 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace std;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 ScalarAlarmSupport::~ScalarAlarmSupport()
 {
@@ -83,7 +83,7 @@ bool ScalarAlarmSupport::init(
        pvHysteresis = pvScalarAlarm->getSubField<PVDouble>("hysteresis");
     }
     if(!pvScalarAlarm
-       || !pvLowAlarmLimit || !pvLowWarningLimit 
+       || !pvLowAlarmLimit || !pvLowWarningLimit
        || !pvLowWarningLimit || !pvHighAlarmLimit
        || !pvHysteresis)
     {

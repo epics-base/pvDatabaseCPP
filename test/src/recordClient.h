@@ -30,7 +30,7 @@
 
 #include <shareLib.h>
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 class RecordClient;
 typedef std::tr1::shared_ptr<RecordClient> RecordClientPtr;
@@ -59,7 +59,7 @@ public:
          std::cout << "RecordClient::detach record " << pvRecord->getRecordName() << std::endl;
          this->pvRecord.reset();
     }
-   
+
 private:
     RecordClient(PVRecordPtr const & pvRecord)
     : pvRecord(pvRecord)

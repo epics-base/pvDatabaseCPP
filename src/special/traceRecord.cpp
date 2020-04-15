@@ -35,7 +35,7 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace std;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 TraceRecordPtr TraceRecord::create(
     std::string const & recordName)
