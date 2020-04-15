@@ -98,4 +98,3 @@ public:
 
 }}
 #endif  /* PVTIMESTAMPPLUGIN_H */
-

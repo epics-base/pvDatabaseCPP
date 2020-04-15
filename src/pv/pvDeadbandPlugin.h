@@ -100,4 +100,3 @@ public:
 
 }}
 #endif  /* PVDEADBANDPLUGIN_H */
-

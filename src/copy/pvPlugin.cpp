@@ -38,4 +38,3 @@ PVPluginPtr PVPluginRegistry::find(const std::string & name)
 }
 
 }}
-

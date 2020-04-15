@@ -343,4 +343,3 @@ MAIN(testPlugin)
     ignoreTest();
     return 0;
 }
-

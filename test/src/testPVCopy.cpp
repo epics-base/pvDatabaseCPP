@@ -401,4 +401,3 @@ MAIN(testPVCopy)
     powerSupplyTest();
     return 0;
 }
-
