@@ -25,7 +25,7 @@
 
 #ifdef powerSupplyEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
-#	undef powerSupplyEpicsExportSharedSymbols
+#       undef powerSupplyEpicsExportSharedSymbols
 #endif
 
 #include <shareLib.h>

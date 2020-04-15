@@ -168,36 +168,36 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     long end = this->end;
     long no_elements = masterArray->getLength();
     if(start<0) {
-    	start = no_elements+start;
-    	if(start<0) start = 0;
+        start = no_elements+start;
+        if(start<0) start = 0;
     }
     if (end < 0) {
-    	end = no_elements + end;
-    	if (end < 0) end = 0;
+        end = no_elements + end;
+        if (end < 0) end = 0;
 
     }
     if(toCopy) {
-    	if (end >= no_elements) end = no_elements - 1;
-    	if (end - start >= 0) len = 1 + (end - start) / increment;
-    	if(len<=0 || start>=no_elements) {
-    		copyArray->setLength(0);
-    		return true;
-    	}
-    	long indfrom = start;
-    	long indto = 0;
-    	copyArray->setCapacity(len);
-    	if(increment==1) {
+        if (end >= no_elements) end = no_elements - 1;
+        if (end - start >= 0) len = 1 + (end - start) / increment;
+        if(len<=0 || start>=no_elements) {
+            copyArray->setLength(0);
+            return true;
+        }
+        long indfrom = start;
+        long indto = 0;
+        copyArray->setCapacity(len);
+        if(increment==1) {
             copy(*masterArray,indfrom,1,*copyArray,indto,1,len);
-    	} else {
-    	    for(long i=0; i<len; ++i) {
-    	        copy(*masterArray,indfrom,1,*copyArray,indto,1,1);
-    	        indfrom += increment;
-    	         indto += 1;
-    	    }
-    	}
-    	copyArray->setLength(len);
+        } else {
+            for(long i=0; i<len; ++i) {
+                copy(*masterArray,indfrom,1,*copyArray,indto,1,1);
+                indfrom += increment;
+                 indto += 1;
+            }
+        }
+        copyArray->setLength(len);
         bitSet->set(pvField->getFieldOffset());
-    	return true;
+        return true;
     }
     if (end - start >= 0) len = 1 + (end - start) / increment;
     if(len<=0) return true;
@@ -205,13 +205,13 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
     long indfrom = 0;
     long indto = start;
     if(increment==1) {
-    	copy(*copyArray,indfrom,1,*masterArray,indto,1,len);
+        copy(*copyArray,indfrom,1,*masterArray,indto,1,len);
     } else {
-    	for(long i=0; i<len; ++i) {
-    	    copy(*copyArray,indfrom,1,*masterArray,indto,1,1);
-    	    indfrom += 1;
-    	     indto += increment;
-    	}
+        for(long i=0; i<len; ++i) {
+            copy(*copyArray,indfrom,1,*masterArray,indto,1,1);
+            indfrom += 1;
+             indto += increment;
+        }
     }
     if(isUnion) masterField->postPut();
     return true;
@@ -219,7 +219,7 @@ bool PVArrayFilter::filter(const PVFieldPtr & pvField,const BitSetPtr & bitSet,b
 
 string PVArrayFilter::getName()
 {
-	return name;
+    return name;
 }
 
 }}

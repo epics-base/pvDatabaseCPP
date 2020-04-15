@@ -26,7 +26,7 @@
 
 #ifdef listenerEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
-#	undef listenerEpicsExportSharedSymbols
+#       undef listenerEpicsExportSharedSymbols
 #endif
 
 #include <shareLib.h>

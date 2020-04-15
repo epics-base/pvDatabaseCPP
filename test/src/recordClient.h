@@ -25,7 +25,7 @@
 
 #ifdef pvRecordClientEpicsExportSharedSymbols
 #   define epicsExportSharedSymbols
-#	undef pvRecordClientEpicsExportSharedSymbols
+#       undef pvRecordClientEpicsExportSharedSymbols
 #endif
 
 #include <shareLib.h>

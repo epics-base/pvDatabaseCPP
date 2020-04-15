@@ -648,7 +648,7 @@ void PVCopy::traverseMasterInitPlugin(CopyNodePtr const & node)
 {
     PVFieldPtr pvField = node->masterPVField;
     PVStructurePtr pvOptions = node->options;
-    if(pvOptions) initPlugin(node,pvOptions,pvField);	
+    if(pvOptions) initPlugin(node,pvOptions,pvField);   
     if(!node->isStructure) return;
     CopyStructureNodePtr structureNode = static_pointer_cast<CopyStructureNode>(node);
     CopyNodePtrArrayPtr nodes = structureNode->nodes;
@@ -710,7 +710,7 @@ void PVCopy::setIgnore(CopyNodePtr const &node) {
          CopyNodePtrArrayPtr nodes = structureNode->nodes;
          for(size_t i=0; i<nodes->size(); ++i) {
             CopyNodePtr node = (*nodes)[i];
-            setIgnore(node);		}
+            setIgnore(node);        }
     } else {
         size_t num = node->masterPVField->getNumberFields();
         if(num>1) {

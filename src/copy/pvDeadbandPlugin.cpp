@@ -128,7 +128,7 @@ bool PVDeadbandFilter::filter(const PVFieldPtr & pvCopy,const BitSetPtr & bitSet
 
 string PVDeadbandFilter::getName()
 {
-	return name;
+    return name;
 }
 
 }}
