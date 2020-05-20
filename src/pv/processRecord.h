@@ -18,7 +18,7 @@
 
 #include <shareLib.h>
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 typedef std::tr1::shared_ptr<epicsThread> EpicsThreadPtr;
 

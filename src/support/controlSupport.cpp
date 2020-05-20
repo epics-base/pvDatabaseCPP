@@ -25,7 +25,7 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace std;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 ControlSupport::~ControlSupport()
 {
@@ -135,4 +135,3 @@ void ControlSupport::reset()
 
 
 }}
-

@@ -38,7 +38,7 @@ using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace std;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 ProcessRecordPtr ProcessRecord::create(
     std::string const & recordName,double delay)
@@ -141,7 +141,7 @@ void ProcessRecord::run()
         if(runStop.tryWait()) {
              runReturn.signal();
              return;
-        }    
+        }
         if(delay>0.0) epicsThreadSleep(delay);
         epicsGuard<epics::pvData::Mutex> guard(mutex);
         PVRecordMap::iterator iter;
@@ -164,4 +164,3 @@ void ProcessRecord::run()
 
 
 }}
-

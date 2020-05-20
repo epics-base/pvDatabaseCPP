@@ -34,7 +34,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 class MonitorLocal;
 typedef std::tr1::shared_ptr<MonitorLocal> MonitorLocalPtr;
@@ -88,7 +88,7 @@ public:
         nextGetUsed = 0;
         nextReleaseUsed = 0;
     }
-    
+
     MonitorElementPtr getFree()
     {
         if(numberFree==0) return MonitorElementPtr();
@@ -98,7 +98,7 @@ public:
         if(nextGetFree>=size) nextGetFree = 0;
         return elements[ind];
     }
-    
+
     void setUsed(MonitorElementPtr const &element)
     {
        if(element!=elements[nextSetUsed++]) {
@@ -107,7 +107,7 @@ public:
         numberUsed++;
         if(nextSetUsed>=size) nextSetUsed = 0;
     }
-    
+
     MonitorElementPtr getUsed()
     {
         if(numberUsed==0) return MonitorElementPtr();
@@ -131,7 +131,7 @@ public:
 
 typedef std::tr1::shared_ptr<MonitorRequester> MonitorRequesterPtr;
 
-    
+
 class MonitorLocal :
     public Monitor,
     public PVListener,

@@ -107,7 +107,7 @@ static void arrayTest()
     uint32 nset = 0;
     size_t n = 10;
     shared_vector<double> values(n);
-    
+
     PVStructurePtr pvRecordStructure(getStandardPVField()->scalarArray(pvDouble,""));
     PVRecordPtr pvRecord(PVRecord::create("doubleArrayRecord",pvRecordStructure));
     PVStructurePtr pvRequest(CreateRequest::create()->createRequest("value[array=1:3]"));
@@ -153,7 +153,7 @@ static void unionArrayTest()
     size_t n = 10;
     shared_vector<double> values(n);
     for(size_t i=0; i<n; i++) values[i] = i + .06;
-    PVDoubleArrayPtr pvDoubleArray = 
+    PVDoubleArrayPtr pvDoubleArray =
         static_pointer_cast<PVDoubleArray>(PVDataCreate::getPVDataCreate()->createPVScalarArray(pvDouble));
     const shared_vector<const double> yyy(freeze(values));
     pvDoubleArray->putFrom(yyy);
@@ -343,4 +343,3 @@ MAIN(testPlugin)
     ignoreTest();
     return 0;
 }
-

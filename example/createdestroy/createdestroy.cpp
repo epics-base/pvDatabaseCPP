@@ -29,12 +29,12 @@ public:
     virtual void process (void);
 };
 
-std::shared_ptr<Record> Record::create (std::string const & name, std::shared_ptr<::epics::pvData::PVStructure> const & pvstruct) 
-{ 
-  std::shared_ptr<Record> pvrecord (new Record (name, pvstruct)); 
+std::shared_ptr<Record> Record::create (std::string const & name, std::shared_ptr<::epics::pvData::PVStructure> const & pvstruct)
+{
+  std::shared_ptr<Record> pvrecord (new Record (name, pvstruct));
   // Need to be explicitly called .. not part of the base constructor
   if(!pvrecord->init()) pvrecord.reset();
-  return pvrecord; 
+  return pvrecord;
 }
 
 void Record::process (void)
@@ -87,7 +87,7 @@ void MyMonitor::getData()
 }
 
 
-int main (int argc, char** argv) 
+int main (int argc, char** argv)
 {
   int verbose = 0;
   unsigned loopctr = 0;
@@ -115,9 +115,9 @@ int main (int argc, char** argv)
              std::cout << "-r call pvRecord->remove -d call master->removeRecord\n";
              std::cout << "default\n";
              std::cout << "-v " << verbose
-                  << " -a  false" 
+                  << " -a  false"
                   << " -d"
-                  << "\n";           
+                  << "\n";
               return 0;
           default:
               std::cerr<<"Unknown argument: "<<opt<<"\n";
@@ -127,10 +127,10 @@ int main (int argc, char** argv)
   if(!callRecord && !callDatabase) callDatabase = true;
   ::epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
   ::epics::pvDatabase::ChannelProviderLocalPtr channelProvider = epics::pvDatabase::getChannelProviderLocal();
-  epics::pvAccess::ServerContext::shared_pointer context 
+  epics::pvAccess::ServerContext::shared_pointer context
       = epics::pvAccess::startPVAServer(epics::pvAccess::PVACCESS_ALL_PROVIDERS, 0, true, true);
   std::string startset("starting set of puts valuectr = ");
-  
+
   while (true) {
       loopctr++;
       std::string name = DEFAULT_RECORD_NAME + std::to_string(loopctr);
@@ -139,7 +139,7 @@ int main (int argc, char** argv)
       // Create record structure
       ::epics::pvData::FieldBuilderPtr builder = epics::pvData::getFieldCreate()->createFieldBuilder();
       builder->add("value", ::epics::pvData::pvULong);
-      std::shared_ptr<::epics::pvData::PVStructure> pvstruct 
+      std::shared_ptr<::epics::pvData::PVStructure> pvstruct
           = ::epics::pvData::getPVDataCreate()->createPVStructure(builder->createStructure());
       std::shared_ptr<Record> pvrecord = Record::create(std::string(name), pvstruct);
       master->addRecord(pvrecord);

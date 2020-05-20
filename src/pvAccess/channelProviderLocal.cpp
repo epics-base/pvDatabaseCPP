@@ -30,13 +30,13 @@ using std::cout;
 using std::endl;
 using std::string;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 static string providerName("local");
 static ChannelProviderLocalPtr channelProvider;
 
 class LocalChannelProviderFactory : public ChannelProviderFactory
-{  
+{
 public:
     POINTER_DEFINITIONS(LocalChannelProviderFactory);
     virtual string getFactoryName() { return providerName;}
@@ -114,7 +114,7 @@ ChannelFind::shared_pointer ChannelProviderLocal::channelFind(
             Status::Ok,
             shared_from_this(),
             true);
-        
+
     } else {
         Status notFoundStatus(Status::STATUSTYPE_ERROR,"pv not found");
         channelFindRequester->channelFindResult(

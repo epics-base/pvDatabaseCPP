@@ -16,7 +16,7 @@
 #include <shareLib.h>
 
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 
 class TraceRecord;

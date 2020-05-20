@@ -44,7 +44,7 @@ PVDatabasePtr PVDatabase::getMaster()
         PVArrayPlugin::create();
         PVTimestampPlugin::create();
         PVDeadbandPlugin::create();
-    }    
+    }
     return pvDatabaseMaster;
 }
 

@@ -67,7 +67,7 @@ PVRecord::~PVRecord()
 
 void PVRecord::unlistenClients()
 {
-    epicsGuard<epics::pvData::Mutex> guard(mutex);   
+    epicsGuard<epics::pvData::Mutex> guard(mutex);
     for(std::list<PVListenerWPtr>::iterator iter = pvListenerList.begin();
          iter!=pvListenerList.end();
          iter++ )
@@ -104,7 +104,7 @@ void PVRecord::remove()
     epicsGuard<epics::pvData::Mutex> guard(mutex);
     PVDatabasePtr pvDatabase(PVDatabase::getMaster());
     if(pvDatabase) pvDatabase->removeFromMap(shared_from_this());
-    pvTimeStamp.detach();     
+    pvTimeStamp.detach();
 }
 
 void PVRecord::initPVRecord()
@@ -248,7 +248,7 @@ void PVRecord::nextMasterPVField(PVFieldPtr const & pvField)
      PVRecordFieldPtr pvRecordField = findPVRecordField(pvField);
      PVListenerPtr listener = pvListener.lock();
      if(!listener.get()) return;
-     if(isAddListener) {         
+     if(isAddListener) {
          pvRecordField->addListener(listener);
      } else {
          pvRecordField->removeListener(listener);
@@ -377,7 +377,7 @@ bool PVRecordField::addListener(PVListenerPtr const & pvListener)
 
 void PVRecordField::removeListener(PVListenerPtr const & pvListener)
 {
-    PVRecordPtr pvRecord(this->pvRecord.lock());   
+    PVRecordPtr pvRecord(this->pvRecord.lock());
     if(pvRecord && pvRecord->getTraceLevel()>1) {
          cout << "PVRecordField::removeListener() " << getFullName() << endl;
     }
@@ -419,7 +419,7 @@ void PVRecordField::postSubField()
 {
     callListener();
     if(isStructure) {
-        PVRecordStructurePtr pvrs = 
+        PVRecordStructurePtr pvrs =
             static_pointer_cast<PVRecordStructure>(shared_from_this());
         PVRecordFieldPtrArrayPtr pvRecordFields = pvrs->getPVRecordFields();
         PVRecordFieldPtrArray::iterator iter;
@@ -459,7 +459,7 @@ void PVRecordStructure::init()
     PVRecordStructurePtr self =
         static_pointer_cast<PVRecordStructure>(shared_from_this());
     PVRecordPtr pvRecord = getPVRecord();
-    for(size_t i=0; i<numFields; i++) {    
+    for(size_t i=0; i<numFields; i++) {
         PVFieldPtr pvField = pvFields[i];
         if(pvField->getField()->getType()==structure) {
              PVStructurePtr xxx = static_pointer_cast<PVStructure>(pvField);

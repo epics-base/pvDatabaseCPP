@@ -38,7 +38,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-namespace epics { namespace pvDatabase { 
+namespace epics { namespace pvDatabase {
 
 static StructureConstPtr nullStructure;
 
@@ -102,7 +102,7 @@ private:
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
         PVRecordPtr const &pvRecord,
         int nProcess)
-    : 
+    :
       channelLocal(channelLocal),
       channelProcessRequester(channelProcessRequester),
       pvRecord(pvRecord),
@@ -235,7 +235,7 @@ private:
         PVStructurePtr const&pvStructure,
         BitSetPtr const & bitSet,
         PVRecordPtr const &pvRecord)
-    : 
+    :
       firstTime(true),
       callProcess(callProcess),
       channelLocal(channelLocal),
@@ -523,7 +523,7 @@ void ChannelPutLocal::put(
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
-        {   
+        {
             epicsGuard <PVRecord> guard(*pvr);
             pvr->beginGroupPut();
             pvCopy->updateMaster(pvStructure, bitSet);
@@ -534,7 +534,7 @@ void ChannelPutLocal::put(
         }
         requester->putDone(Status::Ok,getPtrSelf());
         if(pvr->getTraceLevel()>1)
-        {   
+        {
             cout << "ChannelPutLocal::put" << endl;
         }
     } catch(std::exception& ex) {
@@ -581,7 +581,7 @@ private:
         PVStructurePtr const&pvGetStructure,
         BitSetPtr const & getBitSet,
         PVRecordPtr const &pvRecord)
-    : 
+    :
       callProcess(callProcess),
       channelLocal(channelLocal),
       channelPutGetRequester(channelPutGetRequester),
@@ -887,7 +887,7 @@ void ChannelRPCLocal::processRequest(
         status = Status(Status::STATUSTYPE_FATAL, "Unexpected exception caught while calling RPCService.request(PVStructure).");
         ok = false;
     }
-    
+
     // check null result
     if (ok && !result)
     {
@@ -986,7 +986,7 @@ private:
         PVArrayPtr const &pvArray,
         PVArrayPtr const &pvCopy,
         PVRecordPtr const &pvRecord)
-    : 
+    :
       channelLocal(channelLocal),
       channelArrayRequester(channelArrayRequester),
       pvArray(pvArray),
@@ -1228,7 +1228,7 @@ ChannelLocal::ChannelLocal(
     ChannelProviderLocalPtr const & provider,
     ChannelRequester::shared_pointer const & requester,
     PVRecordPtr const & pvRecord)
-:   
+:
     requester(requester),
     provider(provider),
     pvRecord(pvRecord)
@@ -1273,7 +1273,7 @@ string ChannelLocal::getRequesterName()
          << " requester exists " << (requester ? "true" : "false")
          << endl;
     }
-    
+
     if(!requester) return string();
     return requester->getRequesterName();
 }
@@ -1296,7 +1296,7 @@ void ChannelLocal::message(
     string recordName("record deleted");
     if(pvr) recordName = pvr->getRecordName();
     cout << recordName
-         << " message " << message 
+         << " message " << message
          << " messageType " << getMessageTypeName(messageType)
          << endl;
 }
@@ -1339,8 +1339,8 @@ void ChannelLocal::getField(GetFieldRequester::shared_pointer const &requester,
             pvr->getPVRecordStructure()->getPVStructure()->getStructure();
         requester->getDone(Status::Ok,structure);
         return;
-    } 
-    PVFieldPtr pvField = 
+    }
+    PVFieldPtr pvField =
         pvr->getPVRecordStructure()->getPVStructure()->getSubField(subField);
     if(pvField) {
         requester->getDone(Status::Ok,pvField->getField());
@@ -1456,7 +1456,7 @@ ChannelRPC::shared_pointer ChannelLocal::createChannelRPC(
          << endl;
     }
 
-    ChannelRPCLocalPtr channelRPC = 
+    ChannelRPCLocalPtr channelRPC =
         ChannelRPCLocal::create(
             getPtrSelf(),
             channelRPCRequester,
