@@ -2,6 +2,11 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.5.2 (EPICS 7.0.3.2 May 2020)
+
+* plugin support is new
+* fixed issues #53 and #52
+
 ## Release 4.5.1 (EPICS 7.0.3.1, Nov 2019)
 
 * addRecord is new.
