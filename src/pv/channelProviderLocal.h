@@ -67,11 +67,6 @@ public:
      */
     virtual ~ChannelProviderLocal();
     /**
-     * @brief DEPRECATED
-     *
-     */
-    virtual void destroy(){};
-    /**
      * @brief Returns the channel provider name.
      *
      * @return <b>local</b>
@@ -190,11 +185,6 @@ public:
      * @brief Destructor
      */
     virtual ~ChannelLocal();
-    /**
-     * @brief DEPRECATED
-     *
-     */
-    virtual void destroy() {};
     /**
      * @brief Detach from the record.
      *

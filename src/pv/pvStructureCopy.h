@@ -79,7 +79,6 @@ public:
         epics::pvData::PVStructurePtr const &pvRequest,
         std::string const & structureName);
     virtual ~PVCopy(){}
-    virtual void destroy();
     /**
      * Get the top-level structure of master
      * @returns The master top-level structure.

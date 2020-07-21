@@ -428,11 +428,6 @@ PVCopy::PVCopy(
 {
 }
 
-void PVCopy::destroy()
-{
-    headNode.reset();
-}
-
 bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
 {
     PVStructurePtr pvMasterStructure = pvMaster;

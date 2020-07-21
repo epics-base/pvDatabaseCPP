@@ -87,10 +87,6 @@ public:
      */
     virtual void process();
     /**
-     *  @brief DEPRECATED
-     */
-    virtual void destroy() {}
-    /**
      *  @brief remove record from database.
      *
      * Remove the PVRecord. Release any resources used and

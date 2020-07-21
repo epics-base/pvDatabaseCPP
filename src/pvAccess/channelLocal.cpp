@@ -80,7 +80,6 @@ class ChannelProcessLocal :
 public:
     POINTER_DEFINITIONS(ChannelProcessLocal);
     virtual ~ChannelProcessLocal();
-    virtual void destroy() {} // DEPRECATED
     static ChannelProcessLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelProcessRequester::shared_pointer const & channelProcessRequester,
@@ -210,7 +209,6 @@ class ChannelGetLocal :
 public:
     POINTER_DEFINITIONS(ChannelGetLocal);
     virtual ~ChannelGetLocal();
-    virtual void destroy() {} // DEPRECATED
     static ChannelGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelGetRequester::shared_pointer const & channelGetRequester,
@@ -381,7 +379,6 @@ class ChannelPutLocal :
 public:
     POINTER_DEFINITIONS(ChannelPutLocal);
     virtual ~ChannelPutLocal();
-    virtual void destroy() {} // DEPRECATED
     static ChannelPutLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutRequester::shared_pointer const & channelPutRequester,
@@ -551,7 +548,6 @@ class ChannelPutGetLocal :
 public:
     POINTER_DEFINITIONS(ChannelPutGetLocal);
     virtual ~ChannelPutGetLocal();
-    virtual void destroy() {} // DEPRECATED
     static ChannelPutGetLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelPutGetRequester::shared_pointer const & channelPutGetRequester,
@@ -766,7 +762,6 @@ class ChannelRPCLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelRPCLocal);
-    virtual void destroy() {} // DEPRECATED
     static ChannelRPCLocalPtr create(
         ChannelLocalPtr const & channelLocal,
         ChannelRPCRequester::shared_pointer const & channelRPCRequester,
@@ -958,7 +953,6 @@ class ChannelArrayLocal :
 public:
     POINTER_DEFINITIONS(ChannelArrayLocal);
     virtual ~ChannelArrayLocal();
-    virtual void destroy() {} // DEPRECATED
     static ChannelArrayLocalPtr create(
         ChannelLocalPtr const &channelLocal,
         ChannelArrayRequester::shared_pointer const & channelArrayRequester,
