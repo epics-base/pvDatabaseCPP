@@ -141,7 +141,6 @@ class MonitorLocal :
 public:
     POINTER_DEFINITIONS(MonitorLocal);
     virtual ~MonitorLocal();
-    virtual void destroy() {} // DEPRECATED
     virtual Status start();
     virtual Status stop();
     virtual MonitorElementPtr poll();

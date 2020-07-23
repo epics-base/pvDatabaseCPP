@@ -46,7 +46,6 @@ public:
         std::string const & recordName,
         epics::pvData::PVStructurePtr const & pvStructure);
     virtual ~PowerSupply();
-    virtual void destroy();
     virtual bool init();
     virtual void process();
     void put(double power,double voltage);
@@ -109,11 +108,6 @@ inline PowerSupply::PowerSupply(
 
 inline PowerSupply::~PowerSupply()
 {
-}
-
-inline void PowerSupply::destroy()
-{
-    PVRecord::destroy();
 }
 
 inline bool PowerSupply::init()
