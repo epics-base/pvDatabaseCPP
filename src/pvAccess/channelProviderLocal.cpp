@@ -10,6 +10,7 @@
  */
 
 #include <epicsThread.h>
+#include <asLib.h>
 #include <pv/serverContext.h>
 #include <pv/syncChannelFind.h>
 #include <pv/pvTimeStamp.h>
@@ -175,5 +176,19 @@ Channel::shared_pointer ChannelProviderLocal::createChannel(
     if(!address.empty()) throw std::invalid_argument("address not allowed for local implementation");
     return createChannel(channelName, channelRequester, priority);
 }
+
+void ChannelProviderLocal::initAs(const std::string& filePath, const std::string& substitutions)
+{
+    int status = asInitFile(filePath.c_str(), substitutions.c_str());
+    if(status) {
+        throw std::runtime_error("Invalid AS configuration.");
+    }
+}
+
+bool ChannelProviderLocal::isAsActive()
+{
+    return asActive;
+}
+
 
 }}

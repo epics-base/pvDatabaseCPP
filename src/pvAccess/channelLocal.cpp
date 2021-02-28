@@ -10,6 +10,7 @@
  */
 
 #include <sstream>
+#include <vector>
 
 #include <epicsGuard.h>
 #include <epicsThread.h>
@@ -23,6 +24,7 @@
 #include <pv/pvaVersionNum.h>
 #include <pv/serverContext.h>
 #include <pv/pvSubArrayCopy.h>
+#include <pv/security.h>
 
 #define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
@@ -517,6 +519,13 @@ void ChannelPutLocal::put(
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel->canWrite()) {
+        Status status = Status::error("Channel put is not allowed");
+        requester->putDone(status,getPtrSelf());
+        return;
+    }
+
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -677,6 +686,12 @@ void ChannelPutGetLocal::putGet(
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel->canWrite()) {
+        Status status = Status::error("Channel putGet is not allowed");
+        requester->putGetDone(status,getPtrSelf(),pvGetStructure,getBitSet);
+        return;
+    }
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -1225,7 +1240,13 @@ ChannelLocal::ChannelLocal(
 :
     requester(requester),
     provider(provider),
-    pvRecord(pvRecord)
+    pvRecord(pvRecord),
+    asLevel(pvRecord->getAsLevel()),
+    asGroup(getAsGroup(pvRecord)),
+    asUser(getAsUser(requester)),
+    asHost(getAsHost(requester)),
+    asMemberPvt(0),
+    asClientPvt(0)
 {
     if(pvRecord->getTraceLevel()>0) {
          cout << "ChannelLocal::ChannelLocal()"
@@ -1233,11 +1254,86 @@ ChannelLocal::ChannelLocal(
               << " requester exists " << (requester ? "true" : "false")
               << endl;
     }
+    if (pvRecord->getAsGroup().empty() || asAddMember(&asMemberPvt, &asGroup[0]) != 0) {
+        asMemberPvt = 0;
+    } 
+    if (asMemberPvt) {
+        asAddClient(&asClientPvt, asMemberPvt, asLevel, &asUser[0], &asHost[0]);
+    }
+}
+
+std::vector<char> ChannelLocal::toCharArray(const std::string& s)
+{
+    std::vector<char> v(s.begin(), s.end());
+    v.push_back('\0');
+    return v;
+}
+
+std::vector<char> ChannelLocal::getAsGroup(const PVRecordPtr& pvRecord)
+{
+    return toCharArray(pvRecord->getAsGroup());
+}
+
+std::vector<char> ChannelLocal::getAsUser(const ChannelRequester::shared_pointer& requester)
+{
+    PeerInfo::const_shared_pointer info(requester->getPeerInfo());
+    std::string user;
+    if(info && info->identified) {
+        if(info->authority=="ca") {
+            user = info->account;
+            size_t first = user.find_last_of('/');
+            if(first != std::string::npos) {
+                // prevent CA accounts like "<authority>/<user>"
+                user = user.substr(first+1);
+            }
+        } 
+        else {
+            user = info->authority + "/" + info->account;
+        }
+    } 
+    return toCharArray(user);
+}
+
+std::vector<char> ChannelLocal::getAsHost(const epics::pvAccess::ChannelRequester::shared_pointer& requester)
+{
+    PeerInfo::const_shared_pointer info(requester->getPeerInfo());
+    std::string host;
+    if(info && info->identified) {
+        host= info->peer;
+    } 
+    else {
+        // anonymous
+        host = requester->getRequesterName();
+    }
+
+    // handle form "ip:port"
+    size_t last = host.find_first_of(':');
+    if(last == std::string::npos) {
+        last = host.size();
+    }
+    host.resize(last);
+    return toCharArray(host);
+}
+
+bool ChannelLocal::canWrite() 
+{
+    if(!asActive || (asClientPvt && asCheckPut(asClientPvt))) {
+        return true;
+    }
+    return false;
 }
 
 ChannelLocal::~ChannelLocal()
 {
 // cout << "~ChannelLocal()" << endl;
+    if(asMemberPvt) {
+        asRemoveMember(&asMemberPvt);
+        asMemberPvt = 0;
+    }
+    if(asClientPvt) {
+        asRemoveClient(&asClientPvt);
+        asClientPvt = 0;
+    }
 }
 
 ChannelProvider::shared_pointer ChannelLocal::getProvider()
