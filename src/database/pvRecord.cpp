@@ -37,9 +37,11 @@ namespace epics { namespace pvDatabase {
 
 PVRecordPtr PVRecord::create(
     string const &recordName,
-    PVStructurePtr const & pvStructure)
+    PVStructurePtr const & pvStructure,
+    int asLevel,
+    const std::string& asGroup)
 {
-    PVRecordPtr pvRecord(new PVRecord(recordName,pvStructure));
+    PVRecordPtr pvRecord(new PVRecord(recordName,pvStructure,asLevel,asGroup));
     if(!pvRecord->init()) {
         pvRecord.reset();
     }
@@ -49,12 +51,16 @@ PVRecordPtr PVRecord::create(
 
 PVRecord::PVRecord(
     string const & recordName,
-    PVStructurePtr const & pvStructure)
+    PVStructurePtr const & pvStructure,
+    int asLevel_,
+    const std::string& asGroup_)
 : recordName(recordName),
   pvStructure(pvStructure),
   depthGroupPut(0),
   traceLevel(0),
-  isAddListener(false)
+  isAddListener(false),
+  asLevel(asLevel_),
+  asGroup(asGroup_)
 {
 }
 

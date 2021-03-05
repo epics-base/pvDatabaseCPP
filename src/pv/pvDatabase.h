@@ -59,6 +59,7 @@ class epicsShareClass PVRecord :
 {
 public:
     POINTER_DEFINITIONS(PVRecord);
+    
     /**
      * The Destructor.
      */
@@ -112,11 +113,14 @@ public:
      *
      * @param recordName The name of the record, which is also the channelName.
      * @param pvStructure The top level structure.
+     * @param asLevel AS level (default: ASL0)
+     * @param asGroup AS group (default: DEFAULT)
      * @return A shared pointer to the newly created record.
      */
     static PVRecordPtr create(
         std::string const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
+        epics::pvData::PVStructurePtr const & pvStructure,
+        int asLevel = 0, const std::string& asGroup = "DEFAULT");
     /**
      * @brief  Get the name of the record.
      *
@@ -232,15 +236,30 @@ public:
      * @param level The level
      */
     void setTraceLevel(int level) {traceLevel = level;}
+    /**
+     * @brief Get the ASlevel 
+     *
+     * @return The level.
+     */
+    int getAsLevel() const {return asLevel;}
+    /**
+     * @brief Get the AS group name 
+     *
+     * @return The name.
+     */
+    std::string getAsGroup() const {return asGroup;}
 protected:
     /**
      * @brief Constructor
      * @param recordName The name of the record
      * @param pvStructure The top level PVStructutre
+     * @param asLevel AS level (default: ASL0)
+     * @param asGroup AS group (default: DEFAULT)
      */
     PVRecord(
         std::string const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
+        epics::pvData::PVStructurePtr const & pvStructure,
+        int asLevel = 0, const std::string& asGroup = "DEFAULT");
     /**
      * @brief Initializes the base class.
      *
@@ -269,6 +288,9 @@ private:
 
     epics::pvData::PVTimeStamp pvTimeStamp;
     epics::pvData::TimeStamp timeStamp;
+
+    int asLevel;
+    std::string asGroup;
 };
 
 epicsShareFunc std::ostream& operator<<(std::ostream& o, const PVRecord& record);

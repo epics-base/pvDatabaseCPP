@@ -27,6 +27,7 @@
 #include <pv/pvDatabase.h>
 
 #include <shareLib.h>
+#include <asLib.h>
 
 namespace epics { namespace pvDatabase {
 
@@ -58,6 +59,19 @@ class epicsShareClass ChannelProviderLocal :
 {
 public:
     POINTER_DEFINITIONS(ChannelProviderLocal);
+    /**
+     * @brief Initialize access security configuration
+     * @param filePath AS definition file path 
+     * @param substitutions macro substitutions
+     * @throws std::runtime_error in case of configuration problem 
+     */
+    static void initAs(const std::string& filePath, const std::string& substitutions="");
+    /**
+     * @brief Is access security active?
+     * @return true is AS is active
+     */
+    static bool isAsActive();
+
     /**
      * @brief Constructor
      */
@@ -157,6 +171,7 @@ private:
     int traceLevel;
     friend class ChannelProviderLocalRun;
 };
+
 
 /**
  * @brief Channel for accessing a PVRecord.
@@ -341,6 +356,12 @@ public:
      * @param out the stream on which the message is displayed.
      */
     virtual void printInfo(std::ostream& out);
+    /**
+     * @brief determines if client can write
+     *
+     * @return true if client can write
+     */
+    virtual bool canWrite();
 protected:
     shared_pointer getPtrSelf()
     {
@@ -351,6 +372,19 @@ private:
     ChannelProviderLocalWPtr provider;
     PVRecordWPtr pvRecord;
     epics::pvData::Mutex mutex;
+
+    // AS-specific variables/methods
+    std::vector<char> toCharArray(const std::string& s);
+    std::vector<char> getAsGroup(const PVRecordPtr& pvRecord);
+    std::vector<char> getAsUser(const epics::pvAccess::ChannelRequester::shared_pointer& requester);
+    std::vector<char> getAsHost(const epics::pvAccess::ChannelRequester::shared_pointer& requester);
+
+    int asLevel;
+    std::vector<char> asGroup;
+    std::vector<char> asUser;
+    std::vector<char> asHost;
+    ASMEMBERPVT asMemberPvt;
+    ASCLIENTPVT asClientPvt;
 };
 
 }}
