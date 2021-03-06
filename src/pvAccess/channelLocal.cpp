@@ -520,6 +520,7 @@ void ChannelPutLocal::put(
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
     if(!requester) return;
     ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
     if(!channel->canWrite()) {
         Status status = Status::error("Channel put is not allowed");
         requester->putDone(status,getPtrSelf());
@@ -687,6 +688,7 @@ void ChannelPutGetLocal::putGet(
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
     ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
     if(!channel->canWrite()) {
         Status status = Status::error("Channel putGet is not allowed");
         requester->putGetDone(status,getPtrSelf(),pvGetStructure,getBitSet);
