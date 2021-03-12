@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 
+#include <asLib.h>
 #include <epicsGuard.h>
 #include <epicsThread.h>
 #include <pv/pvData.h>
