@@ -5,6 +5,8 @@ This document summarizes the changes to the module between releases.
 ## Release 4.5.3 (EPICS 7.0.5 Feb 2021)
 
 * The previously deprecated destroy methods have been removed.
+  Any application code that was previously calling these can just remove
+  those calls.
 
 ## Release 4.5.2 (EPICS 7.0.3.2 May 2020)
 
