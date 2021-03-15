@@ -28,6 +28,11 @@ INC += pv/removeRecord.h
 INC += pv/addRecord.h
 INC += pv/processRecord.h
 
+INC += pv/pvdbcrTraceRecord.h
+INC += pv/pvdbcrRemoveRecord.h
+INC += pv/pvdbcrAddRecord.h
+INC += pv/pvdbcrProcessRecord.h
+
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
@@ -39,6 +44,7 @@ include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
 
+pvDatabase_LIBS += nt
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 

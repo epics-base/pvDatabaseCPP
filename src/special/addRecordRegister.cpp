@@ -39,6 +39,7 @@ static const iocshFuncDef addRecordFuncDef = {"addRecordCreate", 1,testArgs};
 
 static void addRecordCallFunc(const iocshArgBuf *args)
 {
+    cerr << "DEPRECATED use pvdbcrAddRecord instead\n";
     char *recordName = args[0].sval;
     if(!recordName) {
         throw std::runtime_error("addRecordCreate invalid number of arguments");

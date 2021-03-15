@@ -39,6 +39,7 @@ static const iocshFuncDef removeRecordFuncDef = {"removeRecordCreate", 1,testArg
 
 static void removeRecordCallFunc(const iocshArgBuf *args)
 {
+    cerr << "DEPRECATED use pvdbcrRemoveRecord instead\n";
     char *recordName = args[0].sval;
     if(!recordName) {
         throw std::runtime_error("removeRecordCreate invalid number of arguments");

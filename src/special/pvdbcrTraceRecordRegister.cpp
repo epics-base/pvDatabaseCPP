@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2013.07.24
+ * @date 2021.03.12
  */
 
 
@@ -25,7 +25,7 @@
 #define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
-#include "pv/traceRecord.h"
+#include "pv/pvdbcrTraceRecord.h"
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
@@ -33,32 +33,33 @@ using namespace epics::pvDatabase;
 using namespace std;
 
 static const iocshArg testArg0 = { "recordName", iocshArgString };
-static const iocshArg *testArgs[] = {
-    &testArg0};
+static const iocshArg testArg1 = { "asLevel", iocshArgInt };
+static const iocshArg *testArgs[] = {&testArg0,&testArg1};
 
-static const iocshFuncDef traceRecordFuncDef = {"traceRecordCreate", 1,testArgs};
+static const iocshFuncDef pvdbcrTraceRecordFuncDef = {"pvdbcrTraceRecord", 2,testArgs};
 
-static void traceRecordCallFunc(const iocshArgBuf *args)
+static void pvdbcrTraceRecordCallFunc(const iocshArgBuf *args)
 {
-    cerr << "DEPRECATED use pvdbcrTraceRecord instead\n";
     char *recordName = args[0].sval;
     if(!recordName) {
         throw std::runtime_error("traceRecordCreate invalid number of arguments");
     }
-    TraceRecordPtr record = TraceRecord::create(recordName);
+    int asLevel = args[1].ival; 
+    PvdbcrTraceRecordPtr record = PvdbcrTraceRecord::create(recordName);
+    record->setAsLevel(asLevel);
     bool result = PVDatabase::getMaster()->addRecord(record);
     if(!result) cout << "recordname" << " not added" << endl;
 }
 
-static void traceRecordRegister(void)
+static void pvdbcrTraceRecordRegister(void)
 {
     static int firstTime = 1;
     if (firstTime) {
         firstTime = 0;
-        iocshRegister(&traceRecordFuncDef, traceRecordCallFunc);
+        iocshRegister(&pvdbcrTraceRecordFuncDef, pvdbcrTraceRecordCallFunc);
     }
 }
 
 extern "C" {
-    epicsExportRegistrar(traceRecordRegister);
+    epicsExportRegistrar(pvdbcrTraceRecordRegister);
 }

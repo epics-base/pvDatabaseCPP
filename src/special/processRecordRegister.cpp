@@ -42,6 +42,7 @@ static const iocshFuncDef processRecordFuncDef = {"processRecordCreate", 2,testA
 
 static void processRecordCallFunc(const iocshArgBuf *args)
 {
+    cerr << "DEPRECATED use pvdbcrProcessRecord instead\n";
     char *recordName = args[0].sval;
     if(!recordName) {
         throw std::runtime_error("processRecordCreate invalid number of arguments");

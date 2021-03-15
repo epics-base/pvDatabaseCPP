@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2013.07.24
+ * @date 2021.03.12
  */
 
 
@@ -25,7 +25,8 @@
 #define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
-#include "pv/traceRecord.h"
+#include "pv/pvdbcrProcessRecord.h"
+
 
 using namespace epics::pvData;
 using namespace epics::pvAccess;
@@ -33,32 +34,36 @@ using namespace epics::pvDatabase;
 using namespace std;
 
 static const iocshArg testArg0 = { "recordName", iocshArgString };
-static const iocshArg *testArgs[] = {
-    &testArg0};
+static const iocshArg testArg1 = { "delay", iocshArgDouble };
+static const iocshArg testArg2 = { "asLevel", iocshArgInt };
+static const iocshArg *testArgs[] = {&testArg0,&testArg1,&testArg2};
 
-static const iocshFuncDef traceRecordFuncDef = {"traceRecordCreate", 1,testArgs};
+static const iocshFuncDef pvdbcrProcessRecordFuncDef = {"pvdbcrProcessRecord", 3,testArgs};
 
-static void traceRecordCallFunc(const iocshArgBuf *args)
+static void pvdbcrProcessRecordCallFunc(const iocshArgBuf *args)
 {
-    cerr << "DEPRECATED use pvdbcrTraceRecord instead\n";
     char *recordName = args[0].sval;
     if(!recordName) {
-        throw std::runtime_error("traceRecordCreate invalid number of arguments");
+        throw std::runtime_error("pvdbcrProcessRecordCreate invalid number of arguments");
     }
-    TraceRecordPtr record = TraceRecord::create(recordName);
+    double delay = args[1].dval;
+    int asLevel = args[2].ival;
+    if(delay<0.0) delay = 1.0;
+    PvdbcrProcessRecordPtr record = PvdbcrProcessRecord::create(recordName,delay);
+    record->setAsLevel(asLevel);
     bool result = PVDatabase::getMaster()->addRecord(record);
     if(!result) cout << "recordname" << " not added" << endl;
 }
 
-static void traceRecordRegister(void)
+static void pvdbcrProcessRecordRegister(void)
 {
     static int firstTime = 1;
     if (firstTime) {
         firstTime = 0;
-        iocshRegister(&traceRecordFuncDef, traceRecordCallFunc);
+        iocshRegister(&pvdbcrProcessRecordFuncDef, pvdbcrProcessRecordCallFunc);
     }
 }
 
 extern "C" {
-    epicsExportRegistrar(traceRecordRegister);
+    epicsExportRegistrar(pvdbcrProcessRecordRegister);
 }

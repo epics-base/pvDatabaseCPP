@@ -248,6 +248,16 @@ public:
      * @return The name.
      */
     std::string getAsGroup() const {return asGroup;}
+    /**
+     * @brief set access security level.
+     * @param level The level
+     */
+    void setAsLevel(int level) {asLevel=level;}
+    /**
+     * @brief set access security group
+     * @param group The group name
+     */
+    void setAsGroup(const std::string& group) {asGroup = group;}
 protected:
     /**
      * @brief Constructor
