@@ -28,11 +28,6 @@ INC += pv/removeRecord.h
 INC += pv/addRecord.h
 INC += pv/processRecord.h
 
-INC += pv/pvdbcrTraceRecord.h
-INC += pv/pvdbcrRemoveRecord.h
-INC += pv/pvdbcrAddRecord.h
-INC += pv/pvdbcrProcessRecord.h
-
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
