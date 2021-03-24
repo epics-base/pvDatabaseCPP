@@ -362,6 +362,12 @@ public:
      * @return true if client can write
      */
     virtual bool canWrite();
+    /**
+     * @brief determines if client can read
+     *
+     * @return true if client can read
+     */
+    virtual bool canRead();
 protected:
     shared_pointer getPtrSelf()
     {

@@ -2,6 +2,11 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.6.0 (EPICS 7.0.5.* March 2021)
+
+* Access Security is now supported.
+* Special support has been revised and extended.
+
 ## Release 4.5.3 (EPICS 7.0.5 Feb 2021)
 
 * The previously deprecated destroy methods have been removed.

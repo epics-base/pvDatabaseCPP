@@ -328,6 +328,13 @@ void ChannelGetLocal::get()
 {
     ChannelGetRequester::shared_pointer requester = channelGetRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
+    if(!channel->canRead()) {
+        Status status = Status::error("ChannelGet::get is not allowed");
+        requester->getDone(status,getPtrSelf(),PVStructurePtr(),BitSetPtr());
+        return;
+    }
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -489,6 +496,13 @@ void ChannelPutLocal::get()
 {
     ChannelPutRequester::shared_pointer requester = channelPutRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
+    if(!channel->canRead()) {
+        Status status = Status::error("ChannelPut::get is not allowed");
+        requester->getDone(status,getPtrSelf(),PVStructurePtr(),BitSetPtr());
+        return;
+    }
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -522,7 +536,7 @@ void ChannelPutLocal::put(
     ChannelLocalPtr channel(channelLocal.lock());
     if(!channel) throw std::logic_error("channel is deleted");
     if(!channel->canWrite()) {
-        Status status = Status::error("Channel put is not allowed");
+        Status status = Status::error("ChannelPut::put is not allowed");
         requester->putDone(status,getPtrSelf());
         return;
     }
@@ -689,9 +703,9 @@ void ChannelPutGetLocal::putGet(
     if(!requester) return;
     ChannelLocalPtr channel(channelLocal.lock());
     if(!channel) throw std::logic_error("channel is deleted");
-    if(!channel->canWrite()) {
-        Status status = Status::error("Channel putGet is not allowed");
-        requester->putGetDone(status,getPtrSelf(),pvGetStructure,getBitSet);
+    if(!channel->canWrite()||!channel->canRead() ) {
+        Status status = Status::error("ChannelPutGet::putGet is not allowed");
+        requester->putGetDone(status,getPtrSelf(),PVStructurePtr(),BitSetPtr());
         return;
     }
     PVRecordPtr pvr(pvRecord.lock());
@@ -722,6 +736,13 @@ void ChannelPutGetLocal::getPut()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
+    if(!channel->canRead()) {
+        Status status = Status::error("ChannelPutGet::getPut is not allowed");
+        requester->getPutDone(status,getPtrSelf(),PVStructurePtr(),BitSetPtr());
+        return;
+    }
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -749,6 +770,13 @@ void ChannelPutGetLocal::getGet()
 {
     ChannelPutGetRequester::shared_pointer requester = channelPutGetRequester.lock();
     if(!requester) return;
+    ChannelLocalPtr channel(channelLocal.lock());
+    if(!channel) throw std::logic_error("channel is deleted");
+    if(!channel->canRead()) {
+        Status status = Status::error("ChannelPutGet::getGet is not allowed");
+        requester->getPutDone(status,getPtrSelf(),PVStructurePtr(),BitSetPtr());
+        return;
+    }
     PVRecordPtr pvr(pvRecord.lock());
     if(!pvr) throw std::logic_error("pvRecord is deleted");
     try {
@@ -1325,9 +1353,15 @@ bool ChannelLocal::canWrite()
     return false;
 }
 
+bool ChannelLocal::canRead()
+{
+    if(!asActive || (asClientPvt && asCheckGet(asClientPvt))) {
+        return true;
+    }
+    return false;
+}
 ChannelLocal::~ChannelLocal()
 {
-// cout << "~ChannelLocal()" << endl;
     if(asMemberPvt) {
         asRemoveMember(&asMemberPvt);
         asMemberPvt = 0;
