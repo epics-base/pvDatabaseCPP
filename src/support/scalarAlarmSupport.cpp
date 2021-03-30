@@ -48,6 +48,7 @@ epics::pvData::StructureConstPtr ScalarAlarmSupport::scalarAlarmField()
 
 ScalarAlarmSupportPtr ScalarAlarmSupport::create(PVRecordPtr const & pvRecord)
 {
+   cerr << "ScalarAlarmSupport IS DEPRECATED\n";
    ScalarAlarmSupportPtr support(new ScalarAlarmSupport(pvRecord));
    return support;
 }
