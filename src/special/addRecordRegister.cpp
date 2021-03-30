@@ -10,16 +10,15 @@
 
 
 /* Author: Marty Kraimer */
-#include <epicsThread.h>
 #include <iocsh.h>
-#include <pv/event.h>
-#include <pv/pvAccess.h>
-#include <pv/serverContext.h>
-#include <pv/pvData.h>
+#include <pv/standardField.h>
+#include <pv/standardPVField.h>
+#include <pv/timeStamp.h>
 #include <pv/pvTimeStamp.h>
-#include <pv/rpcService.h>
-#include "pv/pvStructureCopy.h"
-#include "pv/pvDatabase.h"
+#include <pv/alarm.h>
+#include <pv/pvAlarm.h>
+#include <pv/pvDatabase.h>
+#include <pv/pvaClient.h>
 
 // The following must be the last include for code pvDatabase uses
 #include <epicsExport.h>

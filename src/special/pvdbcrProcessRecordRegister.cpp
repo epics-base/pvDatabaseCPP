@@ -7,8 +7,7 @@
  * @author mrk
  * @date 2021.03.12
  */
-#include <epicsThread.h>
-#include <pv/event.h>
+ #include <epicsThread.h>
 #include <iocsh.h>
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
