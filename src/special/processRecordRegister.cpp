@@ -19,12 +19,12 @@
 #include <pv/pvData.h>
 #include <pv/pvTimeStamp.h>
 #include <pv/rpcService.h>
+#include "pv/pvStructureCopy.h"
+#include "pv/pvDatabase.h"
 
 // The following must be the last include for code pvDatabase uses
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-#include "pv/pvStructureCopy.h"
-#include "pv/pvDatabase.h"
 #include "pv/processRecord.h"
 
 
