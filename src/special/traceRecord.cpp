@@ -24,10 +24,10 @@
 #include <pv/pvAccess.h>
 #include <pv/status.h>
 #include <pv/serverContext.h>
-
-#define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
 #include "pv/channelProviderLocal.h"
+
+#define epicsExportSharedSymbols
 #include "pv/traceRecord.h"
 
 using std::tr1::static_pointer_cast;

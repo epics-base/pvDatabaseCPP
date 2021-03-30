@@ -25,11 +25,10 @@
 #include <pv/pvAccess.h>
 #include <pv/status.h>
 #include <pv/serverContext.h>
-
-
-#define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
 #include "pv/pvDatabase.h"
+
+#define epicsExportSharedSymbols
 #include "pv/addRecord.h"
 
 using std::tr1::static_pointer_cast;
