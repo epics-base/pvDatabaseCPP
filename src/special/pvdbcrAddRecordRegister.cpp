@@ -14,6 +14,9 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
+#include <pv/pvAccess.h>
+#include <pv/serverContext.h>
+
 
 // The following must be the last include for code exampleLink uses
 #include <epicsExport.h>

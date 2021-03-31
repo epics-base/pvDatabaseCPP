@@ -9,9 +9,13 @@
  */
 #include <iocsh.h>
 #include <pv/standardField.h>
+#include <pv/pvAccess.h>
+#include <pv/serverContext.h>
+
 // The following must be the last include for code pvDatabase implements
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;
 using namespace epics::pvDatabase;

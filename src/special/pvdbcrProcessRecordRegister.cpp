@@ -18,9 +18,13 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
+#include <pv/pvAccess.h>
+#include <pv/serverContext.h>
+
 
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;
 using namespace epics::pvAccess;
