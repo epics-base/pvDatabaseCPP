@@ -18,7 +18,6 @@
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
 #include <pv/pvDatabase.h>
-#include <pv/pvaClient.h>
 
 // The following must be the last include for code pvDatabase uses
 #include <epicsExport.h>

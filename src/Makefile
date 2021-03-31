@@ -39,7 +39,6 @@ include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
 
-pvDatabase_LIBS += pvaClient
 pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
 pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 

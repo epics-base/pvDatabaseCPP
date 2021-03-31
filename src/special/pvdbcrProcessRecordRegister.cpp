@@ -7,7 +7,9 @@
  * @author mrk
  * @date 2021.03.12
  */
- #include <epicsThread.h>
+#include <epicsThread.h>
+#include <pv/event.h>
+#include <pv/lock.h>
 #include <iocsh.h>
 #include <pv/standardField.h>
 #include <pv/standardPVField.h>
@@ -16,7 +18,6 @@
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
 #include <pv/pvDatabase.h>
-#include <pv/pvaClient.h>
 
 // The following must be the last include for code exampleLink uses
 #include <epicsExport.h>
@@ -25,7 +26,6 @@
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
-using namespace epics::pvaClient;
 using namespace std;
 
 typedef std::tr1::shared_ptr<epicsThread> EpicsThreadPtr;
