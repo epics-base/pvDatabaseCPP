@@ -20,6 +20,7 @@
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
 
+using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
 using namespace epics::pvDatabase;
