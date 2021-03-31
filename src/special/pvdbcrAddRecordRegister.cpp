@@ -14,12 +14,11 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
-#include <pv/pvDatabase.h>
 
 // The following must be the last include for code exampleLink uses
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-
+#include "pv/pvDatabase.h"
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;

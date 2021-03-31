@@ -17,11 +17,11 @@
 #include <pv/pvTimeStamp.h>
 #include <pv/alarm.h>
 #include <pv/pvAlarm.h>
-#include <pv/pvDatabase.h>
 
 // The following must be the last include for code pvDatabase uses
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvDatabase.h"
 #include "pv/addRecord.h"
 
 using namespace epics::pvData;

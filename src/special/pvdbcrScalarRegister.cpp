@@ -9,11 +9,10 @@
  */
 #include <iocsh.h>
 #include <pv/standardField.h>
-#include <pv/pvDatabase.h>
-// The following must be the last include for code exampleLink uses
+// The following must be the last include for code pvDatabase implements
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-
+#include "pv/pvDatabase.h"
 using namespace epics::pvData;
 using namespace epics::pvDatabase;
 using namespace std;
