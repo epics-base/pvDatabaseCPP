@@ -23,10 +23,10 @@ INC += pv/pvDatabase.h
 
 INC += pv/channelProviderLocal.h
 
-INC += pv/traceRecord.h
-INC += pv/removeRecord.h
-INC += pv/addRecord.h
-INC += pv/processRecord.h
+#INC += pv/traceRecord.h
+#INC += pv/removeRecord.h
+#INC += pv/addRecord.h
+#INC += pv/processRecord.h
 
 INC += pv/pvSupport.h
 INC += pv/controlSupport.h
