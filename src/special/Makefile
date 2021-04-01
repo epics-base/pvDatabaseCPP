@@ -2,16 +2,6 @@
 
 SRC_DIRS += $(PVDATABASE_SRC)/special
 
-DBD += traceRecordRegister.dbd
-DBD += removeRecordRegister.dbd
-DBD += addRecordRegister.dbd
-DBD += processRecordRegister.dbd
-
-LIBSRCS += traceRecordRegister.cpp
-LIBSRCS += removeRecordRegister.cpp
-LIBSRCS += addRecordRegister.cpp
-LIBSRCS += processRecordRegister.cpp
-
 DBD += pvdbcrTraceRecordRegister.dbd
 DBD += pvdbcrRemoveRecordRegister.dbd
 DBD += pvdbcrAddRecordRegister.dbd

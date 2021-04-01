@@ -2,10 +2,11 @@
 
 This document summarizes the changes to the module between releases.
 
-## Release 4.6.0 (EPICS 7.0.5.* March 2021)
+## Release 4.6.0 (EPICS 7.0.5.* April 2021)
 
 * Access Security is now supported.
 * <b>special</b> has been revised and extended.
+* addRecord, removeRecord, processRecord, and traceRecord are replaced by pvdbcr versions.
 * <b>support</b> is DEPRECATED
 
 ## Release 4.5.3 (EPICS 7.0.5 Feb 2021)
