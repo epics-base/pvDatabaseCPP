@@ -1,46 +1,70 @@
-/* processRecord.cpp */
-/**
- * Copyright - See the COPYRIGHT that is included with this distribution.
- * EPICS pvData is distributed subject to a Software License Agreement found
- * in file LICENSE that is included with this distribution.
+/*
+ * Copyright information and license terms for this software can be
+ * found in the file LICENSE that is included with the distribution
  */
+
 /**
  * @author mrk
- * @date 2013.04.18
+ * @date 2021.03.12
  */
-#include <map>
 #include <epicsThread.h>
+#include <epicsGuard.h>
 #include <pv/event.h>
-#include <shareLib.h>
-#include <string>
-#include <cstring>
-#include <stdexcept>
-#include <memory>
-#include <set>
-
 #include <pv/lock.h>
-#include <pv/pvType.h>
-#include <pv/pvData.h>
-#include <pv/pvTimeStamp.h>
+#include <iocsh.h>
+#include <pv/standardField.h>
+#include <pv/standardPVField.h>
 #include <pv/timeStamp.h>
-#include <pv/rpcService.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/alarm.h>
+#include <pv/pvAlarm.h>
 #include <pv/pvAccess.h>
-#include <pv/status.h>
 #include <pv/serverContext.h>
 
+#include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvStructureCopy.h"
+#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
-#include "pv/processRecord.h"
-
-using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
 using namespace epics::pvAccess;
+using namespace epics::pvDatabase;
 using namespace std;
 
-namespace epics { namespace pvDatabase {
+typedef std::tr1::shared_ptr<epicsThread> EpicsThreadPtr;
+class PvdbcrProcessRecord;
+typedef std::tr1::shared_ptr<PvdbcrProcessRecord> PvdbcrProcessRecordPtr;
 
-ProcessRecordPtr ProcessRecord::create(
+class epicsShareClass PvdbcrProcessRecord :
+    public PVRecord,
+    public epicsThreadRunable
+{
+public:
+    POINTER_DEFINITIONS(PvdbcrProcessRecord);
+    static PvdbcrProcessRecordPtr create(
+        std::string const & recordName,double delay);
+    virtual bool init();
+    virtual void process();
+    virtual void run();
+    void startThread();
+    void stop();
+private:
+    PvdbcrProcessRecord(
+        std::string const & recordName,
+        epics::pvData::PVStructurePtr const & pvStructure,double delay);
+    double delay;
+    EpicsThreadPtr thread;
+    epics::pvData::Event runStop;
+    epics::pvData::Event runReturn;
+    PVDatabasePtr pvDatabase;
+    PVRecordMap pvRecordMap;
+    epics::pvData::PVStringPtr pvCommand;
+    epics::pvData::PVStringPtr pvRecordName;
+    epics::pvData::PVStringPtr pvResult;
+    epics::pvData::Mutex mutex;
+};
+
+PvdbcrProcessRecordPtr PvdbcrProcessRecord::create(
     std::string const & recordName,double delay)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
@@ -55,13 +79,13 @@ ProcessRecordPtr ProcessRecord::create(
             endNested()->
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
-    ProcessRecordPtr pvRecord(
-        new ProcessRecord(recordName,pvStructure,delay));
+    PvdbcrProcessRecordPtr pvRecord(
+        new PvdbcrProcessRecord(recordName,pvStructure,delay));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
-void ProcessRecord::startThread()
+void PvdbcrProcessRecord::startThread()
 {
     thread = EpicsThreadPtr(new epicsThread(
         *this,
@@ -71,14 +95,14 @@ void ProcessRecord::startThread()
     thread->start();
 }
 
-void ProcessRecord::stop()
+void PvdbcrProcessRecord::stop()
 {
     runStop.signal();
     runReturn.wait();
 }
 
 
-ProcessRecord::ProcessRecord(
+PvdbcrProcessRecord::PvdbcrProcessRecord(
     std::string const & recordName,
     epics::pvData::PVStructurePtr const & pvStructure,double delay)
 : PVRecord(recordName,pvStructure),
@@ -87,7 +111,7 @@ ProcessRecord::ProcessRecord(
 {
 }
 
-bool ProcessRecord::init()
+bool PvdbcrProcessRecord::init()
 {
     initPVRecord();
     PVStructurePtr pvStructure = getPVStructure();
@@ -100,7 +124,7 @@ bool ProcessRecord::init()
     return true;
 }
 
-void ProcessRecord::process()
+void PvdbcrProcessRecord::process()
 {
     string recordName = pvRecordName->get();
     string command = pvCommand->get();
@@ -135,7 +159,7 @@ void ProcessRecord::process()
     }
 }
 
-void ProcessRecord::run()
+void PvdbcrProcessRecord::run()
 {
     while(true) {
         if(runStop.tryWait()) {
@@ -162,5 +186,46 @@ void ProcessRecord::run()
     }
 }
 
+static const iocshArg arg0 = { "recordName", iocshArgString };
+static const iocshArg arg1 = { "delay", iocshArgDouble };
+static const iocshArg arg2 = { "asLevel", iocshArgInt };
+static const iocshArg arg3 = { "asGroup", iocshArgString };
+static const iocshArg *args[] = {&arg0,&arg1,&arg2,&arg3};
 
-}}
+static const iocshFuncDef pvdbcrProcessRecordFuncDef = {"pvdbcrProcessRecord", 4,args};
+
+static void pvdbcrProcessRecordCallFunc(const iocshArgBuf *args)
+{
+    char *sval = args[0].sval;
+    if(!sval) {
+        throw std::runtime_error("pvdbcrProcessRecord recordName not specified");
+    }
+    string recordName = string(sval);
+    double delay = args[1].dval;
+    if(delay<0.0) delay = 1.0;
+    int asLevel = args[2].ival;
+    string asGroup("DEFAULT");
+    sval = args[3].sval;
+    if(sval) {
+        asGroup = string(sval);
+    }
+    PvdbcrProcessRecordPtr record = PvdbcrProcessRecord::create(recordName,delay);
+    record->setAsLevel(asLevel);
+    record->setAsGroup(asGroup);
+    PVDatabasePtr master = PVDatabase::getMaster();
+    bool result =  master->addRecord(record);
+    if(!result) cout << "recordname " << recordName << " not added" << endl;
+}
+
+static void pvdbcrProcessRecordRegister(void)
+{
+    static int firstTime = 1;
+    if (firstTime) {
+        firstTime = 0;
+        iocshRegister(&pvdbcrProcessRecordFuncDef, pvdbcrProcessRecordCallFunc);
+    }
+}
+
+extern "C" {
+    epicsExportRegistrar(pvdbcrProcessRecordRegister);
+}

@@ -46,6 +46,7 @@ epics::pvData::StructureConstPtr ControlSupport::controlField(ScalarType scalarT
 
 ControlSupportPtr ControlSupport::create(PVRecordPtr const & pvRecord)
 {
+   cerr << "ControlSupport IS DEPRECATED\n";
    ControlSupportPtr support(new ControlSupport(pvRecord));
    return support;
 }
