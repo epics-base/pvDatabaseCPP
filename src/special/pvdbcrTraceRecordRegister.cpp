@@ -20,6 +20,7 @@
 // The following must be the last include
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 

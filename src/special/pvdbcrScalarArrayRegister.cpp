@@ -15,10 +15,10 @@
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-
 // The following must be the last include for code pvDatabase implements
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;

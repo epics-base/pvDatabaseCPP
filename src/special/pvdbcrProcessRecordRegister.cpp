@@ -21,9 +21,9 @@
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
 #include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;

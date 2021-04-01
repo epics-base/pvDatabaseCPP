@@ -17,10 +17,11 @@
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
-
 // The following must be the last include for code exampleLink uses
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvStructureCopy.h"
+#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using std::tr1::static_pointer_cast;
 using namespace epics::pvData;
