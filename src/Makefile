@@ -3,15 +3,8 @@
 TOP = ..
 include $(TOP)/configure/CONFIG
 
-# needed for Windows
-LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
-
 PVDATABASE_SRC = $(TOP)/src
 
-LIBRARY += pvDatabase
-
-# shared library ABI version.
-SHRLIB_VERSION ?= $(EPICS_PVDATABASE_MAJOR_VERSION).$(EPICS_PVDATABASE_MINOR_VERSION).$(EPICS_PVDATABASE_MAINTENANCE_VERSION)
 
 INC += pv/pvPlugin.h
 INC += pv/pvStructureCopy.h
@@ -34,7 +27,18 @@ include $(PVDATABASE_SRC)/pvAccess/Makefile
 include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
 
-pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
-pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
+LIBRARY += pvDatabase
+pvDatabase_LIBS += pvData
+pvDatabase_LIBS += pvAccess
+LIB_LIBS += Com
+
+# shared library ABI version.
+SHRLIB_VERSION ?= $(EPICS_PVDATABASE_MAJOR_VERSION).$(EPICS_PVDATABASE_MINOR_VERSION).$(EPICS_PVDATABASE_MAINTENANCE_VERSION)
+
+# needed for Windows
+LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
+
+#pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
+#pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES
