@@ -10,10 +10,10 @@ DBD += pvdbcrScalarRegister.dbd
 DBD += pvdbcrScalarArrayRegister.dbd
 DBD += pvdbSpecialRegister.dbd
 
+LIBSRCS += pvdbcrScalarRegister.cpp
+LIBSRCS += pvdbcrScalarArrayRegister.cpp
 LIBSRCS += pvdbcrTraceRecordRegister.cpp
 LIBSRCS += pvdbcrRemoveRecordRegister.cpp
 LIBSRCS += pvdbcrAddRecordRegister.cpp
 LIBSRCS += pvdbcrProcessRecordRegister.cpp
-LIBSRCS += pvdbcrScalarRegister.cpp
-LIBSRCS += pvdbcrScalarArrayRegister.cpp
 
