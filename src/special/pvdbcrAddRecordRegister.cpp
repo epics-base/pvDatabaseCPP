@@ -112,7 +112,7 @@ void PvdbcrAddRecord::process()
         pvResult->put(name + " union most be a structure");
         return;
     }
-    StructureConstPtr st = static_pointer_cast<const Structure>(pvField->getField());
+    StructureConstPtr st = std::tr1::static_pointer_cast<const Structure>(pvField->getField());
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(st);
     PVRecordPtr pvRec = PVRecord::create(name,pvStructure);
     bool result = PVDatabase::getMaster()->addRecord(pvRec);
