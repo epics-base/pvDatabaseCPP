@@ -12,6 +12,11 @@
 /* Author: Marty Kraimer */
 #include <iocsh.h>
 #include <pv/standardField.h>
+#include <pv/standardPVField.h>
+#include <pv/timeStamp.h>
+#include <pv/pvTimeStamp.h>
+#include <pv/alarm.h>
+#include <pv/pvAlarm.h>
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
 
