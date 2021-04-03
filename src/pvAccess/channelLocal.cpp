@@ -77,7 +77,7 @@ static bool getProcess(PVStructurePtr pvRequest,bool processDefault)
 }
 
 class ChannelProcessLocal :
-    public ChannelProcess,
+    public epics::pvAccess::ChannelProcess,
     public std::tr1::enable_shared_from_this<ChannelProcessLocal>
 {
 public:
@@ -206,7 +206,7 @@ void ChannelProcessLocal::process()
 }
 
 class ChannelGetLocal :
-    public ChannelGet,
+    public epics::pvAccess::ChannelGet,
     public std::tr1::enable_shared_from_this<ChannelGetLocal>
 {
 public:
@@ -383,7 +383,7 @@ void ChannelGetLocal::get()
 }
 
 class ChannelPutLocal :
-    public ChannelPut,
+    public epics::pvAccess::ChannelPut,
     public std::tr1::enable_shared_from_this<ChannelPutLocal>
 {
 public:
@@ -567,7 +567,7 @@ void ChannelPutLocal::put(
 
 
 class ChannelPutGetLocal :
-    public ChannelPutGet,
+    public epics::pvAccess::ChannelPutGet,
     public std::tr1::enable_shared_from_this<ChannelPutGetLocal>
 {
 public:
@@ -802,8 +802,8 @@ void ChannelPutGetLocal::getGet()
 
 
 class ChannelRPCLocal :
-    public ChannelRPC,
-    public RPCResponseCallback,
+    public epics::pvAccess::ChannelRPC,
+    public epics::pvAccess::RPCResponseCallback,
     public std::tr1::enable_shared_from_this<ChannelRPCLocal>
 {
 public:
@@ -993,7 +993,7 @@ void ChannelRPCLocal::request(PVStructurePtr const & pvArgument)
 typedef std::tr1::shared_ptr<PVArray> PVArrayPtr;
 
 class ChannelArrayLocal :
-    public ChannelArray,
+    public epics::pvAccess::ChannelArray,
     public std::tr1::enable_shared_from_this<ChannelArrayLocal>
 {
 public:

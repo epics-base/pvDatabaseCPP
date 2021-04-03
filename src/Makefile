@@ -24,8 +24,8 @@ INC += pv/scalarAlarmSupport.h
 include $(PVDATABASE_SRC)/copy/Makefile
 include $(PVDATABASE_SRC)/database/Makefile
 include $(PVDATABASE_SRC)/pvAccess/Makefile
-include $(PVDATABASE_SRC)/special/Makefile
 include $(PVDATABASE_SRC)/support/Makefile
+include $(PVDATABASE_SRC)/special/Makefile
 
 LIBRARY += pvDatabase
 pvDatabase_LIBS += pvData
