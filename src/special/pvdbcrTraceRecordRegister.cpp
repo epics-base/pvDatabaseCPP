@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2021.03.12
+ * @date 2021.04.07
  */
 #include <iocsh.h>
 #include <pv/standardField.h>
@@ -20,13 +20,11 @@
 // The following must be the last include
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-#include "pv/pvStructureCopy.h"
-#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
-
 using namespace epics::pvData;
-using namespace epics::pvDatabase;
 using namespace std;
+
+namespace epics { namespace pvDatabase {
 
 class PvdbcrTraceRecord;
 typedef std::tr1::shared_ptr<PvdbcrTraceRecord> PvdbcrTraceRecordPtr;
@@ -102,6 +100,7 @@ void PvdbcrTraceRecord::process()
     pvRecord->setTraceLevel(pvLevel->get());
     pvResult->put("success");
 }
+}}
 
 static const iocshArg arg0 = { "recordName", iocshArgString };
 static const iocshArg arg1 = { "asLevel", iocshArgInt };
@@ -123,10 +122,11 @@ static void pvdbcrTraceRecordCallFunc(const iocshArgBuf *args)
     if(sval) {
         asGroup = string(sval);
     }
-    PvdbcrTraceRecordPtr record = PvdbcrTraceRecord::create(recordName);
+    epics::pvDatabase::PvdbcrTraceRecordPtr record
+        = epics::pvDatabase::PvdbcrTraceRecord::create(recordName);
     record->setAsLevel(asLevel);
     record->setAsGroup(asGroup);
-    PVDatabasePtr master = PVDatabase::getMaster();
+    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     bool result =  master->addRecord(record);
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }
