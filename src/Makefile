@@ -38,7 +38,4 @@ SHRLIB_VERSION ?= $(EPICS_PVDATABASE_MAJOR_VERSION).$(EPICS_PVDATABASE_MINOR_VER
 # needed for Windows
 LIB_SYS_LIBS_WIN32 += netapi32 ws2_32
 
-#pvDatabase_LIBS += $(EPICS_BASE_PVA_CORE_LIBS)
-#pvDatabase_LIBS += $(EPICS_BASE_IOC_LIBS)
-
 include $(TOP)/configure/RULES

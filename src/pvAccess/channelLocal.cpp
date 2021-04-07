@@ -912,7 +912,7 @@ void ChannelRPCLocal::processRequest(
     {
         result = service->request(pvArgument);
     }
-    catch (RPCRequestException& rre)
+    catch (epics::pvAccess::RPCRequestException& rre)
     {
         status = Status(rre.getStatus(), rre.what());
         ok = false;
