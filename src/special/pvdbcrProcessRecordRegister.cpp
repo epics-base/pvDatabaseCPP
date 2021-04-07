@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2021.03.12
+ * @date 2021.04.07
  */
 #include <epicsThread.h>
 #include <epicsGuard.h>
@@ -23,13 +23,11 @@
 
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-#include "pv/pvStructureCopy.h"
-#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
-
 using namespace epics::pvData;
-using namespace epics::pvDatabase;
 using namespace std;
+
+namespace epics { namespace pvDatabase {
 
 typedef std::tr1::shared_ptr<epicsThread> EpicsThreadPtr;
 class PvdbcrProcessRecord;
@@ -185,6 +183,7 @@ void PvdbcrProcessRecord::run()
         }
     }
 }
+}}
 
 static const iocshArg arg0 = { "recordName", iocshArgString };
 static const iocshArg arg1 = { "delay", iocshArgDouble };
@@ -209,10 +208,11 @@ static void pvdbcrProcessRecordCallFunc(const iocshArgBuf *args)
     if(sval) {
         asGroup = string(sval);
     }
-    PvdbcrProcessRecordPtr record = PvdbcrProcessRecord::create(recordName,delay);
+    epics::pvDatabase::PvdbcrProcessRecordPtr record
+         = epics::pvDatabase::PvdbcrProcessRecord::create(recordName,delay);
     record->setAsLevel(asLevel);
     record->setAsGroup(asGroup);
-    PVDatabasePtr master = PVDatabase::getMaster();
+    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     bool result =  master->addRecord(record);
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }

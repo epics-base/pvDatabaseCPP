@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2021.03.12
+ * @date 2021.04.07
  */
 #include <iocsh.h>
 #include <pv/standardField.h>
@@ -19,12 +19,11 @@
 
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-#include "pv/pvStructureCopy.h"
-#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;
-using namespace epics::pvDatabase;
 using namespace std;
+
+namespace epics { namespace pvDatabase {
 
 class PvdbcrRemoveRecord;
 typedef std::tr1::shared_ptr<PvdbcrRemoveRecord> PvdbcrRemoveRecordPtr;
@@ -96,6 +95,7 @@ void PvdbcrRemoveRecord::process()
     pvRecord->remove();
     pvResult->put("success");
 }
+}}
 
 static const iocshArg arg0 = { "recordName", iocshArgString };
 static const iocshArg arg1 = { "asLevel", iocshArgInt };
@@ -117,10 +117,10 @@ static void pvdbcrRemoveRecordCallFunc(const iocshArgBuf *args)
     if(sval) {
         asGroup = string(sval);
     }
-    PvdbcrRemoveRecordPtr record = PvdbcrRemoveRecord::create(recordName);
+    epics::pvDatabase::PvdbcrRemoveRecordPtr record = epics::pvDatabase::PvdbcrRemoveRecord::create(recordName);
     record->setAsLevel(asLevel);
     record->setAsGroup(asGroup);
-    PVDatabasePtr master = PVDatabase::getMaster();
+    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     bool result =  master->addRecord(record);
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }

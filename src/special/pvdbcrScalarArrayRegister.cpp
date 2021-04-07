@@ -5,7 +5,7 @@
 
 /**
  * @author mrk
- * @date 2021.03.12
+ * @date 2021.04.07
  */
 
 
@@ -23,11 +23,8 @@
 // The following must be the last include for code pvDatabase implements
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
-#include "pv/pvStructureCopy.h"
-#include "pv/channelProviderLocal.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;
-using namespace epics::pvDatabase;
 using namespace std;
 
 static const iocshArg arg0 = { "recordName", iocshArgString };
@@ -42,12 +39,12 @@ static void pvdbcrScalarArrayCallFunc(const iocshArgBuf *args)
 {
     char *sval = args[0].sval;
     if(!sval) {
-        throw std::runtime_error("pvdbcrScalarArrayCreate recordName not specified");
+        throw std::runtime_error("pvdbcrScalarArray recordName not specified");
     }
     string recordName = string(sval);
     sval = args[1].sval;
     if(!sval) {
-        throw std::runtime_error("pvdbcrScalarArrayCreate scalarType not specified");
+        throw std::runtime_error("pvdbcrScalarArray scalarType not specified");
     }
     string scalarType = string(sval);
     int asLevel = args[2].ival;
@@ -66,10 +63,11 @@ static void pvdbcrScalarArrayCallFunc(const iocshArgBuf *args)
         add("alarm",standardField->alarm()) ->
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);   
-    PVRecordPtr record = PVRecord::create(recordName,pvStructure);
+    epics::pvDatabase::PVRecordPtr record
+        = epics::pvDatabase::PVRecord::create(recordName,pvStructure);
     record->setAsLevel(asLevel);
     record->setAsGroup(asGroup);
-    PVDatabasePtr master = PVDatabase::getMaster();
+    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     bool result =  master->addRecord(record);
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }
