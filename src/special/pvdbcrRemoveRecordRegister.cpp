@@ -16,6 +16,7 @@
 #include <pv/pvAlarm.h>
 #include <pv/pvAccess.h>
 #include <pv/serverContext.h>
+#include <pv/rpcService.h>
 
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
