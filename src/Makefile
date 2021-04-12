@@ -20,6 +20,12 @@ INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
 
+INC += pv/pvdbcrScalar.h
+INC += pv/pvdbcrScalarArray.h
+INC += pv/pvdbcrAddRecord.h
+INC += pv/pvdbcrRemoveRecord.h
+INC += pv/pvdbcrProcessRecord.h
+INC += pv/pvdbcrTraceRecord.h
 
 include $(PVDATABASE_SRC)/copy/Makefile
 include $(PVDATABASE_SRC)/database/Makefile

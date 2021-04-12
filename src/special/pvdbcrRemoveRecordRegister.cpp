@@ -21,34 +21,15 @@
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvDatabase.h"
+#include "pv/pvdbcrRemoveRecord.h"
 using namespace epics::pvData;
 using namespace std;
 
 namespace epics { namespace pvDatabase {
 
-class PvdbcrRemoveRecord;
-typedef std::tr1::shared_ptr<PvdbcrRemoveRecord> PvdbcrRemoveRecordPtr;
-
-
-class epicsShareClass PvdbcrRemoveRecord :
-    public PVRecord
-{
-public:
-    POINTER_DEFINITIONS(PvdbcrRemoveRecord);
-    static PvdbcrRemoveRecordPtr create(
-        std::string const & recordName);
-    virtual bool init();
-    virtual void process();
-private:
-    PvdbcrRemoveRecord(
-        std::string const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::PVStringPtr pvRecordName;
-    epics::pvData::PVStringPtr pvResult;
-};
-
 PvdbcrRemoveRecordPtr PvdbcrRemoveRecord::create(
-    std::string const & recordName)
+    std::string const & recordName,
+    int asLevel,std::string const & asGroup)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -62,15 +43,17 @@ PvdbcrRemoveRecordPtr PvdbcrRemoveRecord::create(
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
     PvdbcrRemoveRecordPtr pvRecord(
-        new PvdbcrRemoveRecord(recordName,pvStructure));
+        new PvdbcrRemoveRecord(recordName,pvStructure,
+        asLevel,asGroup));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
 PvdbcrRemoveRecord::PvdbcrRemoveRecord(
     std::string const & recordName,
-    epics::pvData::PVStructurePtr const & pvStructure)
-: PVRecord(recordName,pvStructure)
+    epics::pvData::PVStructurePtr const & pvStructure,
+    int asLevel,std::string const & asGroup)
+: PVRecord(recordName,pvStructure,asLevel,asGroup)
 {
 }
 

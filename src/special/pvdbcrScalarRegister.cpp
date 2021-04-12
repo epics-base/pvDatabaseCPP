@@ -21,9 +21,38 @@
 // The following must be the last include for code pvDatabase implements
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
+#include "pv/pvdbcrScalar.h"
 #include "pv/pvDatabase.h"
 using namespace epics::pvData;
 using namespace std;
+
+namespace epics { namespace pvDatabase {
+
+PvdbcrScalar::PvdbcrScalar(
+    std::string const & recordName,epics::pvData::PVStructurePtr const & pvStructure,
+    int asLevel,std::string const & asGroup)
+: PVRecord(recordName,pvStructure,asLevel,asGroup)
+{}
+
+PvdbcrScalarPtr PvdbcrScalar::create(
+    std::string const & recordName,std::string const &  scalarType,
+    int asLevel,std::string const & asGroup)
+{
+    ScalarType st = epics::pvData::ScalarTypeFunc::getScalarType(scalarType);
+    FieldCreatePtr fieldCreate = getFieldCreate();
+    StandardFieldPtr standardField = getStandardField();
+    PVDataCreatePtr pvDataCreate = getPVDataCreate();
+    StructureConstPtr top = fieldCreate->createFieldBuilder()->
+        add("value",st) ->
+        add("timeStamp",standardField->timeStamp()) ->
+        add("alarm",standardField->alarm()) ->
+            createStructure();
+    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);   
+    PvdbcrScalarPtr pvRecord(new PvdbcrScalar(recordName,pvStructure,asLevel,asGroup));
+    pvRecord->initPVRecord();
+    return pvRecord;
+};
+}}
 
 static const iocshArg arg0 = { "recordName", iocshArgString };
 static const iocshArg arg1 = { "scalarType", iocshArgString };
@@ -51,20 +80,11 @@ static void pvdbcrScalarCallFunc(const iocshArgBuf *args)
     if(sval) {
         asGroup = string(sval);
     }
-    ScalarType st = epics::pvData::ScalarTypeFunc::getScalarType(scalarType);
-    FieldCreatePtr fieldCreate = getFieldCreate();
-    StandardFieldPtr standardField = getStandardField();
-    PVDataCreatePtr pvDataCreate = getPVDataCreate();
-    StructureConstPtr top = fieldCreate->createFieldBuilder()->
-        add("value",st) ->
-        add("timeStamp",standardField->timeStamp()) ->
-        add("alarm",standardField->alarm()) ->
-        createStructure();
-    PVStructurePtr pvStructure = pvDataCreate->createPVStructure(top);   
-    epics::pvDatabase::PVRecordPtr record = epics::pvDatabase::PVRecord::create(recordName,pvStructure);
+    epics::pvDatabase::PvdbcrScalarPtr record
+        = epics::pvDatabase::PvdbcrScalar::create(recordName,scalarType);
+    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     record->setAsLevel(asLevel);
     record->setAsGroup(asGroup);
-    epics::pvDatabase::PVDatabasePtr master = epics::pvDatabase::PVDatabase::getMaster();
     bool result =  master->addRecord(record);
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }

@@ -25,46 +25,15 @@
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvDatabase.h"
+#include "pv/pvdbcrProcessRecord.h"
 using namespace epics::pvData;
 using namespace std;
 
 namespace epics { namespace pvDatabase {
 
-typedef std::tr1::shared_ptr<epicsThread> EpicsThreadPtr;
-class PvdbcrProcessRecord;
-typedef std::tr1::shared_ptr<PvdbcrProcessRecord> PvdbcrProcessRecordPtr;
-
-class epicsShareClass PvdbcrProcessRecord :
-    public PVRecord,
-    public epicsThreadRunable
-{
-public:
-    POINTER_DEFINITIONS(PvdbcrProcessRecord);
-    static PvdbcrProcessRecordPtr create(
-        std::string const & recordName,double delay);
-    virtual bool init();
-    virtual void process();
-    virtual void run();
-    void startThread();
-    void stop();
-private:
-    PvdbcrProcessRecord(
-        std::string const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure,double delay);
-    double delay;
-    EpicsThreadPtr thread;
-    epics::pvData::Event runStop;
-    epics::pvData::Event runReturn;
-    PVDatabasePtr pvDatabase;
-    PVRecordMap pvRecordMap;
-    epics::pvData::PVStringPtr pvCommand;
-    epics::pvData::PVStringPtr pvRecordName;
-    epics::pvData::PVStringPtr pvResult;
-    epics::pvData::Mutex mutex;
-};
-
 PvdbcrProcessRecordPtr PvdbcrProcessRecord::create(
-    std::string const & recordName,double delay)
+    std::string const & recordName,double delay,
+    int asLevel,std::string const & asGroup)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -79,32 +48,17 @@ PvdbcrProcessRecordPtr PvdbcrProcessRecord::create(
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
     PvdbcrProcessRecordPtr pvRecord(
-        new PvdbcrProcessRecord(recordName,pvStructure,delay));
+        new PvdbcrProcessRecord(recordName,pvStructure,delay,asLevel,asGroup));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
-}
-
-void PvdbcrProcessRecord::startThread()
-{
-    thread = EpicsThreadPtr(new epicsThread(
-        *this,
-        "processRecord",
-        epicsThreadGetStackSize(epicsThreadStackSmall),
-        epicsThreadPriorityLow));
-    thread->start();
-}
-
-void PvdbcrProcessRecord::stop()
-{
-    runStop.signal();
-    runReturn.wait();
 }
 
 
 PvdbcrProcessRecord::PvdbcrProcessRecord(
     std::string const & recordName,
-    epics::pvData::PVStructurePtr const & pvStructure,double delay)
-: PVRecord(recordName,pvStructure),
+    epics::pvData::PVStructurePtr const & pvStructure,double delay,
+    int asLevel,std::string const & asGroup)
+: PVRecord(recordName,pvStructure,asLevel,asGroup),
   delay(delay),
   pvDatabase(PVDatabase::getMaster())
 {
@@ -121,6 +75,26 @@ bool PvdbcrProcessRecord::init()
     if(!pvResult) return false;
     startThread();
     return true;
+}
+
+void PvdbcrProcessRecord::setDelay(double delay) {this->delay = delay;}
+
+double PvdbcrProcessRecord::getDelay() {return delay;}
+
+void PvdbcrProcessRecord::startThread()
+{
+    thread = EpicsThreadPtr(new epicsThread(
+        *this,
+        "processRecord",
+        epicsThreadGetStackSize(epicsThreadStackSmall),
+        epicsThreadPriorityLow));
+    thread->start();
+}
+
+void PvdbcrProcessRecord::stop()
+{
+    runStop.signal();
+    runReturn.wait();
 }
 
 void PvdbcrProcessRecord::process()
