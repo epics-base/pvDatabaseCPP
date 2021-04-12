@@ -22,34 +22,15 @@
 #include <epicsExport.h>
 #define epicsExportSharedSymbols
 #include "pv/pvDatabase.h"
+#include "pv/pvdbcrTraceRecord.h"
 using namespace epics::pvData;
 using namespace std;
 
 namespace epics { namespace pvDatabase {
 
-class PvdbcrTraceRecord;
-typedef std::tr1::shared_ptr<PvdbcrTraceRecord> PvdbcrTraceRecordPtr;
-
-class epicsShareClass PvdbcrTraceRecord :
-    public PVRecord
-{
-public:
-    POINTER_DEFINITIONS(PvdbcrTraceRecord);
-    static PvdbcrTraceRecordPtr create(
-        std::string const & recordName);
-    virtual bool init();
-    virtual void process();
-private:
-    PvdbcrTraceRecord(
-        std::string const & recordName,
-        epics::pvData::PVStructurePtr const & pvStructure);
-    epics::pvData::PVStringPtr pvRecordName;
-    epics::pvData::PVIntPtr pvLevel;
-    epics::pvData::PVStringPtr pvResult;
-}; 
-
 PvdbcrTraceRecordPtr PvdbcrTraceRecord::create(
-    std::string const & recordName)
+    std::string const & recordName,
+    int asLevel,std::string const & asGroup)
 {
     FieldCreatePtr fieldCreate = getFieldCreate();
     PVDataCreatePtr pvDataCreate = getPVDataCreate();
@@ -64,15 +45,16 @@ PvdbcrTraceRecordPtr PvdbcrTraceRecord::create(
         createStructure();
     PVStructurePtr pvStructure = pvDataCreate->createPVStructure(topStructure);
     PvdbcrTraceRecordPtr pvRecord(
-        new PvdbcrTraceRecord(recordName,pvStructure));
+        new PvdbcrTraceRecord(recordName,pvStructure,asLevel,asGroup));
     if(!pvRecord->init()) pvRecord.reset();
     return pvRecord;
 }
 
 PvdbcrTraceRecord::PvdbcrTraceRecord(
     std::string const & recordName,
-    epics::pvData::PVStructurePtr const & pvStructure)
-: PVRecord(recordName,pvStructure)
+    epics::pvData::PVStructurePtr const & pvStructure,
+    int asLevel,std::string const & asGroup)
+: PVRecord(recordName,pvStructure,asLevel,asGroup)
 {
 }
 
