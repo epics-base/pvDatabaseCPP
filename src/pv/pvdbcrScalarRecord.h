@@ -7,8 +7,8 @@
  * @author mrk
  * @date 2021.04.11
  */
-#ifndef PVDBCRSCALARARRAY_H
-#define PVDBCRSCALARARRAY_H
+#ifndef PVDBCRSCALARRECORD_H
+#define PVDBCRSCALARRECORD_H
 
 #include <pv/pvDatabase.h>
 #include <pv/pvSupport.h>
@@ -18,26 +18,26 @@
 
 namespace epics { namespace pvDatabase {
 
-class PvdbcrScalarArray;
-typedef std::tr1::shared_ptr<PvdbcrScalarArray> PvdbcrScalarArrayPtr;
+class PvdbcrScalarRecord;
+typedef std::tr1::shared_ptr<PvdbcrScalarRecord> PvdbcrScalarRecordPtr;
 
 /**
- * @brief  PvdbcrScalarArray creates a record with a scalar array value, alarm, and timeStamp.
+ * @brief  PvdbcrScalarRecord creates a record with a scalar value, alarm, and timeStamp.
  *
  */
-class epicsShareClass PvdbcrScalarArray :
+class epicsShareClass PvdbcrScalarRecord :
      public PVRecord
 {
 private:
-  PvdbcrScalarArray(
+  PvdbcrScalarRecord(
     std::string const & recordName,epics::pvData::PVStructurePtr const & pvStructure,
     int asLevel,std::string const & asGroup);
 public:
-    POINTER_DEFINITIONS(PvdbcrScalarArray);
+    POINTER_DEFINITIONS(PvdbcrScalarRecord);
     /**
      * The Destructor.
      */
-    virtual ~PvdbcrScalarArray() {}
+    virtual ~PvdbcrScalarRecord() {}
     /**
      * @brief Create a record.
      *
@@ -47,11 +47,11 @@ public:
      * @param asGroup  The access security group.
      * @return The PVRecord
      */
-     static PvdbcrScalarArrayPtr create(
+     static PvdbcrScalarRecordPtr create(
         std::string const & recordName,std::string const &  scalarType,
         int asLevel=0,std::string const & asGroup = std::string("DEFAULT"));
 };
 
 }}
 
-#endif  /* PVDBCRSCALARARRAY_H */
+#endif  /* PVDBCRSCALARRECORD_H */
