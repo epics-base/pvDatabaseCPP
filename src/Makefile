@@ -20,8 +20,8 @@ INC += pv/pvSupport.h
 INC += pv/controlSupport.h
 INC += pv/scalarAlarmSupport.h
 
-INC += pv/pvdbcrScalar.h
-INC += pv/pvdbcrScalarArray.h
+INC += pv/pvdbcrScalarRecord.h
+INC += pv/pvdbcrScalarArrayRecord.h
 INC += pv/pvdbcrAddRecord.h
 INC += pv/pvdbcrRemoveRecord.h
 INC += pv/pvdbcrProcessRecord.h

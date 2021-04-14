@@ -192,7 +192,7 @@ static void pvdbcrProcessRecordCallFunc(const iocshArgBuf *args)
     if(!result) cout << "recordname " << recordName << " not added" << endl;
 }
 
-static void pvdbcrProcessRecordRegister(void)
+static void pvdbcrProcessRecord(void)
 {
     static int firstTime = 1;
     if (firstTime) {
@@ -202,5 +202,5 @@ static void pvdbcrProcessRecordRegister(void)
 }
 
 extern "C" {
-    epicsExportRegistrar(pvdbcrProcessRecordRegister);
+    epicsExportRegistrar(pvdbcrProcessRecord);
 }

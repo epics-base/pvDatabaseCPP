@@ -2,18 +2,17 @@
 
 SRC_DIRS += $(PVDATABASE_SRC)/special
 
-DBD += pvdbcrTraceRecordRegister.dbd
-DBD += pvdbcrRemoveRecordRegister.dbd
-DBD += pvdbcrAddRecordRegister.dbd
-DBD += pvdbcrProcessRecordRegister.dbd
-DBD += pvdbcrScalarRegister.dbd
-DBD += pvdbcrScalarArrayRegister.dbd
-DBD += pvdbSpecialRegister.dbd
+DBD += pvdbcrScalarRecord.dbd
+DBD += pvdbcrScalarArrayRecord.dbd
+DBD += pvdbcrAddRecord.dbd
+DBD += pvdbcrRemoveRecord.dbd
+DBD += pvdbcrProcessRecord.dbd
+DBD += pvdbcrTraceRecord.dbd
+DBD += pvdbcrAllRecords.dbd
 
-LIBSRCS += pvdbcrScalarRegister.cpp
-LIBSRCS += pvdbcrScalarArrayRegister.cpp
-LIBSRCS += pvdbcrTraceRecordRegister.cpp
-LIBSRCS += pvdbcrRemoveRecordRegister.cpp
-LIBSRCS += pvdbcrAddRecordRegister.cpp
-LIBSRCS += pvdbcrProcessRecordRegister.cpp
-
+LIBSRCS += pvdbcrScalarRecord.cpp
+LIBSRCS += pvdbcrScalarArrayRecord.cpp
+LIBSRCS += pvdbcrAddRecord.cpp
+LIBSRCS += pvdbcrRemoveRecord.cpp
+LIBSRCS += pvdbcrProcessRecord.cpp
+LIBSRCS += pvdbcrTraceRecord.cpp
