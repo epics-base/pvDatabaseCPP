@@ -88,7 +88,6 @@ PVCopyPtr PVCopy::create(
     bool result = pvCopy->init(pvStructure);
     if(!result) return PVCopyPtr();
     pvCopy->traverseMasterInitPlugin();
-//cout << pvCopy->dump() << endl;
     return pvCopy;
 }
 
@@ -433,10 +432,19 @@ bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
     PVStructurePtr pvMasterStructure = pvMaster;
     size_t len = pvRequest->getPVFields().size();
     bool entireMaster = false;
-    if(len==0) entireMaster = true;
     PVStructurePtr pvOptions;
-    if(len==1) {
-        pvOptions = pvRequest->getSubField<PVStructure>("_options");
+    if(len==0) {
+        entireMaster = true;
+    }
+    else {
+        // If masterField is in the request, but not in the master structure,
+        // then assume entire master is requested
+        PVStructurePtr masterFieldPtr = pvMaster->getSubField<PVStructure>("masterField");
+        PVStructurePtr requestFieldPtr = pvRequest->getSubField<PVStructure>("masterField");
+        if (!masterFieldPtr && requestFieldPtr) {
+            entireMaster = true;
+            pvOptions = requestFieldPtr->getSubField<PVStructure>("_options");
+        }
     }
     if(entireMaster) {
         structure = pvMasterStructure->getStructure();

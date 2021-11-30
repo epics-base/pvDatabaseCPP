@@ -418,7 +418,10 @@ void PVRecordField::postParent(PVRecordFieldPtr const & subField)
         listener->dataPut(pvrs,subField);
     }
     PVRecordStructurePtr parent(this->parent.lock());
-    if(parent) parent->postParent(subField);
+    if(parent) {
+        parent->postParent(subField);
+        parent->callListener();
+    }
 }
 
 void PVRecordField::postSubField()
