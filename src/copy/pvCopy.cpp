@@ -437,10 +437,10 @@ bool PVCopy::init(epics::pvData::PVStructurePtr const &pvRequest)
         entireMaster = true;
     }
     else {
-        // If masterField is in the request, but not in the master structure,
-        // then assume entire master is requested
-        PVStructurePtr masterFieldPtr = pvMaster->getSubField<PVStructure>("masterField");
-        PVStructurePtr requestFieldPtr = pvRequest->getSubField<PVStructure>("masterField");
+        // If "_" is in the request, but not in the master structure,
+        // then assume the top level PV structure is requested
+        PVStructurePtr masterFieldPtr = pvMaster->getSubField<PVStructure>("_");
+        PVStructurePtr requestFieldPtr = pvRequest->getSubField<PVStructure>("_");
         if (!masterFieldPtr && requestFieldPtr) {
             entireMaster = true;
             pvOptions = requestFieldPtr->getSubField<PVStructure>("_options");
