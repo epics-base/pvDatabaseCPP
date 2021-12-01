@@ -2,6 +2,12 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.X.Y (EPICS 7.X.Y, MMM 20YY)
+
+* Added support for the whole structure (master field) server side plugins. The whole structure
+is identified as the `_` string, and the pvRequest string that applies a plugin to it
+has the form `field(_[pluginXYZ=optionA:3;optionB:uniqueId])`. 
+
 ## Release 4.6.0 (EPICS 7.0.6, Jul 2021)
 
 * Access Security is now supported.
