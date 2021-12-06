@@ -274,6 +274,33 @@ static void testPVScalarArray(
     }
 }
 
+static void testMasterField(PVRecordPtr const& pvRecord)
+{
+    CreateRequest::shared_pointer createRequest = CreateRequest::create();
+    PVStructurePtr pvRequest = createRequest->createRequest("field(_)");
+    if(debug) {
+        cout << "pvRequest" << *pvRequest << endl ;
+    }
+    PVStructurePtr pvStructureRecord = pvRecord->getPVRecordStructure()->getPVStructure();
+    PVCopyPtr pvCopy = PVCopy::create(pvStructureRecord,pvRequest,"");
+    PVStructurePtr pvMasterField = pvCopy->getPVMaster();
+    if(debug) {
+        cout << "PV structure from record" << endl << *pvStructureRecord << endl;
+        cout << "Master PV structure from copy" << endl << *pvMasterField << endl;
+        cout << "Master PV structure from copy offset " << pvMasterField->getFieldOffset() << endl;
+    }
+    testOk1(pvMasterField->getNumberFields() == pvStructureRecord->getNumberFields());
+    testOk1(pvMasterField->getFieldOffset() == 0);
+    PVStructurePtr pvStructureCopy = pvCopy->createPVStructure();
+    BitSetPtr bitSet = BitSetPtr(new BitSet(pvStructureCopy->getNumberFields()));
+    pvCopy->initCopy(pvStructureCopy, bitSet);
+    if(debug) {
+        cout << "PV structure from copy" << endl << *pvStructureCopy << endl;
+        cout << "PV structure from copy offset " << pvStructureCopy->getFieldOffset() << endl;
+    }
+    testOk1(pvMasterField->getNumberFields() == pvStructureCopy->getNumberFields());
+}
+
 static void scalarTest()
 {
     if(debug) {cout << endl << endl << "****scalarTest****" << endl;}
@@ -393,11 +420,21 @@ static void powerSupplyTest()
     testPVScalar(valueNameRecord,valueNameCopy,pvRecord,pvCopy);
 }
 
+static void masterFieldTest()
+{
+    if(debug) {
+        cout << endl << endl << "****masterFieldTest****" << endl;
+    }
+    PVRecordPtr pvRecord = createScalar("doubleRecord",pvDouble,"alarm,timeStamp,display");
+    testMasterField(pvRecord);
+}
+
 MAIN(testPVCopy)
 {
-    testPlan(67);
+    testPlan(70);
     scalarTest();
     arrayTest();
     powerSupplyTest();
+    masterFieldTest();
     return 0;
 }
