@@ -55,7 +55,7 @@ libpv_database = both_libraries(
   'epics-pv-database',
   sources,
   include_directories: include_directories,
-  dependencies: [epics_com_dep, epics_pv_data_dep],
+  dependencies: [epics_com_dep, epics_pv_data_dep, epics_pv_access_dep],
   install: true,
 )
 
