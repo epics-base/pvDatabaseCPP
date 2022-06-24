@@ -332,6 +332,7 @@ PVRecordField::PVRecordField(
     PVRecordPtr const & pvRecord)
 :  pvField(pvField),
    isStructure(pvField->getField()->getType()==structure ? true : false),
+   master(),
    parent(parent),
    pvRecord(pvRecord)
 {
@@ -420,12 +421,16 @@ void PVRecordField::postParent(PVRecordFieldPtr const & subField)
     PVRecordStructurePtr parent(this->parent.lock());
     if(parent) {
         parent->postParent(subField);
-        parent->callListener();
     }
 }
 
 void PVRecordField::postSubField()
 {
+    // Master field pointer will be set in only one subfield
+    PVRecordStructurePtr master(this->master.lock());
+    if(master) {
+        master->callListener();
+    }
     callListener();
     if(isStructure) {
         PVRecordStructurePtr pvrs =
@@ -468,6 +473,11 @@ void PVRecordStructure::init()
     PVRecordStructurePtr self =
         static_pointer_cast<PVRecordStructure>(shared_from_this());
     PVRecordPtr pvRecord = getPVRecord();
+    static bool masterFieldCallbackSet = false;
+    bool isMasterField = (!getFullFieldName().size());
+    if (isMasterField) {
+        masterFieldCallbackSet = false;
+    }
     for(size_t i=0; i<numFields; i++) {
         PVFieldPtr pvField = pvFields[i];
         if(pvField->getField()->getType()==structure) {
@@ -481,6 +491,17 @@ void PVRecordStructure::init()
                 new PVRecordField(pvField,self,pvRecord));
              pvRecordFields->push_back(pvRecordField);
              pvRecordField->init();
+             // Master field listeners will be called before
+             // calling listeners for the first subfield
+             if (!masterFieldCallbackSet) {
+                 masterFieldCallbackSet = true;
+                 // Find master field
+                 PVRecordStructurePtr p = pvRecordField->parent.lock();
+                 while (p) {
+                     pvRecordField->master = p;
+                     p = p->parent.lock();
+                 }
+             }
         }
     }
 }

@@ -376,6 +376,7 @@ private:
     std::list<PVListenerWPtr> pvListenerList;
     epics::pvData::PVField::weak_pointer pvField;
     bool isStructure;
+    PVRecordStructureWPtr master;
     PVRecordStructureWPtr parent;
     PVRecordWPtr pvRecord;
     std::string fullName;
