@@ -2,11 +2,16 @@
 
 This document summarizes the changes to the module between releases.
 
-## Release 4.X.Y (EPICS 7.X.Y, MMM 20YY)
+## Release 4.7.0 (EPICS 7.0.7, Sep 2022)
 
-* Added support for the whole structure (master field) server side plugins. The whole structure
-is identified as the `_` string, and the pvRequest string that applies a plugin to it
-has the form `field(_[pluginXYZ=optionA:3;optionB:uniqueId])`. 
+* Added support for the whole structure (master field) server side plugins.
+  The whole structure is identified as the `_` string, and a pvRequest string
+  that applies a plugin to it takes the form:
+
+  `field(_[XYZ=A:3;B:uniqueId])`
+
+  where `XYZ` is the name of a specific filter plugin that takes parameters
+  `A` and `B` with values `3` and `uniqueId` respectively.
 
 ## Release 4.6.0 (EPICS 7.0.6, Jul 2021)
 
