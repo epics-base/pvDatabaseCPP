@@ -2,6 +2,9 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.7.1 (EPICS 7.0.x, UNRELEASED)
+
+
 ## Release 4.7.0 (EPICS 7.0.7, Sep 2022)
 
 * Added support for the whole structure (master field) server side plugins.
