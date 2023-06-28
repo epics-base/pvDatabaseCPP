@@ -34,34 +34,31 @@ in which a particular client application is written.
 
 The plugin parameters are the following:
 
-- group: this parameter indicates a group that client application belongs to
-(default value: "default"); groups of clients are completely independent
-of each other
+- `group:<group_id>`: specifying a `group_id` names a group the client application belongs to (default value: `default`); clients with different group names are
+completely independent of each other
 
-- set: this parameter designates a client set that application belongs to 
-within its group (default value: "default")
+- `set:<set_id>`: this parameter designates a client set that application belongs to within its group (default value: `default`)
 
-- trigger: this is the PV structure field that distinguishes 
-different channel updates (default value: "timeStamp"); for example,
-for area detector images one could use the "uniqueId" field of the NTND 
+- `trigger:<field_name>`: this is the PV structure field that distinguishes 
+different channel updates (default value: `timeStamp`); for example,
+for area detector images one could use the `uniqueId` field of the NTND 
 structure
 
-- updates: this parameter configures how many sequential updates
-a client (or a set of clients) will receive before the data distributor 
-starts updating the next one (default value: "1")
+- `updates:<n_updates>`: this parameter must be an integer and configures how many sequential updates a client (or a set of clients) will receive before the data distributor starts updating the next one (default value: `1`)
 
-- mode: this parameter configures how channel updates are to be
+- `mode:<update_mode>`: this parameter configures how channel updates are to be
 distributed between clients in a set:
-  - one: update goes to one client per set
-  - all: update goes to all clients in a set
-  - default is "one" if client set id is not specified, and "all" if set 
+  - `one`: update goes to one client per set
+  - `all`: update goes to all clients in a set
+  - default is `one` if client set id is not specified, and `all` if set 
     id is specified
 
 The plugin obeys the following rules:
 
 - Parameter names are case insensitive, but the string values
 are not. For example, "group=abc" and "group=ABC" would indicate two
-different groups of clients. 
+different groups of clients. String values allow alphanumeric characters,
+as well as dashes and underscores.
 
 - Updates for a set of clients are configured when the first client in
 the set requests data. Configuration values (i.e., "trigger", 

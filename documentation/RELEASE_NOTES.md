@@ -10,7 +10,7 @@ This document summarizes the changes to the module between releases.
 
   `_[distributor=group:<group id>;set:<set_id>;trigger:<field_name>;updates:<n_updates>;mode:<update_mode>]`
 
-  The plugin parameters are described bellow:
+  The plugin parameters are optional and are described bellow:
 
   - group: this parameter indicates a group that client application belongs to (default value: "default"); groups of clients are completely independent of each other
 
