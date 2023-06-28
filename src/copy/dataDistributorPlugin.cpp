@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include <cctype>
 #include <string>
 #include <algorithm>
 #include <pv/lock.h>
