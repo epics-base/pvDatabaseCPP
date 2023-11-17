@@ -27,7 +27,7 @@ namespace epics { namespace pvCopy {
 static std::string leftTrim(const std::string& s)
 {
     unsigned int i;
-    unsigned int n = s.length();
+    unsigned int n = (unsigned int)s.length();
     for (i = 0; i < n; i++) {
         if (!isspace(s[i])) {
             break;
@@ -39,7 +39,7 @@ static std::string leftTrim(const std::string& s)
 static std::string rightTrim(const std::string& s)
 {
     unsigned int i;
-    unsigned int n = s.length();
+    unsigned int n = (unsigned int)s.length();
     for (i = n; i > 0; i--) {
         if (!isspace(s[i-1])) {
             break;
@@ -110,7 +110,7 @@ void DataDistributor::removeUnusedInstance(DataDistributorPtr dataDistributorPtr
     std::map<std::string,DataDistributorPtr>::iterator ddit = dataDistributorMap.find(groupId);
     if (ddit != dataDistributorMap.end()) {
         DataDistributorPtr ddPtr = ddit->second;
-        unsigned int nSets = ddPtr->clientSetMap.size();
+        size_t nSets = ddPtr->clientSetMap.size();
         if (nSets == 0) {
             dataDistributorMap.erase(ddit);
         }
@@ -409,7 +409,7 @@ bool DataDistributorFilter::filter(const PVFieldPtr& pvCopy, const BitSetPtr& bi
 
     if(proceedWithUpdate) {
         pvCopy->copyUnchecked(*masterFieldPtr);
-        bitSet->set(pvCopy->getFieldOffset());
+        bitSet->set((unsigned int)pvCopy->getFieldOffset());
     } 
     else {
         // Clear all bits
