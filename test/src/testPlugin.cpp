@@ -366,7 +366,7 @@ static void dataDistributorTest()
     PVCopyPtr pvCopy1(PVCopy::create(pvRecordStructure,pvRequest,""));
     PVStructurePtr pvStructureCopy1(pvCopy1->createPVStructure());
     BitSetPtr bitSet1(new BitSet(pvStructureCopy1->getNumberFields()));
- 
+
     PVCopyPtr pvCopy2(PVCopy::create(pvRecordStructure,pvRequest,""));
     PVStructurePtr pvStructureCopy2(pvCopy2->createPVStructure());
     BitSetPtr bitSet2(new BitSet(pvStructureCopy2->getNumberFields()));
@@ -383,7 +383,7 @@ static void dataDistributorTest()
     debugOutput("client 2: update 0", result, nSet, bitSet2, pvStructureCopy2);
     testOk1(result==true);
     testOk1(nSet==1);
- 
+
     // Update 1: only client 1 gets it
     pvValue->put(1);
 
@@ -398,7 +398,7 @@ static void dataDistributorTest()
     debugOutput("client 2: update 1", result, nSet, bitSet2, pvStructureCopy2);
     testOk1(result==false);
     testOk1(nSet==0);
- 
+
     // Update 2: only client 2 gets it
     pvValue->put(2);
 

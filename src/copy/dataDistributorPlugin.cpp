@@ -26,8 +26,8 @@ namespace epics { namespace pvCopy {
 // Utilities for manipulating strings
 static std::string leftTrim(const std::string& s)
 {
-    int i;
-    int n = s.length();
+    unsigned int i;
+    unsigned int n = (unsigned int)s.length();
     for (i = 0; i < n; i++) {
         if (!isspace(s[i])) {
             break;
@@ -38,8 +38,8 @@ static std::string leftTrim(const std::string& s)
 
 static std::string rightTrim(const std::string& s)
 {
-    int i;
-    int n = s.length();
+    unsigned int i;
+    unsigned int n = (unsigned int)s.length();
     for (i = n; i > 0; i--) {
         if (!isspace(s[i-1])) {
             break;
@@ -83,7 +83,7 @@ static std::string toLowerCase(const std::string& input)
 // Data distributor class
 
 static std::string name("distributor");
-bool DataDistributorPlugin::initialized(DataDistributorPlugin::initialize());
+bool DataDistributorPlugin::initialized(false);
 
 std::map<std::string, DataDistributorPtr> DataDistributor::dataDistributorMap;
 epics::pvData::Mutex DataDistributor::dataDistributorMapMutex;
@@ -110,7 +110,7 @@ void DataDistributor::removeUnusedInstance(DataDistributorPtr dataDistributorPtr
     std::map<std::string,DataDistributorPtr>::iterator ddit = dataDistributorMap.find(groupId);
     if (ddit != dataDistributorMap.end()) {
         DataDistributorPtr ddPtr = ddit->second;
-        int nSets = ddPtr->clientSetMap.size();
+        size_t nSets = ddPtr->clientSetMap.size();
         if (nSets == 0) {
             dataDistributorMap.erase(ddit);
         }
@@ -275,8 +275,11 @@ void DataDistributorPlugin::create()
 
 bool DataDistributorPlugin::initialize()
 {
-    DataDistributorPluginPtr pvPlugin = DataDistributorPluginPtr(new DataDistributorPlugin());
-    PVPluginRegistry::registerPlugin(name,pvPlugin);
+    if (!initialized) {
+        initialized = true;
+        DataDistributorPluginPtr pvPlugin = DataDistributorPluginPtr(new DataDistributorPlugin());
+        PVPluginRegistry::registerPlugin(name,pvPlugin);
+    }
     return true;
 }
 
@@ -406,7 +409,7 @@ bool DataDistributorFilter::filter(const PVFieldPtr& pvCopy, const BitSetPtr& bi
 
     if(proceedWithUpdate) {
         pvCopy->copyUnchecked(*masterFieldPtr);
-        bitSet->set(pvCopy->getFieldOffset());
+        bitSet->set((unsigned int)pvCopy->getFieldOffset());
     } 
     else {
         // Clear all bits
