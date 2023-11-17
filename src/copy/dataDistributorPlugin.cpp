@@ -26,8 +26,8 @@ namespace epics { namespace pvCopy {
 // Utilities for manipulating strings
 static std::string leftTrim(const std::string& s)
 {
-    int i;
-    int n = s.length();
+    unsigned int i;
+    unsigned int n = s.length();
     for (i = 0; i < n; i++) {
         if (!isspace(s[i])) {
             break;
@@ -38,8 +38,8 @@ static std::string leftTrim(const std::string& s)
 
 static std::string rightTrim(const std::string& s)
 {
-    int i;
-    int n = s.length();
+    unsigned int i;
+    unsigned int n = s.length();
     for (i = n; i > 0; i--) {
         if (!isspace(s[i-1])) {
             break;
@@ -110,7 +110,7 @@ void DataDistributor::removeUnusedInstance(DataDistributorPtr dataDistributorPtr
     std::map<std::string,DataDistributorPtr>::iterator ddit = dataDistributorMap.find(groupId);
     if (ddit != dataDistributorMap.end()) {
         DataDistributorPtr ddPtr = ddit->second;
-        int nSets = ddPtr->clientSetMap.size();
+        unsigned int nSets = ddPtr->clientSetMap.size();
         if (nSets == 0) {
             dataDistributorMap.erase(ddit);
         }
@@ -275,7 +275,7 @@ void DataDistributorPlugin::create()
 
 bool DataDistributorPlugin::initialize()
 {
-    if (not initialized) {
+    if (!initialized) {
         initialized = true;
         DataDistributorPluginPtr pvPlugin = DataDistributorPluginPtr(new DataDistributorPlugin());
         PVPluginRegistry::registerPlugin(name,pvPlugin);
