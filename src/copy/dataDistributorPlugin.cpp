@@ -83,7 +83,7 @@ static std::string toLowerCase(const std::string& input)
 // Data distributor class
 
 static std::string name("distributor");
-bool DataDistributorPlugin::initialized(DataDistributorPlugin::initialize());
+bool DataDistributorPlugin::initialized(false);
 
 std::map<std::string, DataDistributorPtr> DataDistributor::dataDistributorMap;
 epics::pvData::Mutex DataDistributor::dataDistributorMapMutex;
@@ -275,8 +275,11 @@ void DataDistributorPlugin::create()
 
 bool DataDistributorPlugin::initialize()
 {
-    DataDistributorPluginPtr pvPlugin = DataDistributorPluginPtr(new DataDistributorPlugin());
-    PVPluginRegistry::registerPlugin(name,pvPlugin);
+    if (not initialized) {
+        initialized = true;
+        DataDistributorPluginPtr pvPlugin = DataDistributorPluginPtr(new DataDistributorPlugin());
+        PVPluginRegistry::registerPlugin(name,pvPlugin);
+    }
     return true;
 }
 
