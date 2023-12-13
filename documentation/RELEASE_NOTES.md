@@ -2,7 +2,7 @@
 
 This document summarizes the changes to the module between releases.
 
-## Release 4.7.1 (EPICS 7.0.x, UNRELEASED)
+## Release 4.7.1 (EPICS 7.0.8, Dec 2023)
 
 * Added data distributor plugin which can be used for distributing data between 
   a group of clients. The plugin is triggered by the request string of the
