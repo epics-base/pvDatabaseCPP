@@ -1,0 +1,93 @@
+# .appveyor.yml for use with EPICS Base ci-scripts
+# (see: https://github.com/epics-base/ci-scripts)
+
+# This is YAML - indentation levels are crucial
+
+cache:
+  - C:\Users\appveyor\.tools
+
+#---------------------------------#
+#       repository cloning        #
+#---------------------------------#
+
+init:
+  # Set autocrlf to make batch files work
+  - git config --global core.autocrlf true
+
+clone_depth: 5
+
+# Build Configurations: dll/static, regular/debug
+configuration:
+  - dynamic
+  - static
+  - dynamic-debug
+  - static-debug
+
+# Default OS Image
+image: Visual Studio 2019
+
+# Environment variables: compiler toolchain, base version, setup file, ...
+environment:
+  # common / default variables for all jobs
+  SETUP_PATH: .ci-local:.ci
+
+  matrix:
+  - BASE: 3.15
+    CMP: vs2019
+  - BASE: 7.0
+    CMP: vs2019
+  - BASE: 7.0
+    CMP: gcc
+  - BASE: 7.0
+    CMP: vs2017
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+
+# Platform: processor architecture
+platform:
+  - x64
+
+#---------------------------------#
+#     building & testing          #
+#---------------------------------#
+
+install:
+  - cmd: git submodule update --init --recursive
+  - cmd: pip install git+https://github.com/mdavidsaver/ci-core-dumper#egg=ci-core-dumper
+  - cmd: python .ci/cue.py prepare
+
+build_script:
+  - cmd: python .ci/cue.py build
+
+test_script:
+  - cmd: python -m ci_core_dumper install
+  - cmd: python .ci/cue.py -T 20M test
+
+on_finish:
+  - ps: Get-ChildItem *.tap -Recurse -Force | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+  - cmd: python .ci/cue.py -T 5M test-results
+
+on_failure:
+  - cmd: python -m ci_core_dumper report
+
+#---------------------------------#
+#         debugging               #
+#---------------------------------#
+
+## if you want to connect by remote desktop to a failed build, uncomment these lines
+## note that you will need to connect within the usual build timeout limit (60 minutes)
+## so you may want to adjust the build matrix above to just build the one of interest
+
+#on_failure:
+#  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+
+#---------------------------------#
+#         notifications           #
+#---------------------------------#
+
+notifications:
+  - provider: Email
+    to:
+      - core-talk@aps.anl.gov
+    on_build_success: false
+  - provider: GitHubPullRequest
