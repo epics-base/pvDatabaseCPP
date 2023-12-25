@@ -45,7 +45,7 @@ public:
      * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
-    virtual bool init(
+    bool init(
         epics::pvData::PVFieldPtr const & pvValue,
         epics::pvData::PVStructurePtr const & pvAlarm,
         epics::pvData::PVFieldPtr const & pvSupport);

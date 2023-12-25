@@ -38,17 +38,17 @@ public:
      */
     virtual ~PVSupport(){}
     /**
-     * @brief Optional  initialization method.
+     * @brief Required initialization method.
      *
-     * Called after PVRecord is created but before record is installed into PVDatabase.
+     * Implementation classes must define an init() method that must be
+     * explicitly called by PVRecord classes that use them to provide
+     * references to the specific fields to be supported. Different support
+     * will may different fields, so a virtual method cannot be defined in
+     * this base class to support them, hence this method always fails.
      *
-     * @param pvValue The field to support.
-     * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
-    virtual bool init(
-        epics::pvData::PVFieldPtr const & pvValue,
-        epics::pvData::PVFieldPtr const & pvSupport) {return true;}
+    bool init() {return false;}
     /**
      *  @brief Optional method for derived class.
      *

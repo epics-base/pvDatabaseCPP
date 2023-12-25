@@ -35,18 +35,17 @@ public:
      */
     virtual ~ControlSupport();
     /**
-     * @brief Connects to contol fields.
+     * @brief Connects to control fields.
      *
      * @param pvValue The field to support.
      * @param pvSupport Support specific fields.
      * @return <b>true</b> for success and <b>false</b> for failure.
      */
-    virtual bool init(
+    bool init(
         epics::pvData::PVFieldPtr const & pvValue,
         epics::pvData::PVFieldPtr const & pvSupport);
     /**
      * @brief Honors control fields.
-     *
      *
      * @return Returns true is any fields were modified; otherwise false.
      */

@@ -2,6 +2,16 @@
 
 This document summarizes the changes to the module between releases.
 
+## Release 4.7.2 (UNRELEASED)
+
+* The virtual `init()` method of `class PVSupport` has been made un-virtual, and the base-class
+  implementation always returns `false` as it should not be used. The `ControlSupport` and
+  `ScalarAlarmSupport` derived classes already provided their own implementations but needed
+  different method arguments, so a virtual base-class method couldn't be used anyway.
+  Those derived classes don't appear to be used internally at all, although they were being
+  used in Marty Kraimer's exampleCPP repository which is no longer maintained or recommended
+  for use anyway.
+
 ## Release 4.7.1 (EPICS 7.0.8, Dec 2023)
 
 * Added data distributor plugin which can be used for distributing data between 
