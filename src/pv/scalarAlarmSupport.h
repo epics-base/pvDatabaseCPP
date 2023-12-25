@@ -52,8 +52,7 @@ public:
     /**
      * @brief Honors scalarAlarm fields.
      *
-     *
-     * @return Returns true is any fields were modified; otherwise false.
+     * @return true if any fields were modified, otherwise false.
      */
     virtual bool process();
     /**
@@ -77,7 +76,7 @@ public:
 private:
 
     ScalarAlarmSupport(PVRecordPtr const & pvRecord);
-    enum {
+    enum AlarmRange {
         range_Lolo = 0,
         range_Low,
         range_Normal,
@@ -85,12 +84,12 @@ private:
         range_Hihi,
         range_Invalid,
         range_Undefined
-    } AlarmRange;
+    };
     void setAlarm(
         epics::pvData::PVStructurePtr const & pvAlarm,
         int alarmRange);
     PVRecordPtr pvRecord;
-    int prevAlarmRange;
+    enum AlarmRange prevAlarmRange;
     epics::pvData::PVScalarPtr pvValue;
     epics::pvData::PVStructurePtr pvAlarm;
     epics::pvData::PVStructurePtr pvScalarAlarm;
