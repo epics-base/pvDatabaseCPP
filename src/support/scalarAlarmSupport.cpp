@@ -110,7 +110,7 @@ bool ScalarAlarmSupport::process()
     double highWarningLimit = pvHighWarningLimit->get();
     double highAlarmLimit = pvHighAlarmLimit->get();
     double hysteresis = pvHysteresis->get();
-    int alarmRange = range_Normal;
+    enum AlarmRange alarmRange = range_Normal;
     if(highAlarmLimit>lowAlarmLimit) {
          if(value>=highAlarmLimit
          ||(prevAlarmRange==range_Hihi && value>=highAlarmLimit-hysteresis)) {
