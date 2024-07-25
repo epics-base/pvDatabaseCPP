@@ -294,7 +294,7 @@ void MonitorLocal::dataPut(PVRecordFieldPtr const & pvRecordField)
     }
     // If this record field is the master field, and the master field was not
     // requested, we do not proceed with copy
-    bool isMasterField = pvRecordField->getPVRecord()->getPVStructure()->getFieldOffset()==0;
+    bool isMasterField = pvRecordField->getPVRecord()->getPVStructure()->getFieldOffset()==0 && pvRecordField->getFullFieldName().empty();
     if (isMasterField && !pvCopy->isMasterFieldRequested()) {
         return;
     }
