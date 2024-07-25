@@ -302,11 +302,99 @@ static void test()
     status = monitor->stop();
     testOk1(status.isOK());
 
+    // Test request for the first field in the structure
+    request = "id";
+    pvRequest = CreateRequest::create()->createRequest(request);
+    cmRequesterImpl = TR1::shared_ptr<ChannelMonitorRequesterImpl>(new ChannelMonitorRequesterImpl(channel->getChannelName()));
+    monitor = channel->createMonitor(cmRequesterImpl, pvRequest);
+    monitorConnected = cmRequesterImpl->waitUntilConnected(1.0);
+    testOk1(monitorConnected);
+    status = monitor->start();
+    testOk1(status.isOK());
+    epicsThreadSleep(1);
+
+    //  Set id, x
+    {
+        pvRecord->beginGroupPut();
+        PVIntPtr id = pvStructure->getSubField<PVInt>("id");
+        id->put(5);
+        PVIntPtr x = pvStructure->getSubField<PVInt>("x");
+        x->put(5);
+        pvRecord->endGroupPut();
+    }
+    epicsThreadSleep(1);
+
+    //  Changed set for (id) requested, (id) changed: 0 set
+    changedSet = cmRequesterImpl->getLastReceivedBitSet();
+    testOk1(changedSet->get(0));
+
+    status = monitor->stop();
+    testOk1(status.isOK());
+
+    // Test request for one of the middle fields in the structure
+    request = "y";
+    pvRequest = CreateRequest::create()->createRequest(request);
+    cmRequesterImpl = TR1::shared_ptr<ChannelMonitorRequesterImpl>(new ChannelMonitorRequesterImpl(channel->getChannelName()));
+    monitor = channel->createMonitor(cmRequesterImpl, pvRequest);
+    monitorConnected = cmRequesterImpl->waitUntilConnected(1.0);
+    testOk1(monitorConnected);
+    status = monitor->start();
+    testOk1(status.isOK());
+    epicsThreadSleep(1);
+
+    //  Set id, y
+    {
+        pvRecord->beginGroupPut();
+        PVIntPtr id = pvStructure->getSubField<PVInt>("id");
+        id->put(6);
+        PVIntPtr y = pvStructure->getSubField<PVInt>("y");
+        y->put(6);
+        pvRecord->endGroupPut();
+    }
+    epicsThreadSleep(1);
+
+    //  Changed set for (y) requested, (y) changed: 0 set
+    changedSet = cmRequesterImpl->getLastReceivedBitSet();
+    testOk1(changedSet->get(0));
+
+    status = monitor->stop();
+    testOk1(status.isOK());
+
+    // Test request for more fields in the structure
+    request = "x,y,z";
+    pvRequest = CreateRequest::create()->createRequest(request);
+    cmRequesterImpl = TR1::shared_ptr<ChannelMonitorRequesterImpl>(new ChannelMonitorRequesterImpl(channel->getChannelName()));
+    monitor = channel->createMonitor(cmRequesterImpl, pvRequest);
+    monitorConnected = cmRequesterImpl->waitUntilConnected(1.0);
+    testOk1(monitorConnected);
+    status = monitor->start();
+    testOk1(status.isOK());
+    epicsThreadSleep(1);
+
+    //  Set id, x, y
+    {
+        pvRecord->beginGroupPut();
+        PVIntPtr id = pvStructure->getSubField<PVInt>("id");
+        id->put(7);
+        PVIntPtr x = pvStructure->getSubField<PVInt>("x");
+        x->put(7);
+        PVIntPtr y = pvStructure->getSubField<PVInt>("y");
+        y->put(7);
+        pvRecord->endGroupPut();
+    }
+    epicsThreadSleep(1);
+
+    //  Changed set for (x,y,z) requested, (x,y) changed: 1,2 set, 3 unset
+    changedSet = cmRequesterImpl->getLastReceivedBitSet();
+    testOk1(!changedSet->get(0) && changedSet->get(1) && changedSet->get(2) && !changedSet->get(3));
+
+    status = monitor->stop();
+    testOk1(status.isOK());
 }
 
 MAIN(testChannelMonitor)
 {
-    testPlan(16);
+    testPlan(28);
     test();
     return 0;
 }
