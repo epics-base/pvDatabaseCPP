@@ -12,11 +12,13 @@ on:
   push:
     paths-ignore:
       - 'documentation/*'
-      - '.*.yml'
+      - '.appveyor.yml'
+      - '.readthedocs.yml'
   pull_request:
     paths-ignore:
       - 'documentation/*'
-      - '.*.yml'
+      - '.appveyor.yml'
+      - '.readthedocs.yml'
 
 env:
     SETUP_PATH: .ci-local:.ci
@@ -39,67 +41,74 @@ jobs:
       matrix:
         # Job names also name artifacts, character limitations apply
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: default
             base: "7.0"
             cross: "windows-x64-mingw"
-            name: "7.0 Ub-20 gcc-9 + MinGW"
+            name: "7.0 Ub-22 gcc + MinGW"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: static
             base: "7.0"
             cross: "windows-x64-mingw"
-            name: "7.0 Ub-20 gcc-9 + MinGW, static"
+            name: "7.0 Ub-22 gcc + MinGW, static"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: static
             base: "7.0"
             extra: "CMD_CXXFLAGS=-std=c++11"
-            name: "7.0 Ub-20 gcc-9 C++11, static"
+            name: "7.0 Ub-22 gcc C++11, static"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
+            cmp: gcc
+            configuration: static
+            base: "7.0"
+            extra: "CMD_CFLAGS=-funsigned-char CMD_CXXFLAGS=-funsigned-char"
+            name: "7.0 Ub-22 gcc uchar"
+
+          - os: ubuntu-22.04
             cmp: clang
             configuration: default
             base: "7.0"
-            name: "7.0 Ub-20 clang-10"
+            name: "7.0 Ub-22 clang"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: clang
             configuration: default
             base: "7.0"
             extra: "CMD_CXXFLAGS=-std=c++11"
-            name: "7.0 Ub-20 clang-10 C++11"
+            name: "7.0 Ub-22 clang C++11"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: default
             base: "7.0"
             cross: "RTEMS-pc686-qemu@5"
-            name: "7.0 Ub-20 gcc-9 + RT-5.1 pc686"
+            name: "7.0 Ub-22 gcc + RT-5.1 pc686"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: default
             base: "7.0"
             cross: "RTEMS-pc386-qemu@4.10"
             test: NO
-            name: "7.0 Ub-20 gcc-9 + RT-4.10"
+            name: "7.0 Ub-22 gcc + RT-4.10"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: default
             base: "7.0"
             cross: "RTEMS-pc386-qemu@4.9"
-            name: "7.0 Ub-20 gcc-9 + RT-4.9"
+            name: "7.0 Ub-22 gcc + RT-4.9"
 
           - os: macos-latest
             cmp: clang
             configuration: default
             base: "7.0"
-            name: "7.0 MacOS clang-12"
+            name: "7.0 MacOS clang"
 
           - os: windows-2019
             cmp: vs2019
@@ -127,15 +136,15 @@ jobs:
             base: "7.0"
             name: "7.0 Win2019 mingw"
 
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             cmp: gcc
             configuration: default
             base: "3.15"
             wine: "64"
-            name: "3.15 Ub-20 gcc-9 + MinGW"
+            name: "3.15 Ub-22 gcc + MinGW"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: true
     - name: Automatic core dump analysis
@@ -153,7 +162,7 @@ jobs:
       run: python .ci/cue.py -T 20M test
     - name: Upload tapfiles Artifact
       if: ${{ always() }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tapfiles ${{ matrix.name }}
         path: '**/O.*/*.tap'
