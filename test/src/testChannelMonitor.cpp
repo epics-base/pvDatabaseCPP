@@ -171,7 +171,8 @@ public:
         }
         else {
             cout << Channel::ConnectionStateNames[connectionState] << endl;
-            exit(3);
+            testFail("Channel did not reach CONNECTED state");
+            event.signal(); // To ensure the test does not hang
         }
     }
 
