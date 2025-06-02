@@ -138,6 +138,7 @@ class ChannelRequesterImpl : public ChannelRequester
 {
 private:
     Event event;
+    bool connected = false;
 
 public:
 
@@ -167,17 +168,18 @@ public:
     virtual void channelStateChange(const Channel::shared_pointer& /*channel*/, Channel::ConnectionState connectionState)
     {
         if (connectionState == Channel::CONNECTED) {
-            event.signal();
-        }
-        else {
+            connected = true;
+        } else {
             cout << Channel::ConnectionStateNames[connectionState] << endl;
-            exit(3);
+            connected = false;
         }
+        event.signal();
     }
 
     bool waitUntilConnected(double timeOut)
     {
-        return event.wait(timeOut);
+        event.wait(timeOut);
+        return connected;
     }
 };
 
@@ -207,8 +209,11 @@ static void test()
     TR1::shared_ptr<ChannelRequesterImpl> channelRequesterImpl(new ChannelRequesterImpl());
 
     Channel::shared_pointer channel = provider->createChannel(recordName, channelRequesterImpl);
-    bool channelConnected = channelRequesterImpl->waitUntilConnected(1.0);
+    bool channelConnected = channelRequesterImpl->waitUntilConnected(2.0);
     testOk1(channelConnected);
+    if (!channelConnected) {
+        testAbort("Channel did not reach CONNECTED state");
+    }
     if (channelConnected) {
         string remoteAddress = channel->getRemoteAddress();
         cout << "remote address: " << remoteAddress << endl;
@@ -218,7 +223,7 @@ static void test()
     PVStructure::shared_pointer pvRequest = CreateRequest::create()->createRequest(request);
     TR1::shared_ptr<ChannelMonitorRequesterImpl> cmRequesterImpl(new ChannelMonitorRequesterImpl(channel->getChannelName()));
     Monitor::shared_pointer monitor = channel->createMonitor(cmRequesterImpl, pvRequest);
-    bool monitorConnected = cmRequesterImpl->waitUntilConnected(1.0);
+    bool monitorConnected = cmRequesterImpl->waitUntilConnected(2.0);
     testOk1(monitorConnected);
     Status status = monitor->start();
     testOk1(status.isOK());
@@ -280,7 +285,7 @@ static void test()
     pvRequest = CreateRequest::create()->createRequest(request);
     cmRequesterImpl = TR1::shared_ptr<ChannelMonitorRequesterImpl>(new ChannelMonitorRequesterImpl(channel->getChannelName()));
     monitor = channel->createMonitor(cmRequesterImpl, pvRequest);
-    monitorConnected = cmRequesterImpl->waitUntilConnected(1.0);
+    monitorConnected = cmRequesterImpl->waitUntilConnected(2.0);
     testOk1(monitorConnected);
     status = monitor->start();
     testOk1(status.isOK());
