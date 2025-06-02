@@ -138,6 +138,7 @@ class ChannelRequesterImpl : public ChannelRequester
 {
 private:
     Event event;
+    bool connected = false;
 
 public:
 
@@ -167,18 +168,18 @@ public:
     virtual void channelStateChange(const Channel::shared_pointer& /*channel*/, Channel::ConnectionState connectionState)
     {
         if (connectionState == Channel::CONNECTED) {
-            event.signal();
-        }
-        else {
+            connected = true;
+        } else {
             cout << Channel::ConnectionStateNames[connectionState] << endl;
-            testFail("Channel did not reach CONNECTED state");
-            event.signal(); // To ensure the test does not hang
+            connected = false;
         }
+        event.signal();
     }
 
     bool waitUntilConnected(double timeOut)
     {
-        return event.wait(timeOut);
+        event.wait(timeOut);
+        return connected;
     }
 };
 
@@ -210,6 +211,9 @@ static void test()
     Channel::shared_pointer channel = provider->createChannel(recordName, channelRequesterImpl);
     bool channelConnected = channelRequesterImpl->waitUntilConnected(1.0);
     testOk1(channelConnected);
+    if (!channelConnected) {
+        testAbort("Channel did not reach CONNECTED state");
+    }
     if (channelConnected) {
         string remoteAddress = channel->getRemoteAddress();
         cout << "remote address: " << remoteAddress << endl;
